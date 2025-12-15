@@ -25,7 +25,7 @@ jobs:
       with:
         python-version: '3.9'
 
-    # 3. 安裝依賴套件 (已加入 lxml)
+    # 3. 安裝依賴套件 (包含 lxml)
     - name: Install dependencies
       run: |
         pip install yfinance twstock pandas lxml
@@ -34,12 +34,19 @@ jobs:
     - name: Run scanner script
       run: python scanner.py
 
-    # 5. 將產生的 data.json 提交回 GitHub
+    # 5. 【關鍵更新】將產生的資料提交回 GitHub
+    # 包含掃描結果 (data.json) 與 產業資料庫 (industry.json)
     - name: Commit and push changes
       run: |
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
+        
+        # 加入掃描結果
         git add data.json
+        
+        # 加入產業資料庫 (如果有變動的話)
+        git add industry.json
+        
         # 只有當檔案有變動時才 commit，避免錯誤
-        git commit -m "Auto-update stock list data [skip ci]" || exit 0
+        git commit -m "Auto-update stock data & industry db [skip ci]" || exit 0
         git push
