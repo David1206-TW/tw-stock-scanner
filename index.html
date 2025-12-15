@@ -20,20 +20,14 @@
             font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;
             background-color: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; white-space: nowrap;
         }
-        /* Tab 切換樣式 */
-        .tab-btn.active {
-            color: #3b82f6;
-            border-bottom: 2px solid #3b82f6;
-        }
-        .tab-btn {
-            color: #6b7280;
-            border-bottom: 2px solid transparent;
-        }
+        .tab-btn.active { color: #3b82f6; border-bottom: 2px solid #3b82f6; }
+        .tab-btn { color: #6b7280; border-bottom: 2px solid transparent; }
+        th.sortable { cursor: pointer; transition: background-color 0.2s; }
+        th.sortable:hover { background-color: #e5e7eb; }
     </style>
 </head>
 <body class="text-gray-800 min-h-screen flex flex-col pb-20">
 
-    <!-- Navbar -->
     <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-40">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -43,31 +37,24 @@
                     <div class="text-[10px] text-gray-400" id="last-updated">更新時間: 讀取中...</div>
                 </div>
             </div>
-            <!-- Reload Button -->
             <button onclick="app.refresh()" class="p-2 bg-slate-700 rounded-full hover:bg-slate-600 active:scale-95 transition-transform">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
         </div>
     </nav>
 
-    <!-- Content Container -->
     <main class="flex-grow p-4 md:p-6 max-w-6xl mx-auto w-full">
-        
-        <!-- PAGE 1: Dashboard (看盤) -->
         <div id="page-dashboard">
-            <!-- Status Banner -->
             <div id="status-banner" class="bg-blue-600 text-white p-3 rounded-lg shadow mb-4 text-sm flex justify-between items-center hidden">
                 <span><i class="fa-solid fa-check-circle mr-2"></i>資料已自動載入</span>
                 <span id="data-count" class="bg-blue-800 px-2 py-1 rounded text-xs">0 檔</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <!-- Control Panel -->
                 <div class="glass-panel rounded-xl p-5 md:col-span-1 h-fit">
                     <h2 class="text-lg font-bold mb-4 border-b pb-2 border-gray-200">
                         <i class="fa-solid fa-sliders mr-2 text-blue-600"></i>篩選操作
                     </h2>
-                    
                     <div class="space-y-3">
                         <button onclick="app.runCompareScan()" id="btn-compare" class="w-full group relative flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                             <i class="fa-solid fa-filter"></i>
@@ -76,18 +63,16 @@
                                 <div class="text-[10px] opacity-80">隱藏已跌破均線的個股</div>
                             </div>
                         </button>
-                        
                         <div class="mt-4 p-3 bg-white rounded border border-gray-200 text-xs text-gray-500 shadow-inner">
                             <p class="mb-1 text-gray-700 font-bold"><i class="fa-solid fa-info-circle mr-1"></i>說明：</p>
                             <ul class="list-disc list-inside space-y-1">
-                                <li>資料來源：GitHub Actions 自動執行</li>
-                                <li>若需即時最新數據，請至「控制台」觸發掃描</li>
+                                <li>點擊標題可排序 (名稱、族群、價格)</li>
+                                <li>需至控制台手動觸發一次掃描以更新欄位</li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                <!-- List Panel -->
                 <div class="glass-panel rounded-xl p-5 md:col-span-2 flex flex-col h-[70vh]">
                     <div class="flex justify-between items-center mb-4 border-b pb-2 border-gray-200">
                         <h2 class="text-lg font-bold flex items-center">
@@ -95,26 +80,20 @@
                         </h2>
                         <span id="filtered-badge" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200">已過濾</span>
                     </div>
-
-                    <!-- Results Table -->
                     <div class="overflow-x-auto overflow-y-auto flex-grow border rounded-lg bg-white relative">
                         <table class="w-full text-sm text-left text-gray-500">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 shadow-sm z-10">
                                 <tr>
-                                    <th scope="col" class="px-4 py-3">代號/名稱</th>
-                                    <th scope="col" class="px-4 py-3 text-right">價格</th>
+                                    <th scope="col" class="px-4 py-3 sortable" onclick="app.sortList('id')">代號/名稱 <i class="fa-solid fa-sort text-gray-400"></i></th>
+                                    <th scope="col" class="px-4 py-3 sortable" onclick="app.sortList('group')">族群 <i class="fa-solid fa-sort text-gray-400"></i></th>
+                                    <th scope="col" class="px-4 py-3 text-right sortable" onclick="app.sortList('price')">價格 <i class="fa-solid fa-sort text-gray-400"></i></th>
                                     <th scope="col" class="px-4 py-3 text-right hidden sm:table-cell">MA5</th>
                                     <th scope="col" class="px-4 py-3 text-right hidden sm:table-cell">MA10</th>
                                     <th scope="col" class="px-4 py-3">備註</th>
                                 </tr>
                             </thead>
                             <tbody id="result-body" class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td colspan="5" class="px-6 py-20 text-center text-gray-400 flex flex-col items-center justify-center h-full">
-                                        <i class="fa-solid fa-spinner fa-spin text-3xl mb-4 text-blue-500"></i>
-                                        <span>正在從雲端讀取...</span>
-                                    </td>
-                                </tr>
+                                <tr><td colspan="6" class="px-6 py-20 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-3xl mb-4 text-blue-500"></i><br>讀取中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -122,76 +101,34 @@
             </div>
         </div>
 
-        <!-- PAGE 2: Admin (控制台) -->
         <div id="page-admin" class="hidden">
             <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto">
-                <h2 class="text-xl font-bold mb-6 flex items-center border-b pb-4">
-                    <i class="fa-solid fa-rocket mr-3 text-red-500"></i>觸發即時掃描 (GitHub Actions)
-                </h2>
-
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fa-solid fa-triangle-exclamation text-yellow-500"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-yellow-700">
-                                這裡可以手動呼叫 GitHub 伺服器執行 `scanner.py`。
-                                <br>你需要一組 <strong>GitHub Personal Access Token (PAT)</strong> 才能操作。
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
+                <h2 class="text-xl font-bold mb-6 flex items-center border-b pb-4"><i class="fa-solid fa-rocket mr-3 text-red-500"></i>手動執行掃描</h2>
                 <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">GitHub 使用者名稱 (Owner)</label>
-                        <input type="text" id="repo-owner" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="例如: yourname">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">儲存庫名稱 (Repo Name)</label>
-                        <input type="text" id="repo-name" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="例如: tw-stock-scanner">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Access Token (PAT)</label>
-                        <input type="password" id="github-token" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ghp_xxxxxxxxxxxx">
-                        <p class="text-xs text-gray-400 mt-1">* Token 僅儲存在您的瀏覽器，不會上傳。</p>
-                    </div>
-
-                    <button onclick="admin.triggerWorkflow()" id="btn-trigger" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition-all flex justify-center items-center mt-4">
-                        <i class="fa-solid fa-play mr-2"></i> 立即執行掃描
-                    </button>
-                    
-                    <!-- Log Output -->
-                    <div id="admin-log" class="mt-4 p-3 bg-gray-900 text-green-400 font-mono text-xs rounded h-32 overflow-y-auto hidden">
-                        > Ready.
-                    </div>
+                    <input type="text" id="repo-owner" class="w-full p-2 border rounded" placeholder="GitHub Owner">
+                    <input type="text" id="repo-name" class="w-full p-2 border rounded" placeholder="Repo Name">
+                    <input type="password" id="github-token" class="w-full p-2 border rounded" placeholder="Access Token">
+                    <button onclick="admin.triggerWorkflow()" id="btn-trigger" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded mt-4">立即執行</button>
+                    <div id="admin-log" class="mt-4 p-3 bg-gray-900 text-green-400 font-mono text-xs rounded h-32 overflow-y-auto hidden"></div>
                 </div>
             </div>
         </div>
-
     </main>
 
-    <!-- Bottom Navigation -->
     <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50 pb-safe">
         <div class="max-w-6xl mx-auto flex justify-around">
-            <button onclick="app.switchTab('dashboard')" id="tab-dashboard" class="tab-btn active flex-1 py-3 text-center flex flex-col items-center justify-center">
-                <i class="fa-solid fa-chart-line text-lg mb-1"></i>
-                <span class="text-xs font-medium">看盤</span>
-            </button>
-            <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 py-3 text-center flex flex-col items-center justify-center">
-                <i class="fa-solid fa-gear text-lg mb-1"></i>
-                <span class="text-xs font-medium">控制台</span>
-            </button>
+            <button onclick="app.switchTab('dashboard')" id="tab-dashboard" class="tab-btn active flex-1 py-3 text-center flex flex-col"><i class="fa-solid fa-chart-line text-lg mb-1"></i><span class="text-xs">看盤</span></button>
+            <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 py-3 text-center flex flex-col"><i class="fa-solid fa-gear text-lg mb-1"></i><span class="text-xs">控制台</span></button>
         </div>
     </nav>
 
     <script>
-        // === 主程式邏輯 ===
         class StockApp {
             constructor() {
                 this.dataUrl = 'data.json';
                 this.stockList = [];
+                this.displayList = [];
+                this.sortState = { key: null, direction: 'asc' };
                 this.ui = {
                     body: document.getElementById('result-body'),
                     lastUpdated: document.getElementById('last-updated'),
@@ -206,10 +143,7 @@
                 };
                 this.init();
             }
-
             refresh() { location.reload(); }
-
-            // 切換頁面 Tab
             switchTab(tabName) {
                 if (tabName === 'dashboard') {
                     this.ui.pageDashboard.classList.remove('hidden');
@@ -221,172 +155,79 @@
                     this.ui.pageAdmin.classList.remove('hidden');
                     this.ui.tabDashboard.classList.remove('active');
                     this.ui.tabAdmin.classList.add('active');
-                    // 載入儲存的設定
                     admin.loadSettings();
                 }
             }
-
             async init() {
                 try {
                     const cacheBuster = new Date().getTime();
                     let response;
-                    
-                    // 優化錯誤處理：專門攔截預覽環境無法解析 URL 的錯誤
-                    try {
-                        response = await fetch(`${this.dataUrl}?t=${cacheBuster}`);
-                    } catch (netError) {
-                        throw new Error("預覽環境無法讀取相對路徑資料，請將程式碼部署至 GitHub Pages 後即可正常運作。");
-                    }
-
-                    if (!response.ok) throw new Error("尚未生成資料，請至控制台觸發掃描 (或確認 GitHub Action 執行狀況)");
-                    
+                    try { response = await fetch(`${this.dataUrl}?t=${cacheBuster}`); } 
+                    catch (netError) { throw new Error("預覽環境無法讀取資料"); }
+                    if (response.status === 404) throw new Error("初次使用請至控制台觸發掃描");
+                    if (!response.ok) throw new Error("讀取失敗");
                     const data = await response.json();
                     this.stockList = data.list || [];
+                    this.displayList = [...this.stockList];
                     this.ui.lastUpdated.innerText = `更新時間: ${data.date}`;
                     this.ui.statusBanner.classList.remove('hidden');
                     this.ui.dataCount.innerText = `${this.stockList.length} 檔`;
                     if(this.stockList.length > 0) this.ui.btnCompare.disabled = false;
-                    this.renderTable(this.stockList);
+                    this.renderTable(this.displayList);
                 } catch (e) {
-                    console.warn(e); // 使用 warn 避免控制台紅字報錯
-                    this.ui.body.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="text-center py-10">
-                                <div class="text-amber-500 font-bold mb-2"><i class="fa-solid fa-triangle-exclamation"></i> 無法讀取資料</div>
-                                <div class="text-xs text-gray-500">${e.message}</div>
-                            </td>
-                        </tr>
-                    `;
-                    this.ui.lastUpdated.innerText = "更新時間: ---";
+                    this.ui.body.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-amber-500 font-bold">${e.message}</td></tr>`;
                     this.ui.btnCompare.disabled = true;
                 }
             }
-
             runCompareScan() {
-                const filtered = this.stockList.filter(stock => stock.price > stock.ma5 && stock.price > stock.ma10);
-                this.renderTable(filtered);
+                this.displayList = this.stockList.filter(stock => stock.price > stock.ma5 && stock.price > stock.ma10);
+                this.renderTable(this.displayList);
                 this.ui.filteredBadge.classList.remove('hidden');
-                this.ui.filteredBadge.innerText = `已過濾: ${filtered.length}/${this.stockList.length}`;
+                this.ui.filteredBadge.innerText = `已過濾: ${this.displayList.length}/${this.stockList.length}`;
             }
-
+            sortList(key) {
+                if (this.sortState.key === key) this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
+                else { this.sortState.key = key; this.sortState.direction = 'asc'; }
+                const dir = this.sortState.direction === 'asc' ? 1 : -1;
+                this.displayList.sort((a, b) => {
+                    let valA = a[key], valB = b[key];
+                    if (key === 'price') return (valA - valB) * dir;
+                    return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
+                });
+                this.renderTable(this.displayList);
+            }
             renderTable(list) {
-                if (list.length === 0) {
-                    this.ui.body.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-gray-400">無符合資料</td></tr>`;
-                    return;
-                }
+                if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-gray-400">無符合資料</td></tr>`; return; }
                 const html = list.map(stock => {
-                    let priceClass = 'text-gray-900 font-mono font-bold';
-                    const rate = parseFloat(stock.changeRate || 0);
-                    if (rate > 0) priceClass = 'tw-up font-bold font-mono'; 
-                    else if (rate < 0) priceClass = 'tw-down font-bold font-mono';
-                    const typeBadge = stock.type === '上市' 
-                        ? '<span class="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded border border-blue-200">市</span>'
-                        : '<span class="bg-purple-100 text-purple-800 text-[10px] px-1.5 py-0.5 rounded border border-purple-200">櫃</span>';
-                    return `
-                        <tr class="bg-white border-b hover:bg-gray-50 transition-colors">
-                            <td class="px-4 py-3">
-                                <div class="flex items-center gap-2">
-                                    ${typeBadge}
-                                    <div><div class="font-bold text-gray-800 leading-tight">${stock.name}</div><div class="text-[10px] text-gray-400 font-mono">${stock.id}</div></div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3 text-right ${priceClass}">${stock.price}</td>
-                            <td class="px-4 py-3 text-right text-gray-500 text-xs hidden sm:table-cell font-mono">${stock.ma5}</td>
-                            <td class="px-4 py-3 text-right text-gray-500 text-xs hidden sm:table-cell font-mono">${stock.ma10}</td>
-                            <td class="px-4 py-3 text-xs text-gray-500">${stock.note || '-'}</td>
-                        </tr>`;
+                    let priceClass = parseFloat(stock.changeRate||0) > 0 ? 'tw-up font-bold' : (parseFloat(stock.changeRate||0) < 0 ? 'tw-down font-bold' : 'text-gray-900 font-bold');
+                    const typeBadge = stock.type === '上市' ? '<span class="bg-blue-100 text-blue-800 text-[10px] px-1 rounded">市</span>' : '<span class="bg-purple-100 text-purple-800 text-[10px] px-1 rounded">櫃</span>';
+                    return `<tr class="bg-white border-b"><td class="px-4 py-3"><div class="flex items-center gap-2">${typeBadge}<div><div class="font-bold text-gray-800">${stock.name}</div><div class="text-[10px] text-gray-400">${stock.id}</div></div></div></td><td class="px-4 py-3 text-xs">${stock.group || '-'}</td><td class="px-4 py-3 text-right ${priceClass}">${stock.price}</td><td class="px-4 py-3 text-right text-xs hidden sm:table-cell text-gray-500">${stock.ma5}</td><td class="px-4 py-3 text-right text-xs hidden sm:table-cell text-gray-500">${stock.ma10}</td><td class="px-4 py-3 text-xs text-gray-500">${stock.note || '-'}</td></tr>`;
                 }).join('');
                 this.ui.body.innerHTML = html;
             }
         }
-
-        // === Admin 控制台邏輯 ===
         class AdminController {
             constructor() {
-                this.ui = {
-                    owner: document.getElementById('repo-owner'),
-                    repo: document.getElementById('repo-name'),
-                    token: document.getElementById('github-token'),
-                    log: document.getElementById('admin-log'),
-                    btn: document.getElementById('btn-trigger')
-                };
+                this.ui = { owner: document.getElementById('repo-owner'), repo: document.getElementById('repo-name'), token: document.getElementById('github-token'), log: document.getElementById('admin-log'), btn: document.getElementById('btn-trigger') };
             }
-
-            log(msg) {
-                this.ui.log.classList.remove('hidden');
-                this.ui.log.innerHTML += `<div>> ${msg}</div>`;
-                this.ui.log.scrollTop = this.ui.log.scrollHeight;
-            }
-
-            loadSettings() {
-                this.ui.owner.value = localStorage.getItem('gh_owner') || '';
-                this.ui.repo.value = localStorage.getItem('gh_repo') || '';
-                this.ui.token.value = localStorage.getItem('gh_token') || '';
-            }
-
-            saveSettings() {
-                localStorage.setItem('gh_owner', this.ui.owner.value.trim());
-                localStorage.setItem('gh_repo', this.ui.repo.value.trim());
-                localStorage.setItem('gh_token', this.ui.token.value.trim());
-            }
-
+            log(msg) { this.ui.log.classList.remove('hidden'); this.ui.log.innerHTML += `<div>> ${msg}</div>`; this.ui.log.scrollTop = this.ui.log.scrollHeight; }
+            loadSettings() { this.ui.owner.value = localStorage.getItem('gh_owner')||''; this.ui.repo.value = localStorage.getItem('gh_repo')||''; this.ui.token.value = localStorage.getItem('gh_token')||''; }
+            saveSettings() { localStorage.setItem('gh_owner', this.ui.owner.value.trim()); localStorage.setItem('gh_repo', this.ui.repo.value.trim()); localStorage.setItem('gh_token', this.ui.token.value.trim()); }
             async triggerWorkflow() {
-                const owner = this.ui.owner.value.trim();
-                const repo = this.ui.repo.value.trim();
-                const token = this.ui.token.value.trim();
-
-                if (!owner || !repo || !token) {
-                    alert("請完整填寫 Owner, Repo Name 和 Token");
-                    return;
-                }
-
-                this.saveSettings();
-                this.ui.btn.disabled = true;
-                this.ui.btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> 發送請求中...';
-                this.ui.log.innerHTML = '> 初始化請求...';
-
+                const owner = this.ui.owner.value.trim(), repo = this.ui.repo.value.trim(), token = this.ui.token.value.trim();
+                if (!owner || !repo || !token) { alert("請填寫所有欄位"); return; }
+                this.saveSettings(); this.ui.btn.disabled = true; this.log('發送請求...');
                 try {
-                    // GitHub Dispatch API URL
-                    const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`;
-                    
-                    this.log(`Target: ${owner}/${repo}`);
-                    this.log(`Workflow: daily_scan.yml`);
-
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/vnd.github.v3+json',
-                            'Authorization': `token ${token}`
-                        },
-                        body: JSON.stringify({
-                            ref: 'main' // 指定分支
-                        })
+                    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, {
+                        method: 'POST', headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, body: JSON.stringify({ ref: 'main' })
                     });
-
-                    if (response.status === 204) {
-                        this.log('<span class="text-green-400 font-bold">成功！請求已發送。</span>');
-                        this.log('GitHub Actions 正在背景啟動...');
-                        this.log('請等待約 3-5 分鐘後，回到「看盤」頁面按重新整理。');
-                        alert("掃描指令已發送！\n\nGitHub 需要幾分鐘的時間執行程式。\n請稍後回來重新整理網頁。");
-                    } else {
-                        const errText = await response.text();
-                        throw new Error(`Status ${response.status}: ${errText}`);
-                    }
-
-                } catch (e) {
-                    console.error(e);
-                    this.log(`<span class="text-red-400">失敗: ${e.message}</span>`);
-                    if(e.message.includes('404')) this.log('提示: 請確認 Repo 名稱正確且 Token 有 Workflow 權限');
-                    if(e.message.includes('401')) this.log('提示: Token 無效或是權限不足');
-                } finally {
-                    this.ui.btn.disabled = false;
-                    this.ui.btn.innerHTML = '<i class="fa-solid fa-play mr-2"></i> 立即執行掃描';
-                }
+                    if (res.status === 204) { this.log('<span class="text-green-400">成功! 請稍後重整。</span>'); alert("掃描已啟動！請約 3-5 分鐘後重新整理網頁。"); }
+                    else throw new Error(res.status);
+                } catch (e) { this.log(`<span class="text-red-400">失敗: ${e.message}</span>`); } 
+                finally { this.ui.btn.disabled = false; }
             }
         }
-
-        const app = new StockApp();
-        const admin = new AdminController();
+        const app = new StockApp(); const admin = new AdminController();
     </script>
 </body>
 </html>
