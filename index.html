@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>台股自動化戰情室</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -22,19 +22,22 @@
         }
         .tab-btn.active { color: #3b82f6; border-bottom: 2px solid #3b82f6; }
         .tab-btn { color: #6b7280; border-bottom: 2px solid transparent; }
-        th.sortable { cursor: pointer; transition: background-color 0.2s; }
+        th.sortable { cursor: pointer; transition: background-color 0.2s; user-select: none; white-space: nowrap; }
         th.sortable:hover { background-color: #e5e7eb; }
+        td { white-space: nowrap; }
     </style>
 </head>
-<body class="text-gray-800 min-h-screen flex flex-col pb-20">
+<!-- 使用 h-screen 與 overflow-hidden 鎖定整體高度，避免雙重捲軸 -->
+<body class="text-gray-800 h-[100dvh] flex flex-col overflow-hidden">
 
-    <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-40">
+    <!-- Top Navbar -->
+    <nav class="bg-slate-900 text-white p-3 shadow-lg shrink-0 z-40">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-robot text-emerald-400 text-2xl"></i>
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-robot text-emerald-400 text-xl"></i>
                 <div>
-                    <h1 class="text-lg font-bold tracking-wider">台股自動化戰情室</h1>
-                    <div class="text-[10px] text-gray-400" id="last-updated">更新時間: 讀取中...</div>
+                    <h1 class="text-base font-bold tracking-wider">台股戰情室</h1>
+                    <div class="text-[10px] text-gray-400" id="last-updated">讀取中...</div>
                 </div>
             </div>
             <button onclick="app.refresh()" class="p-2 bg-slate-700 rounded-full hover:bg-slate-600 active:scale-95 transition-transform">
@@ -43,82 +46,99 @@
         </div>
     </nav>
 
-    <main class="flex-grow p-4 md:p-6 max-w-6xl mx-auto w-full">
-        <div id="page-dashboard">
-            <div id="status-banner" class="bg-blue-600 text-white p-3 rounded-lg shadow mb-4 text-sm flex justify-between items-center hidden">
-                <span><i class="fa-solid fa-check-circle mr-2"></i>資料已自動載入</span>
-                <span id="data-count" class="bg-blue-800 px-2 py-1 rounded text-xs">0 檔</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="glass-panel rounded-xl p-5 md:col-span-1 h-fit">
-                    <h2 class="text-lg font-bold mb-4 border-b pb-2 border-gray-200">
-                        <i class="fa-solid fa-sliders mr-2 text-blue-600"></i>篩選操作
-                    </h2>
-                    <div class="space-y-3">
-                        <button onclick="app.runCompareScan()" id="btn-compare" class="w-full group relative flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i class="fa-solid fa-filter"></i>
-                            <div class="text-left">
-                                <div class="text-sm font-bold">過濾均線支撐</div>
-                                <div class="text-[10px] opacity-80">隱藏已跌破均線的個股</div>
-                            </div>
-                        </button>
-                        <div class="mt-4 p-3 bg-white rounded border border-gray-200 text-xs text-gray-500 shadow-inner">
-                            <p class="mb-1 text-gray-700 font-bold"><i class="fa-solid fa-info-circle mr-1"></i>說明：</p>
-                            <ul class="list-disc list-inside space-y-1">
-                                <li>點擊標題可排序 (名稱、族群、價格)</li>
-                                <li>需至控制台手動觸發一次掃描以更新欄位</li>
-                            </ul>
-                        </div>
-                    </div>
+    <!-- Main Content Area (Flex Grow to fill space) -->
+    <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
+        
+        <!-- PAGE 1: Dashboard -->
+        <div id="page-dashboard" class="flex flex-col h-full gap-2">
+            
+            <!-- Compact Control Area (只保留按鈕與狀態) -->
+            <div class="shrink-0 flex flex-col gap-2">
+                <div id="status-banner" class="bg-blue-600 text-white px-3 py-2 rounded-lg shadow text-xs flex justify-between items-center hidden">
+                    <span><i class="fa-solid fa-check-circle mr-1"></i>資料已載入</span>
+                    <span id="data-count" class="bg-blue-800 px-2 py-0.5 rounded text-[10px]">0 檔</span>
                 </div>
 
-                <div class="glass-panel rounded-xl p-5 md:col-span-2 flex flex-col h-[70vh]">
-                    <div class="flex justify-between items-center mb-4 border-b pb-2 border-gray-200">
-                        <h2 class="text-lg font-bold flex items-center">
-                            <i class="fa-solid fa-list-ol mr-2 text-indigo-600"></i>選股名單
-                        </h2>
-                        <span id="filtered-badge" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200">已過濾</span>
-                    </div>
-                    <div class="overflow-x-auto overflow-y-auto flex-grow border rounded-lg bg-white relative">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 shadow-sm z-10">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3 sortable" onclick="app.sortList('id')">代號/名稱 <i class="fa-solid fa-sort text-gray-400"></i></th>
-                                    <th scope="col" class="px-4 py-3 sortable" onclick="app.sortList('group')">族群 <i class="fa-solid fa-sort text-gray-400"></i></th>
-                                    <th scope="col" class="px-4 py-3 text-right sortable" onclick="app.sortList('price')">價格 <i class="fa-solid fa-sort text-gray-400"></i></th>
-                                    <th scope="col" class="px-4 py-3 text-right hidden sm:table-cell">MA5</th>
-                                    <th scope="col" class="px-4 py-3 text-right hidden sm:table-cell">MA10</th>
-                                    <th scope="col" class="px-4 py-3">備註</th>
-                                </tr>
-                            </thead>
-                            <tbody id="result-body" class="bg-white divide-y divide-gray-200">
-                                <tr><td colspan="6" class="px-6 py-20 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-3xl mb-4 text-blue-500"></i><br>讀取中...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <button onclick="app.runCompareScan()" id="btn-compare" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-filter mr-2"></i> 過濾均線支撐 (剔除跌破)
+                </button>
+            </div>
+
+            <!-- List Panel (Flex Grow to fill remaining height) -->
+            <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/20 shadow-lg">
+                <!-- Header -->
+                <div class="flex justify-between items-center p-3 border-b bg-gray-50/50 shrink-0">
+                    <h2 class="text-sm font-bold flex items-center text-gray-700">
+                        <i class="fa-solid fa-list-ol mr-2 text-indigo-600"></i>選股名單
+                    </h2>
+                    <span id="filtered-badge" class="hidden text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200">已過濾</span>
+                </div>
+                
+                <!-- Scrollable Table Container -->
+                <div class="flex-grow overflow-auto bg-white relative">
+                    <table class="min-w-[900px] w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 shadow-sm z-20">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 sortable sticky left-0 bg-gray-100 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-200" onclick="app.sortList('id')">
+                                    代號/名稱 <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th scope="col" class="px-4 py-3 sortable" onclick="app.sortList('group')">
+                                    族群 <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th scope="col" class="px-4 py-3 text-right sortable" onclick="app.sortList('price')">
+                                    價格 <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th scope="col" class="px-4 py-3 text-right sortable" onclick="app.sortList('changeRate')">
+                                    漲跌幅 <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th scope="col" class="px-4 py-3 text-right">MA5</th>
+                                <th scope="col" class="px-4 py-3 text-right">MA10</th>
+                                <th scope="col" class="px-4 py-3">備註</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-body" class="bg-white divide-y divide-gray-200">
+                            <tr><td colspan="7" class="px-6 py-20 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-3xl mb-4 text-blue-500"></i><br>讀取中...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <div id="page-admin" class="hidden">
-            <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto">
-                <h2 class="text-xl font-bold mb-6 flex items-center border-b pb-4"><i class="fa-solid fa-rocket mr-3 text-red-500"></i>手動執行掃描</h2>
-                <div class="space-y-4">
-                    <input type="text" id="repo-owner" class="w-full p-2 border rounded" placeholder="GitHub Owner">
-                    <input type="text" id="repo-name" class="w-full p-2 border rounded" placeholder="Repo Name">
-                    <input type="password" id="github-token" class="w-full p-2 border rounded" placeholder="Access Token">
-                    <button onclick="admin.triggerWorkflow()" id="btn-trigger" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded mt-4">立即執行</button>
-                    <div id="admin-log" class="mt-4 p-3 bg-gray-900 text-green-400 font-mono text-xs rounded h-32 overflow-y-auto hidden"></div>
+        <!-- Admin Page -->
+        <div id="page-admin" class="hidden h-full overflow-y-auto">
+            <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto mb-4">
+                <h2 class="text-lg font-bold mb-4 flex items-center border-b pb-3"><i class="fa-solid fa-rocket mr-2 text-red-500"></i>手動執行掃描</h2>
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <label class="block text-gray-700 mb-1">GitHub Owner</label>
+                        <input type="text" id="repo-owner" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">Repo Name</label>
+                        <input type="text" id="repo-name" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-1">Access Token (PAT)</label>
+                        <input type="password" id="github-token" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <button onclick="admin.triggerWorkflow()" id="btn-trigger" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded mt-2">立即執行</button>
+                    <div id="admin-log" class="mt-2 p-2 bg-gray-900 text-green-400 font-mono text-xs rounded h-24 overflow-y-auto hidden"></div>
                 </div>
             </div>
         </div>
     </main>
 
-    <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50 pb-safe">
-        <div class="max-w-6xl mx-auto flex justify-around">
-            <button onclick="app.switchTab('dashboard')" id="tab-dashboard" class="tab-btn active flex-1 py-3 text-center flex flex-col"><i class="fa-solid fa-chart-line text-lg mb-1"></i><span class="text-xs">看盤</span></button>
-            <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 py-3 text-center flex flex-col"><i class="fa-solid fa-gear text-lg mb-1"></i><span class="text-xs">控制台</span></button>
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div class="max-w-6xl mx-auto flex justify-around h-full">
+            <button onclick="app.switchTab('dashboard')" id="tab-dashboard" class="tab-btn active flex-1 flex flex-col items-center justify-center">
+                <i class="fa-solid fa-chart-line text-lg mb-1"></i>
+                <span class="text-xs">看盤</span>
+            </button>
+            <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 flex flex-col items-center justify-center">
+                <i class="fa-solid fa-gear text-lg mb-1"></i>
+                <span class="text-xs">控制台</span>
+            </button>
         </div>
     </nav>
 
@@ -163,19 +183,19 @@
                     const cacheBuster = new Date().getTime();
                     let response;
                     try { response = await fetch(`${this.dataUrl}?t=${cacheBuster}`); } 
-                    catch (netError) { throw new Error("預覽環境無法讀取資料"); }
+                    catch (netError) { throw new Error("預覽環境無法讀取資料，請部署至 GitHub Pages。"); }
                     if (response.status === 404) throw new Error("初次使用請至控制台觸發掃描");
                     if (!response.ok) throw new Error("讀取失敗");
                     const data = await response.json();
                     this.stockList = data.list || [];
                     this.displayList = [...this.stockList];
-                    this.ui.lastUpdated.innerText = `更新時間: ${data.date}`;
+                    this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`; // 只顯示時間比較短
                     this.ui.statusBanner.classList.remove('hidden');
                     this.ui.dataCount.innerText = `${this.stockList.length} 檔`;
                     if(this.stockList.length > 0) this.ui.btnCompare.disabled = false;
                     this.renderTable(this.displayList);
                 } catch (e) {
-                    this.ui.body.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-amber-500 font-bold">${e.message}</td></tr>`;
+                    this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 font-bold px-4">${e.message}</td></tr>`;
                     this.ui.btnCompare.disabled = true;
                 }
             }
@@ -183,7 +203,7 @@
                 this.displayList = this.stockList.filter(stock => stock.price > stock.ma5 && stock.price > stock.ma10);
                 this.renderTable(this.displayList);
                 this.ui.filteredBadge.classList.remove('hidden');
-                this.ui.filteredBadge.innerText = `已過濾: ${this.displayList.length}/${this.stockList.length}`;
+                this.ui.filteredBadge.innerText = `已過濾: ${this.displayList.length} 檔`;
             }
             sortList(key) {
                 if (this.sortState.key === key) this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
@@ -191,17 +211,44 @@
                 const dir = this.sortState.direction === 'asc' ? 1 : -1;
                 this.displayList.sort((a, b) => {
                     let valA = a[key], valB = b[key];
-                    if (key === 'price') return (valA - valB) * dir;
+                    if (key === 'price' || key === 'changeRate') return (valA - valB) * dir;
                     return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
                 });
                 this.renderTable(this.displayList);
             }
             renderTable(list) {
-                if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-gray-400">無符合資料</td></tr>`; return; }
+                if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-400">無符合資料</td></tr>`; return; }
                 const html = list.map(stock => {
-                    let priceClass = parseFloat(stock.changeRate||0) > 0 ? 'tw-up font-bold' : (parseFloat(stock.changeRate||0) < 0 ? 'tw-down font-bold' : 'text-gray-900 font-bold');
+                    const rate = parseFloat(stock.changeRate||0);
+                    let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-gray-900 font-bold');
+                    let rateDisplay = rate > 0 ? `+${rate}%` : `${rate}%`;
                     const typeBadge = stock.type === '上市' ? '<span class="bg-blue-100 text-blue-800 text-[10px] px-1 rounded">市</span>' : '<span class="bg-purple-100 text-purple-800 text-[10px] px-1 rounded">櫃</span>';
-                    return `<tr class="bg-white border-b"><td class="px-4 py-3"><div class="flex items-center gap-2">${typeBadge}<div><div class="font-bold text-gray-800">${stock.name}</div><div class="text-[10px] text-gray-400">${stock.id}</div></div></div></td><td class="px-4 py-3 text-xs">${stock.group || '-'}</td><td class="px-4 py-3 text-right ${priceClass}">${stock.price}</td><td class="px-4 py-3 text-right text-xs hidden sm:table-cell text-gray-500">${stock.ma5}</td><td class="px-4 py-3 text-right text-xs hidden sm:table-cell text-gray-500">${stock.ma10}</td><td class="px-4 py-3 text-xs text-gray-500">${stock.note || '-'}</td></tr>`;
+                    
+                    // 處理族群名稱：只取前兩個字
+                    let shortGroup = stock.group || '-';
+                    if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) {
+                        shortGroup = shortGroup.substring(0, 2);
+                    }
+                    const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded">${shortGroup}</span>` : `<span class="text-gray-300 text-[10px]">-</span>`;
+                    
+                    return `
+                        <tr class="bg-white border-b">
+                            <td class="px-4 py-3 sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-100 z-10">
+                                <div class="flex items-center gap-2">
+                                    ${typeBadge}
+                                    <div class="flex flex-col">
+                                        <div class="font-bold text-gray-800 text-xs">${stock.name}</div>
+                                        <div class="font-bold text-gray-500 text-xs">${stock.id}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-xs">${groupBadge}</td>
+                            <td class="px-4 py-3 text-right ${priceClass}">${stock.price}</td>
+                            <td class="px-4 py-3 text-right ${priceClass}">${rateDisplay}</td>
+                            <td class="px-4 py-3 text-right text-xs text-gray-500 font-mono">${stock.ma5}</td>
+                            <td class="px-4 py-3 text-right text-xs text-gray-500 font-mono">${stock.ma10}</td>
+                            <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${stock.note || '-'}</td>
+                        </tr>`;
                 }).join('');
                 this.ui.body.innerHTML = html;
             }
