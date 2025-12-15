@@ -9,7 +9,13 @@
     <style>
         .tw-up { color: #ef4444; }
         .tw-down { color: #22c55e; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: #0f172a; 
+            color: #e2e8f0;
+            /* 防止手機下拉重整導致狀態遺失 */
+            overscroll-behavior-y: contain; 
+        }
         .glass-panel {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(10px);
@@ -29,7 +35,7 @@
 </head>
 <body class="h-[100dvh] flex flex-col overflow-hidden bg-slate-900">
 
-    <!-- Top Navbar (固定頂部，包含雲端更新按鈕) -->
+    <!-- Top Navbar -->
     <nav class="bg-slate-950 text-white p-3 shadow-lg shrink-0 z-40 border-b border-slate-800 flex justify-between items-center h-14">
         <div class="flex items-center gap-2">
             <i class="fa-solid fa-robot text-emerald-400 text-lg"></i>
@@ -39,15 +45,11 @@
             </div>
         </div>
         
-        <!-- 右側按鈕群組 -->
         <div class="flex items-center gap-1">
-            <!-- 雲端更新按鈕 (精簡版) -->
             <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
                 <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
                 <span class="text-[10px] font-medium">更新</span>
             </button>
-            
-            <!-- 重新整理按鈕 -->
             <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
                 <i class="fa-solid fa-rotate-right text-sm"></i>
             </button>
@@ -57,20 +59,16 @@
     <!-- Main Content -->
     <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
         
-        <!-- PAGE 1: Heatmap (熱力圖) -->
+        <!-- PAGE 1: Heatmap -->
         <div id="page-heatmap" class="flex flex-col h-full gap-2">
             <div class="flex-grow overflow-y-auto pb-4">
-                <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                    <!-- 熱力圖內容 -->
-                </div>
+                <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
             </div>
         </div>
 
-        <!-- PAGE 2: List (個股列表) -->
+        <!-- PAGE 2: List -->
         <div id="page-list" class="hidden flex flex-col h-full gap-2">
-            <!-- Control Area -->
             <div class="shrink-0 flex flex-col gap-2">
-                <!-- 狀態列與過濾標籤 -->
                 <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                     <div class="flex items-center gap-2">
                         <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center">
@@ -79,30 +77,28 @@
                         </span>
                         <span id="data-count" class="text-[10px] text-gray-400">0 檔</span>
                     </div>
-                    
-                    <button onclick="app.runCompareScan()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all">
+                    <button onclick="app.toggleMaFilter()" id="btn-ma-filter" class="bg-slate-700 hover:bg-indigo-600 text-gray-300 hover:text-white text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all">
                         過濾支撐
                     </button>
                 </div>
             </div>
 
-            <!-- List Panel -->
             <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
                 <div class="flex-grow overflow-auto bg-slate-900 relative">
                     <table class="w-full text-sm text-left text-gray-400">
                         <thead class="text-xs text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
                                 <th scope="col" class="px-2 py-3 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">
-                                    股名
+                                    股名 <i class="sort-icon fa-solid fa-sort text-[10px] ml-0.5 text-slate-600" id="sort-icon-id"></i>
                                 </th>
                                 <th scope="col" class="px-2 py-3 sortable text-center" onclick="app.sortList('group')">
-                                    族群
+                                    族群 <i class="sort-icon fa-solid fa-sort text-[10px] ml-0.5 text-slate-600" id="sort-icon-group"></i>
                                 </th>
                                 <th scope="col" class="px-2 py-3 text-right sortable" onclick="app.sortList('price')">
-                                    價
+                                    價 <i class="sort-icon fa-solid fa-sort text-[10px] ml-0.5 text-slate-600" id="sort-icon-price"></i>
                                 </th>
                                 <th scope="col" class="px-2 py-3 text-right sortable" onclick="app.sortList('changeRate')">
-                                    漲跌
+                                    漲跌 <i class="sort-icon fa-solid fa-sort text-[10px] ml-0.5 text-slate-600" id="sort-icon-changeRate"></i>
                                 </th>
                                 <th scope="col" class="px-2 py-3 text-right text-[10px]">MA5</th>
                                 <th scope="col" class="px-2 py-3 text-right text-[10px]">MA10</th>
@@ -123,20 +119,11 @@
                 <h2 class="text-lg font-bold mb-4 flex items-center border-b border-slate-700 pb-3 text-white"><i class="fa-solid fa-gear mr-2 text-gray-400"></i>設定</h2>
                 <div class="space-y-3 text-sm">
                     <p class="text-xs text-yellow-500 bg-yellow-900/20 p-2 rounded border border-yellow-800">
-                        <i class="fa-solid fa-circle-info mr-1"></i> 初次使用請填寫以下資訊以啟用「雲端更新」。
+                        <i class="fa-solid fa-circle-info mr-1"></i> 請填寫 Token 以啟用雲端更新。
                     </p>
-                    <div>
-                        <label class="block text-gray-400 mb-1">GitHub Owner</label>
-                        <input type="text" id="repo-owner" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-400 mb-1">Repo Name</label>
-                        <input type="text" id="repo-name" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-gray-400 mb-1">Access Token</label>
-                        <input type="password" id="github-token" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
+                    <input type="text" id="repo-owner" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white placeholder-gray-500" placeholder="GitHub Owner">
+                    <input type="text" id="repo-name" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white placeholder-gray-500" placeholder="Repo Name">
+                    <input type="password" id="github-token" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white placeholder-gray-500" placeholder="Access Token">
                     <button onclick="admin.saveSettings()" class="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded mt-2">儲存設定</button>
                 </div>
             </div>
@@ -166,9 +153,16 @@
             constructor() {
                 this.dataUrl = 'data.json';
                 this.stockList = [];
-                this.displayList = [];
-                this.sortState = { key: null, direction: 'asc' };
-                this.currentFilter = null;
+                this.displayList = []; // 最終顯示的列表
+                
+                // 狀態管理 (State Management)
+                this.state = {
+                    sortBy: null,       // 'price', 'changeRate', etc.
+                    sortDir: 'asc',     // 'asc' or 'desc'
+                    filterGroup: null,  // '半導體', etc.
+                    filterMa: false     // true/false (是否過濾均線)
+                };
+
                 this.lastDataTime = "";
                 this.isPolling = false;
 
@@ -180,6 +174,7 @@
                     filterName: document.getElementById('filter-name'),
                     heatmapContainer: document.getElementById('heatmap-container'),
                     btnCloudUpdate: document.getElementById('btn-cloud-update'),
+                    btnMaFilter: document.getElementById('btn-ma-filter'),
                     
                     pageHeatmap: document.getElementById('page-heatmap'),
                     pageList: document.getElementById('page-list'),
@@ -195,13 +190,11 @@
             refresh() { location.reload(); }
 
             switchTab(tabName) {
-                this.ui.pageHeatmap.classList.add('hidden');
-                this.ui.pageList.classList.add('hidden');
-                this.ui.pageAdmin.classList.add('hidden');
-                this.ui.tabHeatmap.classList.remove('active');
-                this.ui.tabList.classList.remove('active');
-                this.ui.tabAdmin.classList.remove('active');
+                // 隱藏所有頁面
+                ['pageHeatmap', 'pageList', 'pageAdmin'].forEach(p => this.ui[p].classList.add('hidden'));
+                ['tabHeatmap', 'tabList', 'tabAdmin'].forEach(t => this.ui[t].classList.remove('active'));
 
+                // 顯示目標頁面
                 if (tabName === 'heatmap') {
                     this.ui.pageHeatmap.classList.remove('hidden');
                     this.ui.tabHeatmap.classList.add('active');
@@ -209,6 +202,8 @@
                 } else if (tabName === 'list') {
                     this.ui.pageList.classList.remove('hidden');
                     this.ui.tabList.classList.add('active');
+                    // 切換回來時，確保狀態正確
+                    this.applyStateAndRender();
                 } else if (tabName === 'admin') {
                     this.ui.pageAdmin.classList.remove('hidden');
                     this.ui.tabAdmin.classList.add('active');
@@ -217,11 +212,8 @@
             }
 
             async init() {
-                try {
-                    await this.loadData();
-                } catch (e) {
-                    this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 text-xs">${e.message}</td></tr>`;
-                }
+                try { await this.loadData(); } 
+                catch (e) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 text-xs">${e.message}</td></tr>`; }
             }
 
             async loadData() {
@@ -240,70 +232,86 @@
                     this.stopPolling();
                 }
                 this.lastDataTime = data.date;
-
-                this.displayList = [...this.stockList];
-                // 簡化時間顯示
                 this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`;
                 
                 this.renderHeatmap();
+                // 載入新資料後，重新套用當前的過濾與排序狀態
+                this.applyStateAndRender();
+            }
+
+            // === 核心狀態處理 (解決排序重置問題) ===
+            applyStateAndRender() {
+                let list = [...this.stockList];
+
+                // 1. 套用族群過濾
+                if (this.state.filterGroup) {
+                    list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
+                    this.ui.filterTag.classList.remove('hidden');
+                    this.ui.filterName.innerText = this.state.filterGroup;
+                } else {
+                    this.ui.filterTag.classList.add('hidden');
+                }
+
+                // 2. 套用均線過濾
+                if (this.state.filterMa) {
+                    list = list.filter(s => s.price > s.ma5 && s.price > s.ma10);
+                    this.ui.btnMaFilter.classList.remove('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    this.ui.btnMaFilter.classList.add('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white');
+                }
+
+                // 3. 套用排序
+                if (this.state.sortBy) {
+                    const dir = this.state.sortDir === 'asc' ? 1 : -1;
+                    list.sort((a, b) => {
+                        let valA = a[this.state.sortBy];
+                        let valB = b[this.state.sortBy];
+                        if (this.state.sortBy === 'price' || this.state.sortBy === 'changeRate') 
+                            return (parseFloat(valA) - parseFloat(valB)) * dir;
+                        return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
+                    });
+                    
+                    // 更新排序圖示
+                    document.querySelectorAll('.sort-icon').forEach(el => el.className = 'sort-icon fa-solid fa-sort text-[10px] ml-0.5 text-slate-600');
+                    const activeIcon = document.getElementById(`sort-icon-${this.state.sortBy}`);
+                    if(activeIcon) activeIcon.className = `sort-icon fa-solid fa-sort-${this.state.sortDir === 'asc' ? 'up' : 'down'} text-[10px] ml-0.5 text-blue-400`;
+                }
+
+                this.displayList = list;
                 this.renderTable(this.displayList);
                 this.updateCount();
             }
 
-            async triggerCloudUpdate() {
-                const owner = localStorage.getItem('gh_owner');
-                const repo = localStorage.getItem('gh_repo');
-                const token = localStorage.getItem('gh_token');
+            // === 用戶操作觸發 ===
+            filterByGroup(groupName) {
+                this.state.filterGroup = groupName;
+                this.switchTab('list');
+                this.applyStateAndRender();
+            }
 
-                if (!owner || !repo || !token) {
-                    alert("請先至「設定」頁面填寫 Token");
-                    this.switchTab('admin');
-                    return;
+            clearFilter() {
+                this.state.filterGroup = null;
+                this.applyStateAndRender();
+            }
+
+            toggleMaFilter() {
+                this.state.filterMa = !this.state.filterMa;
+                this.applyStateAndRender();
+            }
+
+            sortList(key) {
+                if (this.state.sortBy === key) {
+                    this.state.sortDir = this.state.sortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.state.sortBy = key;
+                    this.state.sortDir = 'asc'; // 預設升冪
                 }
-
-                if (!confirm("確定要更新報價嗎？\n(約需 3-5 分鐘)")) return;
-
-                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i><span class="text-[10px] text-blue-400">執行中</span>`;
-                this.ui.btnCloudUpdate.disabled = true;
-
-                try {
-                    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, {
-                        method: 'POST', 
-                        headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, 
-                        body: JSON.stringify({ ref: 'main' })
-                    });
-
-                    if (res.status === 204) {
-                        this.startPolling();
-                    } else {
-                        throw new Error(`Status ${res.status}`);
-                    }
-                } catch (e) {
-                    alert("發送失敗：" + e.message);
-                    this.resetUpdateButton();
-                }
+                this.applyStateAndRender();
             }
 
-            startPolling() {
-                if (this.isPolling) return;
-                this.isPolling = true;
-                this.ui.lastUpdated.innerText = "等待更新...";
-                this.ui.lastUpdated.classList.add("animate-pulse", "text-blue-400");
-                this.pollInterval = setInterval(() => { this.loadData(); }, 15000);
-            }
-
-            stopPolling() {
-                this.isPolling = false;
-                clearInterval(this.pollInterval);
-                this.resetUpdateButton();
-                this.ui.lastUpdated.classList.remove("animate-pulse", "text-blue-400");
-            }
-
-            resetUpdateButton() {
-                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`;
-                this.ui.btnCloudUpdate.disabled = false;
-            }
-
+            // === 渲染邏輯 ===
             renderHeatmap() {
                 if (this.stockList.length === 0) return;
                 const groups = {};
@@ -338,47 +346,9 @@
                 }).join('');
             }
 
-            filterByGroup(groupName) {
-                this.currentFilter = { type: 'group', value: groupName };
-                this.displayList = this.stockList.filter(s => (s.group || '其他') === groupName);
-                this.ui.filterTag.classList.remove('hidden');
-                this.ui.filterName.innerText = groupName;
-                this.switchTab('list');
-                this.renderTable(this.displayList);
-            }
-
-            clearFilter() {
-                this.currentFilter = null;
-                this.displayList = [...this.stockList];
-                this.ui.filterTag.classList.add('hidden');
-                this.renderTable(this.displayList);
-            }
-
-            runCompareScan() {
-                const baseList = this.currentFilter ? this.displayList : this.stockList;
-                this.displayList = baseList.filter(stock => stock.price > stock.ma5 && stock.price > stock.ma10);
-                if(!this.currentFilter) {
-                    this.ui.filterTag.classList.remove('hidden');
-                    this.ui.filterName.innerText = '均線支撐';
-                }
-                this.renderTable(this.displayList);
-            }
-
-            sortList(key) {
-                if (this.sortState.key === key) this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
-                else { this.sortState.key = key; this.sortState.direction = 'asc'; }
-                const dir = this.sortState.direction === 'asc' ? 1 : -1;
-                this.displayList.sort((a, b) => {
-                    let valA = a[key], valB = b[key];
-                    if (key === 'price' || key === 'changeRate') return (valA - valB) * dir;
-                    return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
-                });
-                this.renderTable(this.displayList);
-            }
-
             renderTable(list) {
-                this.updateCount();
                 if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-500">無符合資料</td></tr>`; return; }
+                
                 const html = list.map(stock => {
                     const rate = parseFloat(stock.changeRate||0);
                     let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-white font-bold');
@@ -410,7 +380,40 @@
                 this.ui.body.innerHTML = html;
             }
 
-            updateCount() { this.ui.dataCount.innerText = `${this.displayList.length}`; }
+            updateCount() { this.ui.dataCount.innerText = `${this.displayList.length} 檔`; }
+
+            // === 雲端更新 ===
+            async triggerCloudUpdate() {
+                const owner = localStorage.getItem('gh_owner');
+                const repo = localStorage.getItem('gh_repo');
+                const token = localStorage.getItem('gh_token');
+                if (!owner || !repo || !token) { alert("請先至設定頁填寫 Token"); this.switchTab('admin'); return; }
+                if (!confirm("確定要更新報價嗎？")) return;
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
+                this.ui.btnCloudUpdate.disabled = true;
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, {
+                        method: 'POST', headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, body: JSON.stringify({ ref: 'main' })
+                    });
+                    if (res.status === 204) { this.startPolling(); } else { throw new Error(`Status ${res.status}`); }
+                } catch (e) { alert("發送失敗：" + e.message); this.resetUpdateButton(); }
+            }
+            startPolling() {
+                if (this.isPolling) return;
+                this.isPolling = true;
+                this.ui.lastUpdated.classList.add("animate-pulse", "text-blue-400");
+                this.pollInterval = setInterval(() => { this.loadData(); }, 15000);
+            }
+            stopPolling() {
+                this.isPolling = false;
+                clearInterval(this.pollInterval);
+                this.resetUpdateButton();
+                this.ui.lastUpdated.classList.remove("animate-pulse", "text-blue-400");
+            }
+            resetUpdateButton() {
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`;
+                this.ui.btnCloudUpdate.disabled = false;
+            }
         }
 
         class AdminController {
