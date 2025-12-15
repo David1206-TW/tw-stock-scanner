@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台股自動化戰情室</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        .tw-up { color: #ef4444; }
+        .tw-down { color: #22c55e; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f4f6; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .note-tag {
+            font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;
+            background-color: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-robot text-emerald-400 text-2xl"></i>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wider">台股自動化戰情室</h1>
+                    <div class="text-[10px] text-gray-400" id="last-updated">更新時間: 讀取中...</div>
+                </div>
+            </div>
+            <!-- Reload Button -->
+            <button onclick="app.refresh()" class="p-2 bg-slate-700 rounded-full hover:bg-slate-600 active:scale-95 transition-transform">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-4 md:p-6 max-w-6xl mx-auto w-full">
+        
+        <!-- Status Banner -->
+        <div id="status-banner" class="bg-blue-600 text-white p-3 rounded-lg shadow mb-4 text-sm flex justify-between items-center hidden">
+            <span><i class="fa-solid fa-check-circle mr-2"></i>資料已自動載入</span>
+            <span id="data-count" class="bg-blue-800 px-2 py-1 rounded text-xs">0 檔</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            
+            <!-- Control Panel -->
+            <div class="glass-panel rounded-xl p-5 md:col-span-1 h-fit">
+                <h2 class="text-lg font-bold mb-4 border-b pb-2 border-gray-200">
+                    <i class="fa-solid fa-sliders mr-2 text-blue-600"></i>操作
+                </h2>
+                
+                <div class="space-y-3">
+                    <!-- Button: Check Price -->
+                    <button onclick="app.runCompareScan()" id="btn-compare" class="w-full group relative flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-filter"></i>
+                        <div class="text-left">
+                            <div class="text-sm font-bold">過濾均線支撐</div>
+                            <div class="text-[10px] opacity-80">隱藏已跌破均線的個股</div>
+                        </div>
+                    </button>
+
+                    <div class="mt-4 p-3 bg-white rounded border border-gray-200 text-xs text-gray-500 shadow-inner">
+                        <p class="mb-1 text-gray-700 font-bold"><i class="fa-solid fa-info-circle mr-1"></i>說明：</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>每日凌晨自動執行</li>
+                            <li>條件：多頭+量縮+MA支撐+年線上</li>
+                            <li>手機開啟即看最新結果</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List Panel -->
+            <div class="glass-panel rounded-xl p-5 md:col-span-2 flex flex-col h-[70vh]">
+                <div class="flex justify-between items-center mb-4 border-b pb-2 border-gray-200">
+                    <h2 class="text-lg font-bold flex items-center">
+                        <i class="fa-solid fa-list-ol mr-2 text-indigo-600"></i>選股名單
+                    </h2>
+                    <span id="filtered-badge" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200">已過濾</span>
+                </div>
+
+                <!-- Results Table -->
+                <div class="overflow-x-auto overflow-y-auto flex-grow border rounded-lg bg-white relative">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 shadow-sm z-10">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">代號/名稱</th>
+                                <th scope="col" class="px-4 py-3 text-right">價格</th>
+                                <th scope="col" class="px-4 py-3 text-right hidden sm:table-cell">MA5</th>
+                                <th scope="col" class="px-4 py-3 text-right hidden sm:table-cell">MA10</th>
+                                <th scope="col" class="px-4 py-3">備註</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-body" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="5" class="px-6 py-20 text-center text-gray-400 flex flex-col items-center justify-center h-full">
+                                    <i class="fa-solid fa-spinner fa-spin text-3xl mb-4 text-blue-500"></i>
+                                    <span>正在從雲端讀取...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        class StockApp {
+            constructor() {
+                // 這裡會自動抓取同目錄下的 data.json
+                this.dataUrl = './data.json';
+                this.stockList = [];
+                this.ui = {
+                    body: document.getElementById('result-body'),
+                    lastUpdated: document.getElementById('last-updated'),
+                    statusBanner: document.getElementById('status-banner'),
+                    dataCount: document.getElementById('data-count'),
+                    btnCompare: document.getElementById('btn-compare'),
+                    filteredBadge: document.getElementById('filtered-badge')
+                };
+                this.init();
+            }
+
+            // 重新整理頁面
+            refresh() {
+                location.reload();
+            }
+
+            async init() {
+                try {
+                    // 加入 timestamp 防止手機瀏覽器快取舊資料
+                    const cacheBuster = new Date().getTime();
+                    const response = await fetch(`${this.dataUrl}?t=${cacheBuster}`);
+                    
+                    if (!response.ok) {
+                        throw new Error("尚未生成資料，請確認 GitHub Action 是否已執行");
+                    }
+                    
+                    const data = await response.json();
+                    this.stockList = data.list || [];
+                    
+                    // 更新 UI
+                    this.ui.lastUpdated.innerText = `更新時間: ${data.date}`;
+                    this.ui.statusBanner.classList.remove('hidden');
+                    this.ui.dataCount.innerText = `${this.stockList.length} 檔`;
+                    
+                    if(this.stockList.length > 0) {
+                        this.ui.btnCompare.disabled = false;
+                    }
+                    
+                    // 預設渲染全部
+                    this.renderTable(this.stockList);
+                } catch (e) {
+                    console.error(e);
+                    this.ui.body.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-10">
+                                <div class="text-red-500 font-bold mb-2">讀取失敗</div>
+                                <div class="text-xs text-gray-400">${e.message}</div>
+                                <div class="text-xs text-gray-400 mt-2">請確認 repository 內是否有 data.json</div>
+                            </td>
+                        </tr>
+                    `;
+                    this.ui.lastUpdated.innerText = "更新時間: ---";
+                    this.ui.btnCompare.disabled = true;
+                }
+            }
+
+            runCompareScan() {
+                // 前端再次確認：是否仍然守住 MA
+                // 注意：這是在過濾 JSON 裡的資料，不是抓即時股價
+                // 用途是：如果列表很長，您可以專注看那些離支撐比較遠、比較安全的股票
+                const filtered = this.stockList.filter(stock => 
+                    stock.price > stock.ma5 && stock.price > stock.ma10
+                );
+                
+                this.renderTable(filtered);
+                this.ui.filteredBadge.classList.remove('hidden');
+                this.ui.filteredBadge.innerText = `已過濾: ${filtered.length}/${this.stockList.length}`;
+            }
+
+            renderTable(list) {
+                if (list.length === 0) {
+                    this.ui.body.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-gray-400">無符合資料</td></tr>`;
+                    return;
+                }
+
+                const html = list.map(stock => {
+                    let priceClass = 'text-gray-900 font-mono font-bold';
+                    const rate = parseFloat(stock.changeRate || 0);
+                    if (rate > 0) priceClass = 'tw-up font-bold font-mono'; 
+                    else if (rate < 0) priceClass = 'tw-down font-bold font-mono';
+
+                    const typeBadge = stock.type === '上市' 
+                        ? '<span class="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded border border-blue-200">市</span>'
+                        : '<span class="bg-purple-100 text-purple-800 text-[10px] px-1.5 py-0.5 rounded border border-purple-200">櫃</span>';
+
+                    return `
+                        <tr class="bg-white border-b hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-2">
+                                    ${typeBadge}
+                                    <div>
+                                        <div class="font-bold text-gray-800 leading-tight">${stock.name}</div>
+                                        <div class="text-[10px] text-gray-400 font-mono">${stock.id}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-right ${priceClass}">${stock.price}</td>
+                            <td class="px-4 py-3 text-right text-gray-500 text-xs hidden sm:table-cell font-mono">${stock.ma5}</td>
+                            <td class="px-4 py-3 text-right text-gray-500 text-xs hidden sm:table-cell font-mono">${stock.ma10}</td>
+                            <td class="px-4 py-3 text-xs text-gray-500">${stock.note || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+                this.ui.body.innerHTML = html;
+            }
+        }
+        const app = new StockApp();
+    </script>
+</body>
+</html>
