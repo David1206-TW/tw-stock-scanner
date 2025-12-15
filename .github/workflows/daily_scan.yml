@@ -1,0 +1,45 @@
+name: Daily Stock Scanner
+
+# 設定觸發條件：每天 UTC 16:00 (台灣時間 00:00) 自動執行
+# 也可以手動觸發 (workflow_dispatch)
+on:
+  schedule:
+    - cron: '0 16 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scan_and_update:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. 下載專案程式碼
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    # 2. 設定 Python 環境
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    # 3. 安裝依賴套件
+    - name: Install dependencies
+      run: |
+        pip install yfinance twstock pandas
+
+    # 4. 執行掃描腳本
+    - name: Run scanner script
+      run: python scanner.py
+
+    # 5. 將產生的 data.json 提交回 GitHub
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+        git add data.json
+        # 只有當檔案有變動時才 commit，避免錯誤
+        git commit -m "Auto-update stock list data [skip ci]" || exit 0
+        git push
