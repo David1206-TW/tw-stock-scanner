@@ -7,97 +7,109 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
+        /* 台股紅漲綠跌設定 */
         .tw-up { color: #ef4444; }
         .tw-down { color: #22c55e; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f4f6; }
+        /* 暗黑模式基礎 */
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #0f172a; color: #e2e8f0; }
+        
+        /* 玻璃擬態面板 - 暗色版 */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
-        .note-tag {
-            font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;
-            background-color: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; white-space: nowrap;
-        }
-        .tab-btn.active { color: #3b82f6; border-bottom: 2px solid #3b82f6; }
-        .tab-btn { color: #6b7280; border-bottom: 2px solid transparent; }
+        
+        .tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
+        .tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; }
+        
         th.sortable { cursor: pointer; transition: background-color 0.2s; user-select: none; white-space: nowrap; }
-        th.sortable:hover { background-color: #e5e7eb; }
+        th.sortable:hover { background-color: #334155; } /* Hover 深灰色 */
+        
+        /* 強制不換行，但在名稱欄位允許換行以節省寬度 */
         td { white-space: nowrap; }
+        
+        /* 針對名稱欄位的微調，允許文字過長時換行，但限制最大寬度 */
+        .name-cell {
+            white-space: normal;
+            max-width: 80px; /* 限制寬度，避免撐大 */
+            line-height: 1.2;
+        }
     </style>
 </head>
-<!-- 使用 h-screen 與 overflow-hidden 鎖定整體高度，避免雙重捲軸 -->
-<body class="text-gray-800 h-[100dvh] flex flex-col overflow-hidden">
+<body class="h-[100dvh] flex flex-col overflow-hidden bg-slate-900">
 
     <!-- Top Navbar -->
-    <nav class="bg-slate-900 text-white p-3 shadow-lg shrink-0 z-40">
+    <nav class="bg-slate-950 text-white p-3 shadow-lg shrink-0 z-40 border-b border-slate-800">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-robot text-emerald-400 text-xl"></i>
+                <i class="fa-solid fa-chart-simple text-blue-400 text-xl"></i>
                 <div>
                     <h1 class="text-base font-bold tracking-wider">台股戰情室</h1>
-                    <div class="text-[10px] text-gray-400" id="last-updated">讀取中...</div>
+                    <div class="text-[10px] text-gray-500" id="last-updated">讀取中...</div>
                 </div>
             </div>
-            <button onclick="app.refresh()" class="p-2 bg-slate-700 rounded-full hover:bg-slate-600 active:scale-95 transition-transform">
+            <button onclick="app.refresh()" class="p-2 bg-slate-800 rounded-full hover:bg-slate-700 active:scale-95 transition-transform text-gray-300">
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
         </div>
     </nav>
 
-    <!-- Main Content Area (Flex Grow to fill space) -->
+    <!-- Main Content -->
     <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
         
         <!-- PAGE 1: Dashboard -->
         <div id="page-dashboard" class="flex flex-col h-full gap-2">
             
-            <!-- Compact Control Area (只保留按鈕與狀態) -->
+            <!-- Control Area -->
             <div class="shrink-0 flex flex-col gap-2">
-                <div id="status-banner" class="bg-blue-600 text-white px-3 py-2 rounded-lg shadow text-xs flex justify-between items-center hidden">
-                    <span><i class="fa-solid fa-check-circle mr-1"></i>資料已載入</span>
-                    <span id="data-count" class="bg-blue-800 px-2 py-0.5 rounded text-[10px]">0 檔</span>
+                <div id="status-banner" class="bg-blue-900/50 border border-blue-800 text-blue-100 px-3 py-2 rounded-lg text-xs flex justify-between items-center hidden">
+                    <span><i class="fa-solid fa-check-circle mr-1 text-blue-400"></i>資料已載入</span>
+                    <span id="data-count" class="bg-blue-950 px-2 py-0.5 rounded text-[10px] text-blue-300">0 檔</span>
                 </div>
 
-                <button onclick="app.runCompareScan()" id="btn-compare" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all">
-                    <i class="fa-solid fa-filter mr-2"></i> 過濾均線支撐 (剔除跌破)
+                <button onclick="app.runCompareScan()" id="btn-compare" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all border border-blue-500/50">
+                    <i class="fa-solid fa-filter mr-2"></i> 過濾均線支撐
                 </button>
             </div>
 
-            <!-- List Panel (Flex Grow to fill remaining height) -->
-            <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/20 shadow-lg">
+            <!-- List Panel -->
+            <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl">
                 <!-- Header -->
-                <div class="flex justify-between items-center p-3 border-b bg-gray-50/50 shrink-0">
-                    <h2 class="text-sm font-bold flex items-center text-gray-700">
-                        <i class="fa-solid fa-list-ol mr-2 text-indigo-600"></i>選股名單
+                <div class="flex justify-between items-center p-2 border-b border-slate-700 bg-slate-800/50 shrink-0">
+                    <h2 class="text-sm font-bold flex items-center text-gray-300">
+                        <i class="fa-solid fa-list-ul mr-2 text-blue-400"></i>自選清單
                     </h2>
-                    <span id="filtered-badge" class="hidden text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200">已過濾</span>
+                    <span id="filtered-badge" class="hidden text-[10px] bg-red-900/50 text-red-300 px-2 py-0.5 rounded border border-red-800">已過濾</span>
                 </div>
                 
-                <!-- Scrollable Table Container -->
-                <div class="flex-grow overflow-auto bg-white relative">
-                    <table class="min-w-[900px] w-full text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0 shadow-sm z-20">
+                <!-- Table Container -->
+                <div class="flex-grow overflow-auto bg-slate-900 relative">
+                    <!-- min-w 設定稍微縮小，讓使用者更願意左右滑，但在小螢幕也能看到重點 -->
+                    <table class="w-full text-sm text-left text-gray-400">
+                        <thead class="text-xs text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
-                                <th scope="col" class="px-4 py-3 sortable sticky left-0 bg-gray-100 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-200" onclick="app.sortList('id')">
-                                    代號/名稱 <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+                                <!-- 固定首欄：背景改為深色 bg-slate-900 -->
+                                <th scope="col" class="px-2 py-3 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">
+                                    股名
                                 </th>
-                                <th scope="col" class="px-4 py-3 sortable" onclick="app.sortList('group')">
-                                    族群 <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+                                <th scope="col" class="px-2 py-3 sortable text-center" onclick="app.sortList('group')">
+                                    族群
                                 </th>
-                                <th scope="col" class="px-4 py-3 text-right sortable" onclick="app.sortList('price')">
-                                    價格 <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+                                <th scope="col" class="px-2 py-3 text-right sortable" onclick="app.sortList('price')">
+                                    價
                                 </th>
-                                <th scope="col" class="px-4 py-3 text-right sortable" onclick="app.sortList('changeRate')">
-                                    漲跌幅 <i class="fa-solid fa-sort text-gray-400 ml-1"></i>
+                                <th scope="col" class="px-2 py-3 text-right sortable" onclick="app.sortList('changeRate')">
+                                    漲跌
                                 </th>
-                                <th scope="col" class="px-4 py-3 text-right">MA5</th>
-                                <th scope="col" class="px-4 py-3 text-right">MA10</th>
-                                <th scope="col" class="px-4 py-3">備註</th>
+                                <th scope="col" class="px-2 py-3 text-right text-[10px]">MA5</th>
+                                <th scope="col" class="px-2 py-3 text-right text-[10px]">MA10</th>
+                                <th scope="col" class="px-2 py-3 text-[10px]">備註</th>
                             </tr>
                         </thead>
-                        <tbody id="result-body" class="bg-white divide-y divide-gray-200">
-                            <tr><td colspan="7" class="px-6 py-20 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin text-3xl mb-4 text-blue-500"></i><br>讀取中...</td></tr>
+                        <tbody id="result-body" class="divide-y divide-slate-800">
+                            <tr><td colspan="7" class="px-6 py-20 text-center text-gray-600"><i class="fa-solid fa-spinner fa-spin text-2xl mb-4 text-blue-500"></i><br>載入中...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -106,38 +118,38 @@
 
         <!-- Admin Page -->
         <div id="page-admin" class="hidden h-full overflow-y-auto">
-            <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto mb-4">
-                <h2 class="text-lg font-bold mb-4 flex items-center border-b pb-3"><i class="fa-solid fa-rocket mr-2 text-red-500"></i>手動執行掃描</h2>
+            <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto mb-4 bg-slate-800">
+                <h2 class="text-lg font-bold mb-4 flex items-center border-b border-slate-700 pb-3 text-white"><i class="fa-solid fa-rocket mr-2 text-red-500"></i>手動執行</h2>
                 <div class="space-y-3 text-sm">
                     <div>
-                        <label class="block text-gray-700 mb-1">GitHub Owner</label>
-                        <input type="text" id="repo-owner" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-gray-400 mb-1">GitHub Owner</label>
+                        <input type="text" id="repo-owner" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-gray-700 mb-1">Repo Name</label>
-                        <input type="text" id="repo-name" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-gray-400 mb-1">Repo Name</label>
+                        <input type="text" id="repo-name" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-gray-700 mb-1">Access Token (PAT)</label>
-                        <input type="password" id="github-token" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-gray-400 mb-1">Access Token</label>
+                        <input type="password" id="github-token" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    <button onclick="admin.triggerWorkflow()" id="btn-trigger" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded mt-2">立即執行</button>
-                    <div id="admin-log" class="mt-2 p-2 bg-gray-900 text-green-400 font-mono text-xs rounded h-24 overflow-y-auto hidden"></div>
+                    <button onclick="admin.triggerWorkflow()" id="btn-trigger" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded mt-2">執行</button>
+                    <div id="admin-log" class="mt-2 p-2 bg-black text-green-400 font-mono text-xs rounded h-24 overflow-y-auto hidden border border-slate-700"></div>
                 </div>
             </div>
         </div>
     </main>
 
     <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+    <nav class="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
         <div class="max-w-6xl mx-auto flex justify-around h-full">
             <button onclick="app.switchTab('dashboard')" id="tab-dashboard" class="tab-btn active flex-1 flex flex-col items-center justify-center">
                 <i class="fa-solid fa-chart-line text-lg mb-1"></i>
-                <span class="text-xs">看盤</span>
+                <span class="text-xs mt-1">報價</span>
             </button>
             <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 flex flex-col items-center justify-center">
                 <i class="fa-solid fa-gear text-lg mb-1"></i>
-                <span class="text-xs">控制台</span>
+                <span class="text-xs mt-1">設定</span>
             </button>
         </div>
     </nav>
@@ -184,18 +196,18 @@
                     let response;
                     try { response = await fetch(`${this.dataUrl}?t=${cacheBuster}`); } 
                     catch (netError) { throw new Error("預覽環境無法讀取資料，請部署至 GitHub Pages。"); }
-                    if (response.status === 404) throw new Error("初次使用請至控制台觸發掃描");
+                    if (response.status === 404) throw new Error("初次使用請至設定頁觸發掃描");
                     if (!response.ok) throw new Error("讀取失敗");
                     const data = await response.json();
                     this.stockList = data.list || [];
                     this.displayList = [...this.stockList];
-                    this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`; // 只顯示時間比較短
+                    this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`;
                     this.ui.statusBanner.classList.remove('hidden');
-                    this.ui.dataCount.innerText = `${this.stockList.length} 檔`;
+                    this.ui.dataCount.innerText = `${this.stockList.length}`;
                     if(this.stockList.length > 0) this.ui.btnCompare.disabled = false;
                     this.renderTable(this.displayList);
                 } catch (e) {
-                    this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 font-bold px-4">${e.message}</td></tr>`;
+                    this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 font-bold px-4 text-xs">${e.message}</td></tr>`;
                     this.ui.btnCompare.disabled = true;
                 }
             }
@@ -203,7 +215,7 @@
                 this.displayList = this.stockList.filter(stock => stock.price > stock.ma5 && stock.price > stock.ma10);
                 this.renderTable(this.displayList);
                 this.ui.filteredBadge.classList.remove('hidden');
-                this.ui.filteredBadge.innerText = `已過濾: ${this.displayList.length} 檔`;
+                this.ui.filteredBadge.innerText = `剩 ${this.displayList.length}`;
             }
             sortList(key) {
                 if (this.sortState.key === key) this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
@@ -217,37 +229,35 @@
                 this.renderTable(this.displayList);
             }
             renderTable(list) {
-                if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-400">無符合資料</td></tr>`; return; }
+                if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-500">無符合資料</td></tr>`; return; }
                 const html = list.map(stock => {
                     const rate = parseFloat(stock.changeRate||0);
-                    let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-gray-900 font-bold');
+                    let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-white font-bold');
                     let rateDisplay = rate > 0 ? `+${rate}%` : `${rate}%`;
-                    const typeBadge = stock.type === '上市' ? '<span class="bg-blue-100 text-blue-800 text-[10px] px-1 rounded">市</span>' : '<span class="bg-purple-100 text-purple-800 text-[10px] px-1 rounded">櫃</span>';
+                    const typeBadge = stock.type === '上市' ? '<span class="bg-blue-900 text-blue-300 text-[9px] px-1 rounded border border-blue-800">市</span>' : '<span class="bg-purple-900 text-purple-300 text-[9px] px-1 rounded border border-purple-800">櫃</span>';
                     
-                    // 處理族群名稱：只取前兩個字
                     let shortGroup = stock.group || '-';
                     if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) {
                         shortGroup = shortGroup.substring(0, 2);
                     }
-                    const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded">${shortGroup}</span>` : `<span class="text-gray-300 text-[10px]">-</span>`;
+                    const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-slate-800 text-gray-400 text-[10px] px-1 py-0.5 rounded border border-slate-700">${shortGroup}</span>` : `<span class="text-gray-600 text-[10px]">-</span>`;
                     
                     return `
-                        <tr class="bg-white border-b">
-                            <td class="px-4 py-3 sticky left-0 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-100 z-10">
-                                <div class="flex items-center gap-2">
-                                    ${typeBadge}
-                                    <div class="flex flex-col">
-                                        <div class="font-bold text-gray-800 text-xs">${stock.name}</div>
-                                        <div class="font-bold text-gray-500 text-xs">${stock.id}</div>
+                        <tr class="hover:bg-slate-800 transition-colors">
+                            <td class="px-2 py-3 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10">
+                                <div class="flex items-center gap-1.5">
+                                    <div class="flex flex-col w-[70px]">
+                                        <div class="text-white text-xs font-bold leading-tight name-cell">${stock.name}</div>
+                                        <div class="text-gray-500 text-[10px] flex items-center gap-1 mt-0.5">${stock.id} ${typeBadge}</div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-xs">${groupBadge}</td>
-                            <td class="px-4 py-3 text-right ${priceClass}">${stock.price}</td>
-                            <td class="px-4 py-3 text-right ${priceClass}">${rateDisplay}</td>
-                            <td class="px-4 py-3 text-right text-xs text-gray-500 font-mono">${stock.ma5}</td>
-                            <td class="px-4 py-3 text-right text-xs text-gray-500 font-mono">${stock.ma10}</td>
-                            <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${stock.note || '-'}</td>
+                            <td class="px-2 py-3 text-center align-middle">${groupBadge}</td>
+                            <td class="px-2 py-3 text-right ${priceClass} text-sm">${stock.price}</td>
+                            <td class="px-2 py-3 text-right ${priceClass} text-xs">${rateDisplay}</td>
+                            <td class="px-2 py-3 text-right text-[10px] text-gray-500 font-mono">${stock.ma5}</td>
+                            <td class="px-2 py-3 text-right text-[10px] text-gray-500 font-mono">${stock.ma10}</td>
+                            <td class="px-2 py-3 text-[10px] text-gray-600 whitespace-nowrap">${stock.note || '-'}</td>
                         </tr>`;
                 }).join('');
                 this.ui.body.innerHTML = html;
