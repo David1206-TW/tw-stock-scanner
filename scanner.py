@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V3 (含產業資料庫快取)
+台股自動掃描策略機器人 (Scanner Bot) - V4 (精確策略版)
 
 【篩選條件說明 (Strategy)】
 1. 站上年線 (Life Line): 
@@ -8,27 +8,23 @@
    - 目的：確保長線趨勢偏多，排除空頭走勢的股票。
 
 2. 多頭排列 (Trend): 
-   - 條件：20日均線 (月線) > 60日均線 (季線)，且季線呈現上揚趨勢 (今日MA60 > 昨日MA60)。
-   - 目的：確認中短期趨勢向上。
+   - 條件：20日均線 (月線) > 60日均線 (季線)。
+   - 條件：5日均線 (周線) > 20日均線 (月線)。【新規則】
+   - 目的：確認短中長期均線同步向上 (MA5 > MA20 > MA60)。
 
 3. 均線支撐 (Support): 
    - 條件：收盤價必須同時站上 5日均線 與 10日均線。
-   - 目的：確保短線強勢，股價有支撐。
+   - 條件：連續3日日K「最低點」差異在 ±1% 內 (打樁確認)。
+   - 目的：確保短線強勢，且底部有特定買盤防守。
 
 4. 漲多拉回 (Pullback): 
-   - 條件：收盤價未創近5日新高 (非突破當下)，且股價距離 5日線 乖離率 < 3%。
+   - 條件：收盤價未創近5日新高 (非突破當下)。
+   - 條件：股價距離 5日線 乖離率 < 3%。
    - 目的：尋找回檔整理、回測均線的買點，而非追高。
 
 5. 量縮整理 (Volume): 
-   - 條件：今日成交量 < 5日均量。
+   - 條件：今日成交量 < 3日均量。
    - 目的：確認籌碼沉澱，價穩量縮。
-
-【V3 功能升級】
-1. 實作「產業資料庫 (industry.json)」：
-   - 首次執行會建立資料庫。
-   - 之後執行若該股票已在資料庫中，直接讀取，不再重新判斷/爬取。
-   - 大幅提升每日掃描速度。
-2. 擴充熱門次產業關鍵字。
 """
 
 import yfinance as yf
@@ -59,43 +55,30 @@ def save_industry_db(db_data):
 
 # ==========================================
 # 2. 次產業對照表 (種子資料)
+# 【註】此字典為手動維護的熱門/細分產業分類，程式會將其結果存入 industry.json
 # ==========================================
-# 當資料庫沒有資料時，優先查這張表
 SEED_INDUSTRY_MAP = {
-    # --- 記憶體 ---
     '3260': '記憶體模組', '8299': 'NAND控制IC', '2408': 'DRAM', '2344': 'DRAM', '2451': '創見(記憶體)',
-    # --- AI / 伺服器 ---
     '2330': '晶圓代工(AI)', '2317': 'AI伺服器', '3231': 'AI伺服器', '2382': 'AI伺服器', '6669': 'AI伺服器',
     '3661': 'ASIC(IP)', '3443': 'ASIC(IP)', '3035': 'ASIC(IP)', '2356': 'AI伺服器',
-    # --- 散熱 ---
     '3017': '散熱模組', '3324': '散熱模組', '3653': '散熱(液冷)', '2421': '散熱',
-    # --- 矽光子 / CPO ---
     '3450': '矽光子', '3363': '矽光子', '4979': '矽光子', '4908': '光通訊', '3081': '光學封裝',
-    # --- 重電 / 綠能 ---
     '1513': '重電(變壓器)', '1519': '重電', '1503': '重電', '1514': '重電', '1609': '電線電纜',
-    # --- PCB / CCL ---
     '2383': 'CCL(銅箔基板)', '6274': 'CCL', '6213': 'PCB', '3037': 'ABF載板', '8046': 'PCB', '2368': 'PCB',
-    # --- 網通 / 低軌衛星 ---
     '2345': '網通設備', '3704': '網通', '5388': '網通', '2314': '台揚(衛星)',
-    # --- 軸承 ---
     '3548': '軸承(摺疊機)', '3376': '軸承', '6805': '軸承'
 }
 
 def get_stock_group(code, db_data):
-    # 1. [最優先] 檢查資料庫是否已有紀錄 (有就直接回傳，極速!)
-    if code in db_data:
-        return db_data[code]
+    # 1. 查 industry.json (自動學習/永久記憶)
+    if code in db_data: return db_data[code]
     
-    # 2. [次要] 查種子對照表
-    if code in SEED_INDUSTRY_MAP:
-        return SEED_INDUSTRY_MAP[code]
+    # 2. 查 SEED_INDUSTRY_MAP (手動補強)
+    if code in SEED_INDUSTRY_MAP: return SEED_INDUSTRY_MAP[code]
     
-    # 3. [最後] 使用 twstock 官方分類
+    # 3. 查 twstock 官方分類 (最終分類)
     if code in twstock.codes:
-        raw_group = twstock.codes[code].group
-        # 簡單處理字串，移除"工業"、"業"讓顯示更簡潔
-        return raw_group.replace("工業", "").replace("業", "")
-    
+        return twstock.codes[code].group.replace("工業", "").replace("業", "")
     return "其他"
 
 # ==========================================
@@ -116,24 +99,31 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 4. 策略邏輯核心
+# 4. 策略邏輯核心 (Updated V4)
 # ==========================================
 def check_strategy(df):
+    # 資料長度不足無法計算 MA240
     if len(df) < 240: return False, {}
 
     close = df['Close']
     volume = df['Volume']
     high = df['High']
+    low = df['Low'] 
     
+    # 計算均線
     ma5 = close.rolling(5).mean()
     ma10 = close.rolling(10).mean()
     ma20 = close.rolling(20).mean()
     ma60 = close.rolling(60).mean()
     ma240 = close.rolling(240).mean()
     
-    vol_ma5 = volume.rolling(5).mean()
+    # 計算 3日均量 (新規則)
+    vol_ma3 = volume.rolling(3).mean()
+    
+    # 近 5 日最高價
     recent_high = high.rolling(5).max()
 
+    # 取得最新數據 (t)
     curr_c = close.iloc[-1]
     curr_v = volume.iloc[-1]
     curr_ma5 = ma5.iloc[-1]
@@ -141,19 +131,51 @@ def check_strategy(df):
     curr_ma20 = ma20.iloc[-1]
     curr_ma60 = ma60.iloc[-1]
     curr_ma240 = ma240.iloc[-1]
-    curr_vol_ma5 = vol_ma5.iloc[-1]
-    curr_recent_high = recent_high.iloc[-2]
+    curr_vol_ma3 = vol_ma3.iloc[-1]
+    curr_recent_high = recent_high.iloc[-2] 
+    
+    # 取得昨日收盤價
     prev_c = close.iloc[-2]
 
-    # --- 策略條件 ---
-    cond_above_annual = curr_c > curr_ma240 
-    cond_trend = (curr_ma20 > curr_ma60) and (curr_ma60 > ma60.iloc[-2]) 
-    cond_support = (curr_c > curr_ma5) and (curr_c > curr_ma10) 
+    # --- 策略條件判斷 ---
+    
+    # 1. 站上年線 (Life Line)
+    cond_life_line = curr_c > curr_ma240
+    
+    # 2. 多頭排列 (Trend) 【新規則】
+    # MA20 > MA60 且 MA5 > MA20 
+    cond_trend = (curr_ma20 > curr_ma60) and (curr_ma5 > curr_ma20)
+    
+    # 3. 均線支撐 (Support) - 包含打樁邏輯
+    # A. 站上 MA5 & MA10
+    cond_ma_support = (curr_c > curr_ma5) and (curr_c > curr_ma10)
+    
+    # B. 連續 3 日最低價差異 < 1% (Low Support Check)
+    # 檢查資料長度是否足夠 (至少要有 3 筆才能看 L0, L1, L2)
+    if len(low) < 3: return False, {}
+    
+    l0 = low.iloc[-1]
+    l1 = low.iloc[-2]
+    l2 = low.iloc[-3]
+    
+    # 計算兩兩之間的差異百分比
+    diff_1 = abs(l0 - l1) / l1
+    diff_2 = abs(l1 - l2) / l2
+    
+    cond_low_stable = (diff_1 < 0.01) and (diff_2 < 0.01)
+    
+    # 綜合支撐條件
+    cond_support = cond_ma_support and cond_low_stable
+    
+    # 4. 漲多拉回 (Pullback)
     proximity = (curr_c - curr_ma5) / curr_ma5
-    cond_pullback = (curr_c < curr_recent_high) and (proximity < 0.03) 
-    cond_volume = curr_v < curr_vol_ma5 
+    cond_pullback = (curr_c < curr_recent_high) and (proximity < 0.03)
+    
+    # 5. 量縮整理 (Volume) - 小於 3日均量
+    cond_volume = curr_v < curr_vol_ma3
 
-    is_match = cond_above_annual and cond_trend and cond_support and cond_pullback and cond_volume
+    # --- 最終判定 ---
+    is_match = cond_life_line and cond_trend and cond_support and cond_pullback and cond_volume
     
     if is_match:
         change_rate = 0.0
@@ -166,7 +188,7 @@ def check_strategy(df):
             "ma10": round(curr_ma10, 2),
             "ma240": round(curr_ma240, 2),
             "changeRate": change_rate,
-            "vol_ratio": round(curr_v / curr_vol_ma5, 2)
+            "vol_ratio": round(curr_v / curr_vol_ma3, 2) # 這裡顯示的是與 3MA 的比率
         }
     else:
         return False, {}
@@ -177,7 +199,6 @@ def check_strategy(df):
 def run_scanner():
     full_list = get_all_tickers()
     
-    # 載入現有的產業資料庫
     industry_db = load_industry_db()
     print(f"已載入產業資料庫，共 {len(industry_db)} 筆資料。")
     
@@ -185,11 +206,10 @@ def run_scanner():
     
     valid_stocks = []
     batch_size = 100 
-    total_batches = (len(full_list) // batch_size) + 1
     
     for i in range(0, len(full_list), batch_size):
         batch = full_list[i:i+batch_size]
-        print(f"Processing batch {i//batch_size + 1}/{total_batches}...")
+        print(f"Processing batch {i//batch_size + 1}...")
         
         try:
             data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False)
@@ -212,10 +232,7 @@ def run_scanner():
                         if raw_code in twstock.codes:
                             name = twstock.codes[raw_code].name
                         
-                        # 【核心功能】取得族群分類 (優先查DB -> 查表 -> 查官方)
                         group = get_stock_group(raw_code, industry_db)
-                        
-                        # 如果資料庫裡沒有這筆，把它加進去 (下次就有了)
                         if raw_code not in industry_db:
                             industry_db[raw_code] = group
                         
@@ -235,7 +252,6 @@ def run_scanner():
                 except: continue
         except: continue
 
-    # 掃描結束後，將更新後的產業資料庫存檔
     save_industry_db(industry_db)
     print("產業資料庫已更新並儲存。")
 
@@ -245,7 +261,7 @@ def run_scanner():
 # 主程式
 # ==========================================
 if __name__ == "__main__":
-    print("啟動自動掃描程序...")
+    print("啟動自動掃描程序 (V4 精確版)...")
     results = run_scanner()
     
     output_payload = {
@@ -259,4 +275,3 @@ if __name__ == "__main__":
         json.dump(output_payload, f, ensure_ascii=False, indent=2)
     
     print(f"掃描完成！共有 {len(results)} 檔符合條件。")
-    print(f"結果已儲存於 {filename}")
