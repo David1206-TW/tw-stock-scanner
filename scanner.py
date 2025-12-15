@@ -1,4 +1,29 @@
 # -*- coding: utf-8 -*-
+"""
+台股自動掃描策略機器人 (Scanner Bot)
+
+【篩選條件說明】
+1. 站上年線 (Life Line): 
+   - 條件：收盤價 > 240日均線 (MA240)。
+   - 目的：確保長線趨勢偏多，排除空頭走勢的股票。
+
+2. 多頭排列 (Trend): 
+   - 條件：20日均線 (月線) > 60日均線 (季線)，且季線呈現上揚趨勢 (今日MA60 > 昨日MA60)。
+   - 目的：確認中短期趨勢向上。
+
+3. 均線支撐 (Support): 
+   - 條件：收盤價必須同時站上 5日均線 與 10日均線。
+   - 目的：確保短線強勢，股價有支撐。
+
+4. 漲多拉回 (Pullback): 
+   - 條件：收盤價未創近5日新高 (非突破當下)，且股價距離 5日線 乖離率 < 3%。
+   - 目的：尋找回檔整理、回測均線的買點，而非追高。
+
+5. 量縮整理 (Volume): 
+   - 條件：今日成交量 < 5日均量。
+   - 目的：確認籌碼沉澱，價穩量縮。
+"""
+
 import yfinance as yf
 import pandas as pd
 import twstock
@@ -102,7 +127,6 @@ def run_scanner():
     batch_size = 100 
     total_batches = (len(full_list) // batch_size) + 1
     
-    # GitHub Actions 不適合用 tqdm 進度條，改用簡單 print
     for i in range(0, len(full_list), batch_size):
         batch = full_list[i:i+batch_size]
         print(f"Processing batch {i//batch_size + 1}/{total_batches}...")
@@ -125,14 +149,19 @@ def run_scanner():
                     
                     if match:
                         raw_code = ticker.split('.')[0]
-                        # 嘗試取得中文名稱
                         name = raw_code
+                        industry_group = "其他" # 預設
+
+                        # 【新增】抓取產業族群
                         if raw_code in twstock.codes:
-                            name = twstock.codes[raw_code].name
+                            stock_info = twstock.codes[raw_code]
+                            name = stock_info.name
+                            industry_group = stock_info.group # 例如：半導體業
                         
                         stock_entry = {
                             "id": raw_code,
                             "name": name,
+                            "group": industry_group, # 寫入 JSON
                             "type": "上櫃" if ".TWO" in ticker else "上市",
                             "price": info['price'],
                             "ma5": info['ma5'],
@@ -160,7 +189,6 @@ if __name__ == "__main__":
         "list": results
     }
     
-    # 儲存為 data.json
     filename = 'data.json'
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(output_payload, f, ensure_ascii=False, indent=2)
