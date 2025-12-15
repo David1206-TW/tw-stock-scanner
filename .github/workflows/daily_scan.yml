@@ -25,10 +25,10 @@ jobs:
       with:
         python-version: '3.9'
 
-    # 3. 安裝依賴套件
+    # 3. 安裝依賴套件 (已加入 lxml)
     - name: Install dependencies
       run: |
-        pip install yfinance twstock pandas
+        pip install yfinance twstock pandas lxml
 
     # 4. 執行掃描腳本
     - name: Run scanner script
