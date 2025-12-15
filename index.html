@@ -7,51 +7,49 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
-        /* 台股紅漲綠跌設定 */
         .tw-up { color: #ef4444; }
         .tw-down { color: #22c55e; }
-        /* 暗黑模式基礎 */
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #0f172a; color: #e2e8f0; }
-        
-        /* 玻璃擬態面板 - 暗色版 */
         .glass-panel {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
-        
         .tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
         .tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; }
-        
         th.sortable { cursor: pointer; transition: background-color 0.2s; user-select: none; white-space: nowrap; }
-        th.sortable:hover { background-color: #334155; } /* Hover 深灰色 */
-        
-        /* 強制不換行，但在名稱欄位允許換行以節省寬度 */
+        th.sortable:hover { background-color: #334155; }
         td { white-space: nowrap; }
+        .name-cell { white-space: normal; max-width: 80px; line-height: 1.2; }
         
-        /* 針對名稱欄位的微調，允許文字過長時換行，但限制最大寬度 */
-        .name-cell {
-            white-space: normal;
-            max-width: 80px; /* 限制寬度，避免撐大 */
-            line-height: 1.2;
-        }
+        @keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .animate-updating { animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #60a5fa; }
     </style>
 </head>
 <body class="h-[100dvh] flex flex-col overflow-hidden bg-slate-900">
 
-    <!-- Top Navbar -->
-    <nav class="bg-slate-950 text-white p-3 shadow-lg shrink-0 z-40 border-b border-slate-800">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-chart-simple text-blue-400 text-xl"></i>
-                <div>
-                    <h1 class="text-base font-bold tracking-wider">台股戰情室</h1>
-                    <div class="text-[10px] text-gray-500" id="last-updated">讀取中...</div>
-                </div>
+    <!-- Top Navbar (固定頂部，包含雲端更新按鈕) -->
+    <nav class="bg-slate-950 text-white p-3 shadow-lg shrink-0 z-40 border-b border-slate-800 flex justify-between items-center h-14">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-robot text-emerald-400 text-lg"></i>
+            <div class="flex flex-col">
+                <h1 class="text-sm font-bold tracking-wider leading-none">台股戰情室</h1>
+                <div class="text-[9px] text-gray-500 mt-0.5" id="last-updated">讀取中...</div>
             </div>
-            <button onclick="app.refresh()" class="p-2 bg-slate-800 rounded-full hover:bg-slate-700 active:scale-95 transition-transform text-gray-300">
-                <i class="fa-solid fa-rotate-right"></i>
+        </div>
+        
+        <!-- 右側按鈕群組 -->
+        <div class="flex items-center gap-1">
+            <!-- 雲端更新按鈕 (精簡版) -->
+            <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+                <span class="text-[10px] font-medium">更新</span>
+            </button>
+            
+            <!-- 重新整理按鈕 -->
+            <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
+                <i class="fa-solid fa-rotate-right text-sm"></i>
             </button>
         </div>
     </nav>
@@ -59,38 +57,41 @@
     <!-- Main Content -->
     <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
         
-        <!-- PAGE 1: Dashboard -->
-        <div id="page-dashboard" class="flex flex-col h-full gap-2">
-            
+        <!-- PAGE 1: Heatmap (熱力圖) -->
+        <div id="page-heatmap" class="flex flex-col h-full gap-2">
+            <div class="flex-grow overflow-y-auto pb-4">
+                <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    <!-- 熱力圖內容 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: List (個股列表) -->
+        <div id="page-list" class="hidden flex flex-col h-full gap-2">
             <!-- Control Area -->
             <div class="shrink-0 flex flex-col gap-2">
-                <div id="status-banner" class="bg-blue-900/50 border border-blue-800 text-blue-100 px-3 py-2 rounded-lg text-xs flex justify-between items-center hidden">
-                    <span><i class="fa-solid fa-check-circle mr-1 text-blue-400"></i>資料已載入</span>
-                    <span id="data-count" class="bg-blue-950 px-2 py-0.5 rounded text-[10px] text-blue-300">0 檔</span>
+                <!-- 狀態列與過濾標籤 -->
+                <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                    <div class="flex items-center gap-2">
+                        <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center">
+                            <span id="filter-name">族群</span>
+                            <button onclick="app.clearFilter()" class="ml-2 hover:text-white"><i class="fa-solid fa-times"></i></button>
+                        </span>
+                        <span id="data-count" class="text-[10px] text-gray-400">0 檔</span>
+                    </div>
+                    
+                    <button onclick="app.runCompareScan()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all">
+                        過濾支撐
+                    </button>
                 </div>
-
-                <button onclick="app.runCompareScan()" id="btn-compare" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all border border-blue-500/50">
-                    <i class="fa-solid fa-filter mr-2"></i> 過濾均線支撐
-                </button>
             </div>
 
             <!-- List Panel -->
-            <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl">
-                <!-- Header -->
-                <div class="flex justify-between items-center p-2 border-b border-slate-700 bg-slate-800/50 shrink-0">
-                    <h2 class="text-sm font-bold flex items-center text-gray-300">
-                        <i class="fa-solid fa-list-ul mr-2 text-blue-400"></i>自選清單
-                    </h2>
-                    <span id="filtered-badge" class="hidden text-[10px] bg-red-900/50 text-red-300 px-2 py-0.5 rounded border border-red-800">已過濾</span>
-                </div>
-                
-                <!-- Table Container -->
+            <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
                 <div class="flex-grow overflow-auto bg-slate-900 relative">
-                    <!-- min-w 設定稍微縮小，讓使用者更願意左右滑，但在小螢幕也能看到重點 -->
                     <table class="w-full text-sm text-left text-gray-400">
                         <thead class="text-xs text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
-                                <!-- 固定首欄：背景改為深色 bg-slate-900 -->
                                 <th scope="col" class="px-2 py-3 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">
                                     股名
                                 </th>
@@ -116,11 +117,14 @@
             </div>
         </div>
 
-        <!-- Admin Page -->
+        <!-- PAGE 3: Admin -->
         <div id="page-admin" class="hidden h-full overflow-y-auto">
             <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto mb-4 bg-slate-800">
-                <h2 class="text-lg font-bold mb-4 flex items-center border-b border-slate-700 pb-3 text-white"><i class="fa-solid fa-rocket mr-2 text-red-500"></i>手動執行</h2>
+                <h2 class="text-lg font-bold mb-4 flex items-center border-b border-slate-700 pb-3 text-white"><i class="fa-solid fa-gear mr-2 text-gray-400"></i>設定</h2>
                 <div class="space-y-3 text-sm">
+                    <p class="text-xs text-yellow-500 bg-yellow-900/20 p-2 rounded border border-yellow-800">
+                        <i class="fa-solid fa-circle-info mr-1"></i> 初次使用請填寫以下資訊以啟用「雲端更新」。
+                    </p>
                     <div>
                         <label class="block text-gray-400 mb-1">GitHub Owner</label>
                         <input type="text" id="repo-owner" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none">
@@ -133,8 +137,7 @@
                         <label class="block text-gray-400 mb-1">Access Token</label>
                         <input type="password" id="github-token" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
-                    <button onclick="admin.triggerWorkflow()" id="btn-trigger" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded mt-2">執行</button>
-                    <div id="admin-log" class="mt-2 p-2 bg-black text-green-400 font-mono text-xs rounded h-24 overflow-y-auto hidden border border-slate-700"></div>
+                    <button onclick="admin.saveSettings()" class="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded mt-2">儲存設定</button>
                 </div>
             </div>
         </div>
@@ -143,8 +146,12 @@
     <!-- Bottom Navigation -->
     <nav class="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
         <div class="max-w-6xl mx-auto flex justify-around h-full">
-            <button onclick="app.switchTab('dashboard')" id="tab-dashboard" class="tab-btn active flex-1 flex flex-col items-center justify-center">
-                <i class="fa-solid fa-chart-line text-lg mb-1"></i>
+            <button onclick="app.switchTab('heatmap')" id="tab-heatmap" class="tab-btn active flex-1 flex flex-col items-center justify-center">
+                <i class="fa-solid fa-fire text-lg mb-1"></i>
+                <span class="text-xs mt-1">熱力圖</span>
+            </button>
+            <button onclick="app.switchTab('list')" id="tab-list" class="tab-btn flex-1 flex flex-col items-center justify-center">
+                <i class="fa-solid fa-list-ul text-lg mb-1"></i>
                 <span class="text-xs mt-1">報價</span>
             </button>
             <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 flex flex-col items-center justify-center">
@@ -161,62 +168,202 @@
                 this.stockList = [];
                 this.displayList = [];
                 this.sortState = { key: null, direction: 'asc' };
+                this.currentFilter = null;
+                this.lastDataTime = "";
+                this.isPolling = false;
+
                 this.ui = {
                     body: document.getElementById('result-body'),
                     lastUpdated: document.getElementById('last-updated'),
-                    statusBanner: document.getElementById('status-banner'),
                     dataCount: document.getElementById('data-count'),
-                    btnCompare: document.getElementById('btn-compare'),
-                    filteredBadge: document.getElementById('filtered-badge'),
-                    pageDashboard: document.getElementById('page-dashboard'),
+                    filterTag: document.getElementById('filter-tag'),
+                    filterName: document.getElementById('filter-name'),
+                    heatmapContainer: document.getElementById('heatmap-container'),
+                    btnCloudUpdate: document.getElementById('btn-cloud-update'),
+                    
+                    pageHeatmap: document.getElementById('page-heatmap'),
+                    pageList: document.getElementById('page-list'),
                     pageAdmin: document.getElementById('page-admin'),
-                    tabDashboard: document.getElementById('tab-dashboard'),
+                    
+                    tabHeatmap: document.getElementById('tab-heatmap'),
+                    tabList: document.getElementById('tab-list'),
                     tabAdmin: document.getElementById('tab-admin')
                 };
                 this.init();
             }
+
             refresh() { location.reload(); }
+
             switchTab(tabName) {
-                if (tabName === 'dashboard') {
-                    this.ui.pageDashboard.classList.remove('hidden');
-                    this.ui.pageAdmin.classList.add('hidden');
-                    this.ui.tabDashboard.classList.add('active');
-                    this.ui.tabAdmin.classList.remove('active');
-                } else {
-                    this.ui.pageDashboard.classList.add('hidden');
+                this.ui.pageHeatmap.classList.add('hidden');
+                this.ui.pageList.classList.add('hidden');
+                this.ui.pageAdmin.classList.add('hidden');
+                this.ui.tabHeatmap.classList.remove('active');
+                this.ui.tabList.classList.remove('active');
+                this.ui.tabAdmin.classList.remove('active');
+
+                if (tabName === 'heatmap') {
+                    this.ui.pageHeatmap.classList.remove('hidden');
+                    this.ui.tabHeatmap.classList.add('active');
+                    this.renderHeatmap();
+                } else if (tabName === 'list') {
+                    this.ui.pageList.classList.remove('hidden');
+                    this.ui.tabList.classList.add('active');
+                } else if (tabName === 'admin') {
                     this.ui.pageAdmin.classList.remove('hidden');
-                    this.ui.tabDashboard.classList.remove('active');
                     this.ui.tabAdmin.classList.add('active');
                     admin.loadSettings();
                 }
             }
+
             async init() {
                 try {
-                    const cacheBuster = new Date().getTime();
-                    let response;
-                    try { response = await fetch(`${this.dataUrl}?t=${cacheBuster}`); } 
-                    catch (netError) { throw new Error("預覽環境無法讀取資料，請部署至 GitHub Pages。"); }
-                    if (response.status === 404) throw new Error("初次使用請至設定頁觸發掃描");
-                    if (!response.ok) throw new Error("讀取失敗");
-                    const data = await response.json();
-                    this.stockList = data.list || [];
-                    this.displayList = [...this.stockList];
-                    this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`;
-                    this.ui.statusBanner.classList.remove('hidden');
-                    this.ui.dataCount.innerText = `${this.stockList.length}`;
-                    if(this.stockList.length > 0) this.ui.btnCompare.disabled = false;
-                    this.renderTable(this.displayList);
+                    await this.loadData();
                 } catch (e) {
-                    this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 font-bold px-4 text-xs">${e.message}</td></tr>`;
-                    this.ui.btnCompare.disabled = true;
+                    this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 text-xs">${e.message}</td></tr>`;
                 }
             }
-            runCompareScan() {
-                this.displayList = this.stockList.filter(stock => stock.price > stock.ma5 && stock.price > stock.ma10);
+
+            async loadData() {
+                const cacheBuster = new Date().getTime();
+                let response;
+                try { response = await fetch(`${this.dataUrl}?t=${cacheBuster}`); } 
+                catch (netError) { throw new Error("預覽環境無法讀取資料"); }
+                if (response.status === 404) throw new Error("初次使用請至設定頁觸發掃描");
+                if (!response.ok) throw new Error("讀取失敗");
+                
+                const data = await response.json();
+                this.stockList = data.list || [];
+                
+                if (this.lastDataTime && this.lastDataTime !== data.date) {
+                    alert(`資料已更新！\n時間: ${data.date}`);
+                    this.stopPolling();
+                }
+                this.lastDataTime = data.date;
+
+                this.displayList = [...this.stockList];
+                // 簡化時間顯示
+                this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`;
+                
+                this.renderHeatmap();
                 this.renderTable(this.displayList);
-                this.ui.filteredBadge.classList.remove('hidden');
-                this.ui.filteredBadge.innerText = `剩 ${this.displayList.length}`;
+                this.updateCount();
             }
+
+            async triggerCloudUpdate() {
+                const owner = localStorage.getItem('gh_owner');
+                const repo = localStorage.getItem('gh_repo');
+                const token = localStorage.getItem('gh_token');
+
+                if (!owner || !repo || !token) {
+                    alert("請先至「設定」頁面填寫 Token");
+                    this.switchTab('admin');
+                    return;
+                }
+
+                if (!confirm("確定要更新報價嗎？\n(約需 3-5 分鐘)")) return;
+
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i><span class="text-[10px] text-blue-400">執行中</span>`;
+                this.ui.btnCloudUpdate.disabled = true;
+
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, {
+                        method: 'POST', 
+                        headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, 
+                        body: JSON.stringify({ ref: 'main' })
+                    });
+
+                    if (res.status === 204) {
+                        this.startPolling();
+                    } else {
+                        throw new Error(`Status ${res.status}`);
+                    }
+                } catch (e) {
+                    alert("發送失敗：" + e.message);
+                    this.resetUpdateButton();
+                }
+            }
+
+            startPolling() {
+                if (this.isPolling) return;
+                this.isPolling = true;
+                this.ui.lastUpdated.innerText = "等待更新...";
+                this.ui.lastUpdated.classList.add("animate-pulse", "text-blue-400");
+                this.pollInterval = setInterval(() => { this.loadData(); }, 15000);
+            }
+
+            stopPolling() {
+                this.isPolling = false;
+                clearInterval(this.pollInterval);
+                this.resetUpdateButton();
+                this.ui.lastUpdated.classList.remove("animate-pulse", "text-blue-400");
+            }
+
+            resetUpdateButton() {
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`;
+                this.ui.btnCloudUpdate.disabled = false;
+            }
+
+            renderHeatmap() {
+                if (this.stockList.length === 0) return;
+                const groups = {};
+                this.stockList.forEach(stock => {
+                    const gName = stock.group || '其他';
+                    if (!groups[gName]) groups[gName] = { totalChange: 0, count: 0 };
+                    groups[gName].totalChange += parseFloat(stock.changeRate || 0);
+                    groups[gName].count++;
+                });
+                const groupArray = Object.keys(groups).map(key => ({
+                    name: key,
+                    avgChange: (groups[key].totalChange / groups[key].count).toFixed(2),
+                    count: groups[key].count
+                })).sort((a, b) => b.avgChange - a.avgChange);
+
+                this.ui.heatmapContainer.innerHTML = groupArray.map(g => {
+                    const rate = parseFloat(g.avgChange);
+                    let colorClass = 'bg-slate-700';
+                    if (rate > 2) colorClass = 'bg-red-600';
+                    else if (rate > 0) colorClass = 'bg-red-900/80';
+                    else if (rate < -2) colorClass = 'bg-green-600';
+                    else if (rate < 0) colorClass = 'bg-green-900/80';
+
+                    return `
+                        <div onclick="app.filterByGroup('${g.name}')" class="${colorClass} p-3 rounded-lg shadow cursor-pointer active:scale-95 transition-transform flex flex-col justify-between h-24 border border-white/10 hover:border-white/30">
+                            <span class="text-sm font-bold text-white truncate">${g.name}</span>
+                            <div class="flex justify-between items-end">
+                                <span class="text-xs text-gray-300">${g.count}檔</span>
+                                <span class="text-lg font-bold text-white">${rate>0?'+':''}${rate}%</span>
+                            </div>
+                        </div>`;
+                }).join('');
+            }
+
+            filterByGroup(groupName) {
+                this.currentFilter = { type: 'group', value: groupName };
+                this.displayList = this.stockList.filter(s => (s.group || '其他') === groupName);
+                this.ui.filterTag.classList.remove('hidden');
+                this.ui.filterName.innerText = groupName;
+                this.switchTab('list');
+                this.renderTable(this.displayList);
+            }
+
+            clearFilter() {
+                this.currentFilter = null;
+                this.displayList = [...this.stockList];
+                this.ui.filterTag.classList.add('hidden');
+                this.renderTable(this.displayList);
+            }
+
+            runCompareScan() {
+                const baseList = this.currentFilter ? this.displayList : this.stockList;
+                this.displayList = baseList.filter(stock => stock.price > stock.ma5 && stock.price > stock.ma10);
+                if(!this.currentFilter) {
+                    this.ui.filterTag.classList.remove('hidden');
+                    this.ui.filterName.innerText = '均線支撐';
+                }
+                this.renderTable(this.displayList);
+            }
+
             sortList(key) {
                 if (this.sortState.key === key) this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
                 else { this.sortState.key = key; this.sortState.direction = 'asc'; }
@@ -228,7 +375,9 @@
                 });
                 this.renderTable(this.displayList);
             }
+
             renderTable(list) {
+                this.updateCount();
                 if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-500">無符合資料</td></tr>`; return; }
                 const html = list.map(stock => {
                     const rate = parseFloat(stock.changeRate||0);
@@ -237,13 +386,11 @@
                     const typeBadge = stock.type === '上市' ? '<span class="bg-blue-900 text-blue-300 text-[9px] px-1 rounded border border-blue-800">市</span>' : '<span class="bg-purple-900 text-purple-300 text-[9px] px-1 rounded border border-purple-800">櫃</span>';
                     
                     let shortGroup = stock.group || '-';
-                    if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) {
-                        shortGroup = shortGroup.substring(0, 2);
-                    }
+                    if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) shortGroup = shortGroup.substring(0, 2);
                     const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-slate-800 text-gray-400 text-[10px] px-1 py-0.5 rounded border border-slate-700">${shortGroup}</span>` : `<span class="text-gray-600 text-[10px]">-</span>`;
                     
                     return `
-                        <tr class="hover:bg-slate-800 transition-colors">
+                        <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
                             <td class="px-2 py-3 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10">
                                 <div class="flex items-center gap-1.5">
                                     <div class="flex flex-col w-[70px]">
@@ -262,26 +409,20 @@
                 }).join('');
                 this.ui.body.innerHTML = html;
             }
+
+            updateCount() { this.ui.dataCount.innerText = `${this.displayList.length}`; }
         }
+
         class AdminController {
             constructor() {
-                this.ui = { owner: document.getElementById('repo-owner'), repo: document.getElementById('repo-name'), token: document.getElementById('github-token'), log: document.getElementById('admin-log'), btn: document.getElementById('btn-trigger') };
+                this.ui = { owner: document.getElementById('repo-owner'), repo: document.getElementById('repo-name'), token: document.getElementById('github-token') };
             }
-            log(msg) { this.ui.log.classList.remove('hidden'); this.ui.log.innerHTML += `<div>> ${msg}</div>`; this.ui.log.scrollTop = this.ui.log.scrollHeight; }
             loadSettings() { this.ui.owner.value = localStorage.getItem('gh_owner')||''; this.ui.repo.value = localStorage.getItem('gh_repo')||''; this.ui.token.value = localStorage.getItem('gh_token')||''; }
-            saveSettings() { localStorage.setItem('gh_owner', this.ui.owner.value.trim()); localStorage.setItem('gh_repo', this.ui.repo.value.trim()); localStorage.setItem('gh_token', this.ui.token.value.trim()); }
-            async triggerWorkflow() {
-                const owner = this.ui.owner.value.trim(), repo = this.ui.repo.value.trim(), token = this.ui.token.value.trim();
-                if (!owner || !repo || !token) { alert("請填寫所有欄位"); return; }
-                this.saveSettings(); this.ui.btn.disabled = true; this.log('發送請求...');
-                try {
-                    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, {
-                        method: 'POST', headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, body: JSON.stringify({ ref: 'main' })
-                    });
-                    if (res.status === 204) { this.log('<span class="text-green-400">成功! 請稍後重整。</span>'); alert("掃描已啟動！請約 3-5 分鐘後重新整理網頁。"); }
-                    else throw new Error(res.status);
-                } catch (e) { this.log(`<span class="text-red-400">失敗: ${e.message}</span>`); } 
-                finally { this.ui.btn.disabled = false; }
+            saveSettings() { 
+                localStorage.setItem('gh_owner', this.ui.owner.value.trim()); 
+                localStorage.setItem('gh_repo', this.ui.repo.value.trim()); 
+                localStorage.setItem('gh_token', this.ui.token.value.trim()); 
+                alert('設定已儲存！');
             }
         }
         const app = new StockApp(); const admin = new AdminController();
