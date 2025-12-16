@@ -59,11 +59,15 @@
             text-align: center;
             flex-shrink: 0;
         }
-
-        /* 自定義捲軸 */
-        ::-webkit-scrollbar { height: 4px; width: 4px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
+        
+        /* 隱藏捲軸但保留功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
     </style>
 </head>
 <body class="h-[100dvh] flex flex-col overflow-hidden bg-slate-900">
@@ -107,32 +111,51 @@
         <!-- List (報價列表) -->
         <div id="page-list" class="hidden flex flex-col h-full gap-2">
             <div class="shrink-0 flex flex-col gap-2">
+                <!-- 【修改】合併為單一控制列 -->
                 <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
-                    <div class="flex items-center gap-2">
-                        <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center">
+                    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar flex-grow mr-2">
+                        <!-- 過濾標籤 (有過濾時顯示) -->
+                        <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center whitespace-nowrap">
                             <span id="filter-name">族群</span>
                             <button onclick="app.clearFilter()" class="ml-2 hover:text-white"><i class="fa-solid fa-times"></i></button>
                         </span>
-                        <span id="data-count" class="text-[10px] text-gray-400">0 檔</span>
+                        
+                        <!-- 總數 -->
+                        <span id="data-count" class="text-[10px] text-gray-400 font-mono whitespace-nowrap">總: 0</span>
+                        
+                        <!-- 分隔線 -->
+                        <span class="text-gray-600 text-[10px]">|</span>
+                        
+                        <!-- 策略統計 (搬移到這裡) -->
+                        <span class="flex items-center gap-1 text-[10px] text-blue-300 whitespace-nowrap">
+                            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block"></span>
+                            拉回:<span id="count-pullback" class="font-bold">0</span>
+                        </span>
+                        <span class="flex items-center gap-1 text-[10px] text-purple-300 whitespace-nowrap">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block"></span>
+                            VCP:<span id="count-vcp" class="font-bold">0</span>
+                        </span>
                     </div>
-                    <button onclick="app.toggleMaFilter()" id="btn-ma-filter" class="bg-slate-700 text-gray-300 text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all">過濾支撐</button>
+                    
+                    <!-- 按鈕區 -->
+                    <button onclick="app.toggleMaFilter()" id="btn-ma-filter" class="bg-slate-700 text-gray-300 text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all whitespace-nowrap flex-shrink-0">
+                        過濾支撐
+                    </button>
                 </div>
             </div>
+            
             <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
                 <div class="flex-grow overflow-auto bg-slate-900 relative">
                     <table class="min-w-[360px] w-full text-sm text-left text-gray-400">
                         <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
-                                <!-- Sticky Col 1: 股名 -->
-                                <th scope="col" class="px-1 py-2 sortable sticky left-0 z-30 bg-slate-950 border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]" onclick="app.sortList('id')">
-                                    股名<span class="sort-symbol" id="sort-symbol-id">⇅</span>
-                                </th>
+                                <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">股名<span class="sort-symbol" id="sort-symbol-id">⇅</span></th>
                                 <th scope="col" class="px-1 py-2 sortable text-center" onclick="app.sortList('group')">族群<span class="sort-symbol" id="sort-symbol-group">⇅</span></th>
                                 <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('price')">價<span class="sort-symbol" id="sort-symbol-price">⇅</span></th>
                                 <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('changeRate')">漲跌<span class="sort-symbol" id="sort-symbol-changeRate">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right text-[9px]">MA5</th>
-                                <th scope="col" class="px-1 py-2 text-right text-[9px]">MA10</th>
-                                <th scope="col" class="px-1 py-2 text-[10px]">備註</th>
+                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-400" onclick="app.sortList('ma5')">MA5<span class="sort-symbol" id="sort-symbol-ma5">⇅</span></th>
+                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-400" onclick="app.sortList('ma10')">MA10<span class="sort-symbol" id="sort-symbol-ma10">⇅</span></th>
+                                <th scope="col" class="px-1 py-2 text-[10px] sortable" onclick="app.sortList('note')">備註<span class="sort-symbol" id="sort-symbol-note">⇅</span></th>
                             </tr>
                         </thead>
                         <tbody id="result-body" class="divide-y divide-slate-800">
@@ -154,18 +177,24 @@
                     <table class="min-w-[850px] w-full text-sm text-left text-gray-400">
                         <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
-                                <!-- Sticky Col 1: 日期 -->
-                                <th scope="col" class="px-1 py-2 sortable sticky left-0 z-30 bg-slate-950 border-r border-slate-800" style="min-width: 45px;" onclick="app.sortPerfList('date')">
+                                <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('date')">
                                     日期<span class="sort-symbol" id="perf-symbol-date">⇅</span>
                                 </th>
-                                <!-- Sticky Col 2: 股名 (接在日期後面) -->
-                                <th scope="col" class="px-1 py-2 sortable sticky left-[45px] z-30 bg-slate-950 border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]" style="min-width: 55px;" onclick="app.sortPerfList('id')">
+                                <th scope="col" class="px-1 py-2 sortable sticky left-[40px] bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('id')">
                                     股名<span class="sort-symbol" id="perf-symbol-id">⇅</span>
                                 </th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('buy_price')">進場<span class="sort-symbol" id="perf-symbol-buy_price">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('roi')">累%<span class="sort-symbol" id="perf-symbol-roi">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('daily_change')">日%<span class="sort-symbol" id="perf-symbol-daily_change">⇅</span></th>
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('buy_price')">
+                                    進場<span class="sort-symbol" id="perf-symbol-buy_price">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">
+                                    現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('roi')">
+                                    累%<span class="sort-symbol" id="perf-symbol-roi">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('daily_change')">
+                                    日%<span class="sort-symbol" id="perf-symbol-daily_change">⇅</span>
+                                </th>
                                 <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_1')">1日%<span class="sort-symbol" id="perf-symbol-roi_1">⇅</span></th>
                                 <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_5')">5日%<span class="sort-symbol" id="perf-symbol-roi_5">⇅</span></th>
                                 <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_10')">10日%<span class="sort-symbol" id="perf-symbol-roi_10">⇅</span></th>
@@ -236,6 +265,9 @@
                     btnCloudUpdate: document.getElementById('btn-cloud-update'),
                     btnMaFilter: document.getElementById('btn-ma-filter'),
                     winRateBadge: document.getElementById('win-rate-badge'),
+                    
+                    countPullback: document.getElementById('count-pullback'),
+                    countVcp: document.getElementById('count-vcp'),
                     
                     pageHeatmap: document.getElementById('page-heatmap'),
                     pageList: document.getElementById('page-list'),
@@ -313,17 +345,6 @@
                     if(res.ok) {
                         const historyData = await res.json();
                         this.historyList = [];
-                        
-                        const stats = {
-                            1: { total: 0, win: 0, sumRoi: 0 },
-                            5: { total: 0, win: 0, sumRoi: 0 },
-                            10: { total: 0, win: 0, sumRoi: 0 },
-                            20: { total: 0, win: 0, sumRoi: 0 },
-                            30: { total: 0, win: 0, sumRoi: 0 },
-                            60: { total: 0, win: 0, sumRoi: 0 },
-                            120: { total: 0, win: 0, sumRoi: 0 }
-                        };
-
                         let totalStocks = 0;
                         let winStocks = 0;
 
@@ -342,17 +363,8 @@
                                     daily_change: stock.daily_change || 0,
                                     roi: roi
                                 });
-
                                 totalStocks++;
                                 if ((stock.roi || 0) > 0) winStocks++;
-
-                                [1, 5, 10, 20, 30, 60, 120].forEach(d => {
-                                    if (diffDays >= d) {
-                                        stats[d].total++;
-                                        if (roi > 0) stats[d].win++;
-                                        stats[d].sumRoi += roi;
-                                    }
-                                });
                             });
                         });
 
@@ -364,7 +376,25 @@
                             else if(winRate < 40) this.ui.winRateBadge.className = "ml-2 text-[9px] bg-green-900/50 text-green-300 border border-green-700 px-1.5 py-0.5 rounded font-mono";
                             else this.ui.winRateBadge.className = "ml-2 text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono";
                         }
-
+                        
+                        const stats = {
+                            1: { total: 0, win: 0, sumRoi: 0 },
+                            5: { total: 0, win: 0, sumRoi: 0 },
+                            10: { total: 0, win: 0, sumRoi: 0 },
+                            20: { total: 0, win: 0, sumRoi: 0 },
+                            30: { total: 0, win: 0, sumRoi: 0 },
+                            60: { total: 0, win: 0, sumRoi: 0 },
+                            120: { total: 0, win: 0, sumRoi: 0 }
+                        };
+                        this.historyList.forEach(s => {
+                            [1, 5, 10, 20, 30, 60, 120].forEach(d => {
+                                if (s.daysHeld >= d) {
+                                    stats[d].total++;
+                                    if (s.roi > 0) stats[d].win++;
+                                    stats[d].sumRoi += s.roi;
+                                }
+                            });
+                        });
                         this.renderPerfStats(stats);
                     }
                 } catch(e) { console.log('No history'); }
@@ -441,13 +471,10 @@
                         }
                     }).join('');
 
-                    // 在第二欄顯示: 股名 (上方), 代號 (下方)
                     return `
                         <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
-                            <!-- 凍結左側第一欄: 日期 -->
-                            <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-r border-r border-slate-800 z-10 text-[10px] text-gray-400 min-w-[45px]">${dateDisplay}</td>
-                            <!-- 凍結左側第二欄: 股名+代號 -->
-                            <td class="px-1 py-2 sticky left-[45px] bg-slate-900 z-10 text-xs text-gray-300 font-bold min-w-[55px] border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">
+                            <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10 text-[10px] text-gray-400 min-w-[30px]">${dateDisplay}</td>
+                            <td class="px-1 py-2 sticky left-[30px] bg-slate-900 z-10 text-xs text-gray-300 font-bold min-w-[50px] border-r border-slate-800">
                                 <div>${s.name}</div>
                                 <div class="text-[9px] text-gray-500 font-normal">${s.id}</div>
                             </td>
@@ -461,11 +488,23 @@
                 }).join('');
                 this.ui.perfBody.innerHTML = html;
             }
-
-            // ... (其他原有邏輯省略，但請保留) ...
             
+            // ... (其他原有邏輯) ...
             applyStateAndRender() {
                 let list = [...this.stockList];
+                
+                // 【新增】統計策略數量
+                let pbCount = 0;
+                let vcpCount = 0;
+                list.forEach(s => {
+                    if (s.note && s.note.includes('拉回佈局')) pbCount++;
+                    if (s.note && s.note.includes('VCP')) vcpCount++;
+                });
+                
+                this.ui.countPullback.innerText = pbCount;
+                this.ui.countVcp.innerText = vcpCount;
+                this.ui.dataCount.innerText = `總: ${list.length}`; // 更新總數顯示
+
                 if (this.state.filterGroup) {
                     list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
                     this.ui.filterTag.classList.remove('hidden');
@@ -486,7 +525,7 @@
                     list.sort((a, b) => {
                         let valA = a[this.state.sortBy];
                         let valB = b[this.state.sortBy];
-                        if (this.state.sortBy === 'price' || this.state.sortBy === 'changeRate') 
+                        if (['price', 'changeRate', 'ma5', 'ma10'].includes(this.state.sortBy)) 
                             return (parseFloat(valA) - parseFloat(valB)) * dir;
                         return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
                     });
@@ -579,7 +618,6 @@
                     const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-slate-800 text-gray-400 text-[10px] px-1 py-0.5 rounded border border-slate-700">${shortGroup}</span>` : `<span class="text-gray-600 text-[10px]">-</span>`;
                     return `
                         <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
-                            <!-- 【修改】報價列表也加上 Sticky 效果 -->
                             <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10">
                                 <div class="flex items-center gap-1.5">
                                     <div class="flex flex-col w-[70px]">
