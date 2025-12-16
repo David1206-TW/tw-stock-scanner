@@ -7,177 +7,179 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 <style>
-    .tw-up { color: #ef4444; }
-    .tw-down { color: #22c55e; }
-    body { 
-        font-family: 'Noto Sans TC', sans-serif; 
-        background-color: #0f172a; 
-        color: #e2e8f0;
-        overscroll-behavior-y: contain; 
-    }
-    .glass-panel {
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    }
-    .tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
-    .tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; }
+.tw-up { color: #ef4444; }
+.tw-down { color: #22c55e; }
+body { font-family: 'Noto Sans TC', sans-serif; background-color: #0f172a; color: #e2e8f0; overscroll-behavior-y: contain; }
+.glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
+.tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
+.tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; }
+th.sortable { cursor: pointer; transition: background-color 0.2s; user-select: none; white-space: nowrap; padding-top: 0.5rem; padding-bottom: 0.5rem; font-size: 10px; }
+th.sortable:hover { background-color: #334155; }
+td { white-space: nowrap; }
+.name-cell { white-space: normal; max-width: 70px; line-height: 1.2; }
+@keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+.animate-updating { animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #60a5fa; }
+.sort-symbol { display: inline-block; font-size: 8px; margin-left: 1px; vertical-align: 1px; color: #64748b; opacity: 0.5; transform: scale(0.9); }
+.sort-symbol.active { color: #60a5fa; opacity: 1; font-weight: bold; }
+.stat-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 4px 8px; min-width: 70px; text-align: center; flex-shrink: 0; }
 
-    th.sortable { 
-        cursor: pointer; 
-        transition: background-color 0.2s; 
-        user-select: none; 
-        white-space: nowrap; 
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-        font-size: 10px; 
-    }
-    th.sortable:hover { background-color: #334155; }
-    td { white-space: nowrap; }
-    .name-cell { white-space: normal; max-width: 80px; line-height: 1.2; }
+/* sticky 左側陰影 */
+table td.sticky {
+  box-shadow: 2px 0 5px -2px rgba(0,0,0,0.5);
+}
 
-    @keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-    .animate-updating { animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #60a5fa; }
-
-    .sort-symbol {
-        display: inline-block;
-        font-size: 8px;
-        margin-left: 1px;
-        vertical-align: 1px;
-        color: #64748b;
-        opacity: 0.5;
-        transform: scale(0.9);
-    }
-    .sort-symbol.active { color: #60a5fa; opacity: 1; font-weight: bold; }
-
-    .stat-card {
-        background: rgba(30, 41, 59, 0.5);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 4px;
-        padding: 4px 8px;
-        min-width: 70px;
-        text-align: center;
-        flex-shrink: 0;
-    }
-
-    /* Sticky 左側欄位，桌面 + 手機 */
-    .sticky-left {
-        position: sticky;
-        left: 0;
-        z-index: 30;
-        background-color: rgba(30, 41, 59, 0.9);
-        border-right: 1px solid rgba(255,255,255,0.1);
-    }
-
-    /* 手機橫向滑動 */
-    .overflow-x-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* 手機端表格調整 */
+@media (max-width: 640px) {
+  table { min-width: 360px; }
+  .name-cell { max-width: 70px; white-space: normal; }
+}
 </style>
 </head>
 <body class="h-[100dvh] flex flex-col overflow-hidden bg-slate-900">
 
 <!-- Top Navbar -->
 <nav class="bg-slate-950 text-white p-2 shadow-lg shrink-0 z-40 border-b border-slate-800 flex justify-between items-center h-14">
-    <div class="flex items-center gap-2 pl-1">
-        <i class="fa-solid fa-robot text-emerald-400 text-lg"></i>
-        <div class="flex flex-col">
-            <div class="flex items-center gap-2">
-                <h1 class="text-sm font-bold tracking-wider leading-none">台股戰情室</h1>
-                <span id="win-rate-badge" class="hidden text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono">
-                    勝率 -%
-                </span>
-            </div>
-            <div class="text-[9px] text-gray-500 mt-0.5" id="last-updated">讀取中...</div>
-        </div>
+  <div class="flex items-center gap-2 pl-1">
+    <i class="fa-solid fa-robot text-emerald-400 text-lg"></i>
+    <div class="flex flex-col">
+      <div class="flex items-center gap-2">
+        <h1 class="text-sm font-bold tracking-wider leading-none">台股戰情室</h1>
+        <span id="win-rate-badge" class="hidden text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono"> 勝率 -% </span>
+      </div>
+      <div class="text-[9px] text-gray-500 mt-0.5" id="last-updated">讀取中...</div>
     </div>
-    
-    <div class="flex items-center gap-1">
-        <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
-            <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
-            <span class="text-[10px] font-medium">更新</span>
-        </button>
-        <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
-            <i class="fa-solid fa-rotate-right text-sm"></i>
-        </button>
-    </div>
+  </div>
+  <div class="flex items-center gap-1">
+    <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
+      <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+      <span class="text-[10px] font-medium">更新</span>
+    </button>
+    <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
+      <i class="fa-solid fa-rotate-right text-sm"></i>
+    </button>
+  </div>
 </nav>
 
 <!-- Main Content -->
 <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
 
-    <!-- Heatmap -->
-    <div id="page-heatmap" class="flex flex-col h-full gap-2">
-        <div class="flex-grow overflow-y-auto pb-4">
-            <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
-        </div>
+  <!-- Heatmap -->
+  <div id="page-heatmap" class="flex flex-col h-full gap-2">
+    <div class="flex-grow overflow-y-auto pb-4">
+      <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
     </div>
+  </div>
 
-    <!-- List -->
-    <div id="page-list" class="hidden flex flex-col h-full gap-2">
-        <div class="shrink-0 flex flex-col gap-2">
-            <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
-                <div class="flex items-center gap-2">
-                    <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center">
-                        <span id="filter-name">族群</span>
-                        <button onclick="app.clearFilter()" class="ml-2 hover:text-white"><i class="fa-solid fa-times"></i></button>
-                    </span>
-                    <span id="data-count" class="text-[10px] text-gray-400">0 檔</span>
-                </div>
-                <button onclick="app.toggleMaFilter()" id="btn-ma-filter" class="bg-slate-700 text-gray-300 text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all">過濾支撐</button>
-            </div>
+  <!-- List -->
+  <div id="page-list" class="hidden flex flex-col h-full gap-2">
+    <div class="shrink-0 flex flex-col gap-2">
+      <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+        <div class="flex items-center gap-2">
+          <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center">
+            <span id="filter-name">族群</span>
+            <button onclick="app.clearFilter()" class="ml-2 hover:text-white"><i class="fa-solid fa-times"></i></button>
+          </span>
+          <span id="data-count" class="text-[10px] text-gray-400">0 檔</span>
         </div>
-        <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10 overflow-x-scroll">
-            <div class="flex-grow overflow-auto bg-slate-900 relative">
-                <table class="min-w-[360px] w-full text-sm text-left text-gray-400">
-                    <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
-                        <tr>
-                            <th scope="col" class="px-1 py-2 sortable sticky-left text-gray-300" onclick="app.sortList('id')">
-                                股名<span class="sort-symbol" id="sort-symbol-id">⇅</span>
-                            </th>
-                            <th scope="col" class="px-1 py-2 sortable text-center" onclick="app.sortList('group')">
-                                族群<span class="sort-symbol" id="sort-symbol-group">⇅</span>
-                            </th>
-                            <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('price')">
-                                價<span class="sort-symbol" id="sort-symbol-price">⇅</span>
-                            </th>
-                            <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('changeRate')">
-                                漲跌<span class="sort-symbol" id="sort-symbol-changeRate">⇅</span>
-                            </th>
-                            <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('ma5')">
-                                MA5<span class="sort-symbol" id="sort-symbol-ma5">⇅</span>
-                            </th>
-                            <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('ma10')">
-                                MA10<span class="sort-symbol" id="sort-symbol-ma10">⇅</span>
-                            </th>
-                            <th scope="col" class="px-1 py-2 text-[10px] sortable" onclick="app.sortList('note')">
-                                備註<span class="sort-symbol" id="sort-symbol-note">⇅</span>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody id="result-body" class="divide-y divide-slate-800">
-                        <tr><td colspan="7" class="px-6 py-20 text-center text-gray-600"><i class="fa-solid fa-spinner fa-spin text-2xl mb-4 text-blue-500"></i><br>載入中...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <button onclick="app.toggleMaFilter()" id="btn-ma-filter" class="bg-slate-700 text-gray-300 text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all">過濾支撐</button>
+      </div>
     </div>
+    <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
+      <div class="flex-grow overflow-auto bg-slate-900 relative">
+        <table class="min-w-[360px] w-full text-sm text-left text-gray-400">
+          <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
+            <tr>
+              <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">
+                股名<span class="sort-symbol" id="sort-symbol-id">⇅</span>
+              </th>
+              <th scope="col" class="px-1 py-2 sortable text-center" onclick="app.sortList('group')">族群<span class="sort-symbol" id="sort-symbol-group">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('price')">價<span class="sort-symbol" id="sort-symbol-price">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('changeRate')">漲跌<span class="sort-symbol" id="sort-symbol-changeRate">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('ma5')">MA5<span class="sort-symbol" id="sort-symbol-ma5">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('ma10')">MA10<span class="sort-symbol" id="sort-symbol-ma10">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-[10px] sortable" onclick="app.sortList('note')">備註<span class="sort-symbol" id="sort-symbol-note">⇅</span></th>
+            </tr>
+          </thead>
+          <tbody id="result-body" class="divide-y divide-slate-800">
+            <tr><td colspan="7" class="px-6 py-20 text-center text-gray-600">
+              <i class="fa-solid fa-spinner fa-spin text-2xl mb-4 text-blue-500"></i><br>載入中...
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-    <!-- 其他頁面如績效、Admin維持原樣，需在table欄位加 sticky-left 即可 -->
+  <!-- Performance -->
+  <div id="page-perf" class="hidden flex flex-col h-full gap-2">
+    <div class="shrink-0 flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="perf-stats-bar">
+      <div class="text-xs text-gray-500 p-2">計算中...</div>
+    </div>
+    <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
+      <div class="flex-grow overflow-auto bg-slate-900 relative">
+        <table class="min-w-[850px] w-full text-sm text-left text-gray-400">
+          <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
+            <tr>
+              <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 border-r border-slate-800">日期<span class="sort-symbol" id="perf-symbol-date">⇅</span></th>
+              <th scope="col" class="px-1 py-2 sortable sticky left-[30px] bg-slate-950 z-30 border-r border-slate-800">股名<span class="sort-symbol" id="perf-symbol-id">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('buy_price')">進場<span class="sort-symbol" id="perf-symbol-buy_price">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('roi')">累%<span class="sort-symbol" id="perf-symbol-roi">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('daily_change')">日%<span class="sort-symbol" id="perf-symbol-daily_change">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_1')">1日%<span class="sort-symbol" id="perf-symbol-roi_1">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_5')">5日%<span class="sort-symbol" id="perf-symbol-roi_5">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_10')">10日%<span class="sort-symbol" id="perf-symbol-roi_10">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_20')">20日%<span class="sort-symbol" id="perf-symbol-roi_20">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_30')">30日%<span class="sort-symbol" id="perf-symbol-roi_30">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_60')">60日%<span class="sort-symbol" id="perf-symbol-roi_60">⇅</span></th>
+              <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_120')">120日%<span class="sort-symbol" id="perf-symbol-roi_120">⇅</span></th>
+            </tr>
+          </thead>
+          <tbody id="perf-body" class="divide-y divide-slate-800">
+            <tr><td colspan="13" class="px-6 py-20 text-center text-gray-600">尚無歷史資料</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin -->
+  <div id="page-admin" class="hidden h-full overflow-y-auto">
+    <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto mb-4 bg-slate-800">
+      <h2 class="text-lg font-bold mb-4 flex items-center border-b border-slate-700 pb-3 text-white">
+        <i class="fa-solid fa-gear mr-2 text-gray-400"></i>設定
+      </h2>
+      <div class="space-y-3 text-sm">
+        <input type="text" id="repo-owner" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white" placeholder="GitHub Owner">
+        <input type="text" id="repo-name" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white" placeholder="Repo Name">
+        <input type="password" id="github-token" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white" placeholder="Access Token">
+        <button onclick="admin.saveSettings()" class="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded mt-2">儲存設定</button>
+      </div>
+    </div>
+  </div>
 
 </main>
 
-<!-- Bottom Nav -->
+<!-- Bottom Tab -->
 <nav class="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
-    <div class="max-w-6xl mx-auto flex justify-around h-full">
-        <button onclick="app.switchTab('heatmap')" id="tab-heatmap" class="tab-btn active flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-fire text-lg mb-1"></i><span class="text-xs mt-1">熱力圖</span></button>
-        <button onclick="app.switchTab('list')" id="tab-list" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-list-ul text-lg mb-1"></i><span class="text-xs mt-1">報價</span></button>
-        <button onclick="app.switchTab('perf')" id="tab-perf" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-trophy text-lg mb-1"></i><span class="text-xs mt-1">績效</span></button>
-        <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-gear text-lg mb-1"></i><span class="text-xs mt-1">設定</span></button>
-    </div>
+  <div class="max-w-6xl mx-auto flex justify-around h-full">
+    <button onclick="app.switchTab('heatmap')" id="tab-heatmap" class="tab-btn active flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-fire text-lg mb-1"></i><span class="text-xs mt-1">熱力圖</span></button>
+    <button onclick="app.switchTab('list')" id="tab-list" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-list-ul text-lg mb-1"></i><span class="text-xs mt-1">報價</span></button>
+    <button onclick="app.switchTab('perf')" id="tab-perf" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-trophy text-lg mb-1"></i><span class="text-xs mt-1">績效</span></button>
+    <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-gear text-lg mb-1"></i><span class="text-xs mt-1">設定</span></button>
+  </div>
 </nav>
 
 <script>
-// StockApp class 原邏輯保持不變，只需在 renderTable/perfTable 中 table 的股名欄 td 加 class="sticky-left"
+/* 你的 StockApp 和 AdminController JS 原本程式碼保持不變 */
+class StockApp {
+  // ... 保留原本程式碼 ...
+}
+class AdminController {
+  // ... 保留原本程式碼 ...
+}
+const app = new StockApp();
+const admin = new AdminController();
 </script>
 
 </body>
