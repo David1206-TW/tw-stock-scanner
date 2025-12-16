@@ -1,5 +1,5 @@
 {
-  "date": "2025/12/16 19:32:12",
+  "date": "2025/12/16 20:32:52",
   "source": "GitHub Actions",
   "list": [
     {
@@ -99,22 +99,6 @@
       "daily_change": -2.11
     },
     {
-      "id": "2476",
-      "name": "鉅祥",
-      "group": "電子零組件業",
-      "type": "上市",
-      "price": 88.6,
-      "ma5": 89.06,
-      "ma10": 88.32,
-      "changeRate": -0.34,
-      "isValid": true,
-      "note": "VCP / 年線85.84",
-      "buy_price": 88.6,
-      "latest_price": 88.6,
-      "roi": 0.0,
-      "daily_change": -0.34
-    },
-    {
       "id": "2495",
       "name": "普安",
       "group": "電腦及週邊設備業",
@@ -131,22 +115,6 @@
       "daily_change": 0.0
     },
     {
-      "id": "2548",
-      "name": "華固",
-      "group": "建材營造業",
-      "type": "上市",
-      "price": 104.0,
-      "ma5": 103.9,
-      "ma10": 103.65,
-      "changeRate": -0.95,
-      "isValid": true,
-      "note": "VCP / 年線103.41",
-      "buy_price": 104.0,
-      "latest_price": 104.0,
-      "roi": 0.0,
-      "daily_change": -0.95
-    },
-    {
       "id": "2801",
       "name": "彰銀",
       "group": "金融保險業",
@@ -161,22 +129,6 @@
       "latest_price": 20.6,
       "roi": 0.0,
       "daily_change": -0.96
-    },
-    {
-      "id": "2812",
-      "name": "台中銀",
-      "group": "金融保險業",
-      "type": "上市",
-      "price": 21.25,
-      "ma5": 21.25,
-      "ma10": 21.11,
-      "changeRate": -0.47,
-      "isValid": true,
-      "note": "VCP / 年線19.92",
-      "buy_price": 21.25,
-      "latest_price": 21.25,
-      "roi": 0.0,
-      "daily_change": -0.47
     },
     {
       "id": "2820",
@@ -339,22 +291,6 @@
       "daily_change": 0.7
     },
     {
-      "id": "4960",
-      "name": "誠美材",
-      "group": "光電業",
-      "type": "上市",
-      "price": 13.75,
-      "ma5": 13.75,
-      "ma10": 13.64,
-      "changeRate": 0.0,
-      "isValid": true,
-      "note": "VCP / 年線13.63",
-      "buy_price": 13.75,
-      "latest_price": 13.75,
-      "roi": 0.0,
-      "daily_change": 0.0
-    },
-    {
       "id": "5515",
       "name": "建國",
       "group": "建材營造業",
@@ -401,22 +337,6 @@
       "latest_price": 59.0,
       "roi": 0.0,
       "daily_change": -5.14
-    },
-    {
-      "id": "6477",
-      "name": "安集",
-      "group": "光電業",
-      "type": "上市",
-      "price": 36.0,
-      "ma5": 35.4,
-      "ma10": 35.11,
-      "changeRate": -1.1,
-      "isValid": true,
-      "note": "VCP / 年線34.76",
-      "buy_price": 36.0,
-      "latest_price": 36.0,
-      "roi": 0.0,
-      "daily_change": -1.1
     },
     {
       "id": "6541",
