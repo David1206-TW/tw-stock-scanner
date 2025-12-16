@@ -1,29 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V9 (高檔洗盤/壓縮版)
+台股自動掃描策略機器人 (Scanner Bot) - V10 (第一次突破前高版)
 
-【針對痛點】
-修正 V8 對 K 棒要求過嚴的問題。
-允許高檔整理時出現「十字線」、「上影線」、「小黑K」等洗盤型態，
-只要股價守住關鍵支撐 (MA10) 且量縮，都視為蓄勢待發。
+【目標型態：12/4 光聖模式 (The First Breakout)】
+尋找「均線多頭排列」但「乖離率尚未過大」的股票。
+排除已經大漲一段的個股，鎖定在起漲點前夕、均線糾結壓縮的標的。
 
 【篩選條件說明 (Strategy)】
-1. 強勢趨勢 (Strong Trend):
-   - MA10 > MA20 > MA60。
-   - MA10 維持上揚 (今日MA10 > 昨日MA10)。
+1. 長線保護短線 (Long-term Trend):
+   - 收盤價 > 240日均線 (MA240)。(年線之上)
 
-2. 高檔蓄勢 (Near High):
-   - 收盤價 >= 近 20日最高價 * 0.95 (維持在高檔區)。
+2. 多頭排列 (Trend):
+   - MA10 > MA20 > MA60。(趨勢向上)
 
-3. 波動壓縮 (Squeeze):
-   - 近 5 日波動幅度 < 10% (盤整待變)。
+3. 位階控制 (Position Control) 【關鍵新增】:
+   - 乖離率限制：(收盤價 - MA60) / MA60 < 25%。
+   - 目的：排除已經噴離季線太遠、漲幅過大的股票 (避開 12/16 光聖)。
+   - 確保買在「起漲區」而非「追高區」。
 
-4. 量縮整理 (Dry Volume):
-   - 今日成交量 < 5日均量 (籌碼沉澱)。
+4. 均線糾結/壓縮 (Consolidation) 【關鍵新增】:
+   - (MA5, MA10, MA20) 最高值與最低值差異 < 8%。
+   - 目的：找出均線糾結、籌碼沉澱、準備發動的股票。
 
-5. 支撐確認 (Support Check) 【關鍵修改】:
-   - 收盤價 > MA10：不論紅黑K，只要收盤沒破 10日線，趨勢就沒壞。
-   - RSI(6) > 55：允許指標稍微降溫，但仍維持在多方區。
+5. 量縮整理 (Dry Volume):
+   - 今日成交量 < 5日均量 (量縮)。
+
+6. 支撐確認 (Support):
+   - 收盤價 > MA10 (守住短期攻擊線)。
 """
 
 import yfinance as yf
@@ -92,85 +95,73 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 4. 技術指標計算 (RSI)
-# ==========================================
-def calculate_rsi(series, period=6):
-    delta = series.diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
-    return 100 - (100 / (1 + rs))
-
-# ==========================================
-# 5. 策略邏輯核心 (V9 - 高檔洗盤/壓縮版)
+# 4. 策略邏輯核心 (V10 - 第一次突破前高版)
 # ==========================================
 def check_strategy(df):
-    if len(df) < 120: return False, {}
+    if len(df) < 240: return False, {}
 
     close = df['Close']
     volume = df['Volume']
-    high = df['High']
-    low = df['Low']
     
     # 計算均線
     ma5 = close.rolling(5).mean()
     ma10 = close.rolling(10).mean()
     ma20 = close.rolling(20).mean()
     ma60 = close.rolling(60).mean()
+    ma240 = close.rolling(240).mean()
     
     # 計算均量
     vol_ma5 = volume.rolling(5).mean()
     
-    # 計算 RSI (6日短線動能)
-    rsi_6 = calculate_rsi(close, 6)
-
     # 取得最新數據
     curr_c = close.iloc[-1]
     curr_v = volume.iloc[-1]
-    
     curr_ma5 = ma5.iloc[-1]
     curr_ma10 = ma10.iloc[-1]
     curr_ma20 = ma20.iloc[-1]
     curr_ma60 = ma60.iloc[-1]
+    curr_ma240 = ma240.iloc[-1]
     curr_vol_ma5 = vol_ma5.iloc[-1]
-    curr_rsi = rsi_6.iloc[-1]
     
-    # 取得昨日數據 (用於判斷斜率)
-    prev_ma10 = ma10.iloc[-2]
     prev_c = close.iloc[-2]
 
     # 【Filter 1】流動性過濾
     if curr_vol_ma5 < 500000: return False, {}
 
-    # --- 策略條件 ---
+    # --- V10 策略條件 ---
 
-    # 1. 強勢多頭 (Trend) & 均線斜率 (Slope)
-    # MA10 > MA20 > MA60，且 MA10 向上
-    cond_trend = (curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60) and (curr_ma10 >= prev_ma10)
+    # 1. 長線保護短線 (Life Line)
+    # 股價必須在年線之上
+    cond_life_line = curr_c > curr_ma240
 
-    # 2. 高檔蓄勢 (Near High)
-    high_20 = high.rolling(20).max().iloc[-1]
-    cond_near_high = curr_c >= (high_20 * 0.95)
+    # 2. 多頭排列 (Trend)
+    # 至少要 MA10 > MA20 > MA60 (趨勢向上)
+    cond_trend = (curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)
 
-    # 3. 波動壓縮 (Squeeze)
-    # 近 5 天股價波動幅度小於 10%
-    recent_high_5 = high.rolling(5).max().iloc[-1]
-    recent_low_5 = low.rolling(5).min().iloc[-1]
-    volatility_5 = (recent_high_5 - recent_low_5) / curr_c
-    cond_squeeze = volatility_5 < 0.10
+    # 3. 位階控制 (Position Control) - 避免選到已經噴出的
+    # 股價距離季線 (MA60) 的乖離率不能超過 25%
+    # 12/16 的光聖乖離率可能已經超過 40%，會被這條擋掉
+    # 12/4 的光聖乖離率還在安全範圍內
+    bias_ma60 = (curr_c - curr_ma60) / curr_ma60
+    cond_not_too_high = bias_ma60 < 0.25
 
-    # 4. 量縮整理 (Dry Volume)
+    # 4. 均線糾結/壓縮 (Consolidation) - 找出醞釀中的
+    # 檢查 MA5, MA10, MA20 是否糾結在一起
+    # 定義：這三條均線的最大值與最小值差距 < 8%
+    mas = [curr_ma5, curr_ma10, curr_ma20]
+    ma_divergence = (max(mas) - min(mas)) / min(mas)
+    cond_consolidation = ma_divergence < 0.08
+
+    # 5. 量縮整理 (Dry Volume)
+    # 確保不是爆量出貨盤，而是量縮洗盤
     cond_vol_dry = curr_v < curr_vol_ma5
 
-    # 5. 支撐確認 (Support Check) - 關鍵修改！
-    # A. 收盤價守住 MA10 (允許紅黑K、十字線，只要不破支撐)
+    # 6. 短線支撐 (Support)
+    # 收盤價守住 MA10 (允許破 MA5 洗盤，但不能破 MA10)
     cond_support = curr_c > curr_ma10
-    
-    # B. RSI(6) > 55 (稍微放寬，允許整理時指標降溫，但不能轉弱)
-    cond_rsi_strong = curr_rsi > 55
 
     # --- 最終判定 ---
-    is_match = cond_trend and cond_near_high and cond_squeeze and cond_vol_dry and cond_support and cond_rsi_strong
+    is_match = cond_life_line and cond_trend and cond_not_too_high and cond_consolidation and cond_vol_dry and cond_support
     
     if is_match:
         change_rate = 0.0
@@ -181,7 +172,7 @@ def check_strategy(df):
             "price": round(curr_c, 2),
             "ma5": round(curr_ma5, 2),
             "ma10": round(curr_ma10, 2),
-            "ma240": round(close.rolling(240).mean().iloc[-1], 2) if len(close) > 240 else 0,
+            "ma240": round(curr_ma240, 2),
             "changeRate": change_rate,
             "vol_ratio": round(curr_v / curr_vol_ma5, 2)
         }
@@ -189,7 +180,7 @@ def check_strategy(df):
         return False, {}
 
 # ==========================================
-# 6. 批次執行掃描
+# 5. 批次執行掃描
 # ==========================================
 def run_scanner():
     full_list = get_all_tickers()
@@ -240,7 +231,7 @@ def run_scanner():
                             "ma10": info['ma10'],
                             "changeRate": info['changeRate'],
                             "isValid": True,
-                            "note": f"RSI強勢 / 量縮整理"
+                            "note": f"均線糾結 / 準備突破"
                         }
                         valid_stocks.append(stock_entry)
                 except: continue
@@ -255,7 +246,7 @@ def run_scanner():
 # 主程式
 # ==========================================
 if __name__ == "__main__":
-    print("啟動自動掃描程序 (V9 高檔洗盤/壓縮版)...")
+    print("啟動自動掃描程序 (V10 第一次突破前高版)...")
     results = run_scanner()
     
     output_payload = {
@@ -269,3 +260,5 @@ if __name__ == "__main__":
         json.dump(output_payload, f, ensure_ascii=False, indent=2)
     
     print(f"掃描完成！共有 {len(results)} 檔符合條件。")
+
+
