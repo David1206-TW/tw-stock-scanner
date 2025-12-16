@@ -1,5 +1,5 @@
 {
-  "date": "2025/12/16 10:26:55",
+  "date": "2025/12/16 10:52:42",
   "source": "GitHub Actions Auto Scan",
   "list": [
     {
@@ -12,19 +12,7 @@
       "ma10": 11.66,
       "changeRate": -1.68,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
-    },
-    {
-      "id": "1528",
-      "name": "恩德",
-      "group": "電機機械",
-      "type": "上市",
-      "price": 16.2,
-      "ma5": 15.89,
-      "ma10": 15.43,
-      "changeRate": 1.57,
-      "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線10.48"
     },
     {
       "id": "1590",
@@ -36,7 +24,7 @@
       "ma10": 926.1,
       "changeRate": -2.89,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線873.02"
     },
     {
       "id": "1714",
@@ -48,7 +36,7 @@
       "ma10": 8.3,
       "changeRate": -0.47,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線8.07"
     },
     {
       "id": "2337",
@@ -60,7 +48,7 @@
       "ma10": 36.22,
       "changeRate": -2.11,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線23.47"
     },
     {
       "id": "2495",
@@ -72,7 +60,7 @@
       "ma10": 27.6,
       "changeRate": 0.0,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線25.25"
     },
     {
       "id": "2820",
@@ -84,7 +72,7 @@
       "ma10": 16.72,
       "changeRate": 0.3,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線15.66"
     },
     {
       "id": "2836",
@@ -96,7 +84,7 @@
       "ma10": 12.21,
       "changeRate": 0.4,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線11.6"
     },
     {
       "id": "2845",
@@ -108,7 +96,7 @@
       "ma10": 12.69,
       "changeRate": 0.39,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線12.68"
     },
     {
       "id": "2883",
@@ -120,7 +108,7 @@
       "ma10": 16.5,
       "changeRate": -0.29,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線16.24"
     },
     {
       "id": "3010",
@@ -132,7 +120,7 @@
       "ma10": 115.1,
       "changeRate": 0.42,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線102.53"
     },
     {
       "id": "3028",
@@ -144,7 +132,7 @@
       "ma10": 38.02,
       "changeRate": 0.13,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線32.71"
     },
     {
       "id": "3046",
@@ -156,7 +144,7 @@
       "ma10": 50.88,
       "changeRate": -1.13,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線47.46"
     },
     {
       "id": "5515",
@@ -168,7 +156,7 @@
       "ma10": 32.74,
       "changeRate": 0.59,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線27.32"
     },
     {
       "id": "6209",
@@ -180,7 +168,7 @@
       "ma10": 58.77,
       "changeRate": -5.14,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線33.44"
     },
     {
       "id": "6541",
@@ -192,19 +180,7 @@
       "ma10": 58.6,
       "changeRate": 1.17,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
-    },
-    {
-      "id": "0055",
-      "name": "元大MSCI金融",
-      "group": "",
-      "type": "上市",
-      "price": 31.08,
-      "ma5": 30.79,
-      "ma10": 30.45,
-      "changeRate": 0.03,
-      "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線58.71"
     },
     {
       "id": "1784",
@@ -216,7 +192,7 @@
       "ma10": 100.58,
       "changeRate": -3.76,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線80.26"
     },
     {
       "id": "3162",
@@ -228,7 +204,7 @@
       "ma10": 60.5,
       "changeRate": -2.57,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線49.59"
     },
     {
       "id": "4123",
@@ -240,7 +216,7 @@
       "ma10": 37.3,
       "changeRate": 0.0,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線36.69"
     },
     {
       "id": "6261",
@@ -252,7 +228,7 @@
       "ma10": 65.4,
       "changeRate": 1.95,
       "isValid": true,
-      "note": "均線糾結 / 準備突破"
+      "note": "年線61.49"
     }
   ]
 }
