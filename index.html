@@ -111,10 +111,10 @@
         <!-- List (報價列表) -->
         <div id="page-list" class="hidden flex flex-col h-full gap-2">
             <div class="shrink-0 flex flex-col gap-2">
-                <!-- 【修改】合併為單一控制列 -->
+                <!-- 合併為單一控制列 -->
                 <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar flex-grow mr-2">
-                        <!-- 過濾標籤 (有過濾時顯示) -->
+                        <!-- 過濾標籤 -->
                         <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center whitespace-nowrap">
                             <span id="filter-name">族群</span>
                             <button onclick="app.clearFilter()" class="ml-2 hover:text-white"><i class="fa-solid fa-times"></i></button>
@@ -126,7 +126,7 @@
                         <!-- 分隔線 -->
                         <span class="text-gray-600 text-[10px]">|</span>
                         
-                        <!-- 策略統計 (搬移到這裡) -->
+                        <!-- 策略統計 -->
                         <span class="flex items-center gap-1 text-[10px] text-blue-300 whitespace-nowrap">
                             <span class="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block"></span>
                             拉回:<span id="count-pullback" class="font-bold">0</span>
@@ -461,6 +461,10 @@
                     const dayClass = dayChg > 0 ? 'text-red-400' : (dayChg < 0 ? 'text-green-400' : 'text-gray-400');
                     const dateDisplay = s.date.substring(5);
 
+                    // 網址產生邏輯
+                    const suffix = s.type === '上市' ? '.TW' : '.TWO';
+                    const linkUrl = `https://tw.stock.yahoo.com/quote/${s.id}${suffix}/technical-analysis`;
+
                     const cols = [1, 5, 10, 20, 30, 60, 120].map(d => {
                         const val = s[`roi_${d}`];
                         if (val > -90000) {
@@ -474,9 +478,11 @@
                     return `
                         <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
                             <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10 text-[10px] text-gray-400 min-w-[30px]">${dateDisplay}</td>
-                            <td class="px-1 py-2 sticky left-[30px] bg-slate-900 z-10 text-xs text-gray-300 font-bold min-w-[50px] border-r border-slate-800">
-                                <div>${s.name}</div>
-                                <div class="text-[9px] text-gray-500 font-normal">${s.id}</div>
+                            <td class="px-1 py-2 sticky left-[30px] bg-slate-900 z-10 text-xs font-bold min-w-[50px] border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">
+                                <a href="${linkUrl}" target="_blank" class="block hover:opacity-80 group">
+                                    <div class="text-blue-400 group-hover:text-blue-300 underline decoration-blue-400/30">${s.name}</div>
+                                    <div class="text-[9px] text-gray-500 font-normal no-underline">${s.id}</div>
+                                </a>
                             </td>
                             <td class="px-1 py-2 text-right text-xs text-gray-500">${s.buy_price}</td>
                             <td class="px-1 py-2 text-right text-xs text-gray-300">${s.latest_price}</td>
@@ -493,7 +499,6 @@
             applyStateAndRender() {
                 let list = [...this.stockList];
                 
-                // 【新增】統計策略數量
                 let pbCount = 0;
                 let vcpCount = 0;
                 list.forEach(s => {
@@ -503,7 +508,7 @@
                 
                 this.ui.countPullback.innerText = pbCount;
                 this.ui.countVcp.innerText = vcpCount;
-                this.ui.dataCount.innerText = `總: ${list.length}`; // 更新總數顯示
+                this.ui.dataCount.innerText = `總: ${list.length}`; 
 
                 if (this.state.filterGroup) {
                     list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
@@ -616,15 +621,20 @@
                     let shortGroup = stock.group || '-';
                     if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) shortGroup = shortGroup.substring(0, 2);
                     const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-slate-800 text-gray-400 text-[10px] px-1 py-0.5 rounded border border-slate-700">${shortGroup}</span>` : `<span class="text-gray-600 text-[10px]">-</span>`;
+                    
+                    // 網址產生邏輯
+                    const suffix = stock.type === '上市' ? '.TW' : '.TWO';
+                    const linkUrl = `https://tw.stock.yahoo.com/quote/${stock.id}${suffix}/technical-analysis`;
+
                     return `
                         <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
                             <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10">
-                                <div class="flex items-center gap-1.5">
+                                <a href="${linkUrl}" target="_blank" class="flex items-center gap-1.5 block hover:opacity-80 group">
                                     <div class="flex flex-col w-[70px]">
-                                        <div class="text-white text-xs font-bold leading-tight name-cell">${stock.name}</div>
-                                        <div class="text-gray-500 text-[10px] flex items-center gap-1 mt-0.5">${stock.id} ${typeBadge}</div>
+                                        <div class="text-blue-400 text-xs font-bold leading-tight name-cell underline decoration-blue-400/30 group-hover:text-blue-300">${stock.name}</div>
+                                        <div class="text-gray-500 text-[10px] flex items-center gap-1 mt-0.5 no-underline">${stock.id} ${typeBadge}</div>
                                     </div>
-                                </div>
+                                </a>
                             </td>
                             <td class="px-1 py-2 text-center align-middle">${groupBadge}</td>
                             <td class="px-1 py-2 text-right ${priceClass} text-sm">${price}</td>
