@@ -13,7 +13,8 @@
       "note": "年線10.48",
       "buy_price": 11.7,
       "latest_price": 11.7,
-      "roi": -0.0
+      "roi": -0.0,
+      "daily_change": -1.68
     },
     {
       "id": "1590",
@@ -28,7 +29,8 @@
       "note": "年線873.02",
       "buy_price": 940.0,
       "latest_price": 940.0,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": -2.89
     },
     {
       "id": "1714",
@@ -43,7 +45,8 @@
       "note": "年線8.07",
       "buy_price": 8.4,
       "latest_price": 8.4,
-      "roi": -0.0
+      "roi": -0.0,
+      "daily_change": -0.47
     },
     {
       "id": "2337",
@@ -58,7 +61,8 @@
       "note": "年線23.47",
       "buy_price": 37.15,
       "latest_price": 37.15,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": -2.11
     },
     {
       "id": "2495",
@@ -73,7 +77,8 @@
       "note": "年線25.25",
       "buy_price": 28.4,
       "latest_price": 28.4,
-      "roi": -0.0
+      "roi": -0.0,
+      "daily_change": 0.0
     },
     {
       "id": "2820",
@@ -88,7 +93,8 @@
       "note": "年線15.66",
       "buy_price": 16.85,
       "latest_price": 16.85,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": 0.3
     },
     {
       "id": "2836",
@@ -103,7 +109,8 @@
       "note": "年線11.6",
       "buy_price": 12.4,
       "latest_price": 12.4,
-      "roi": -0.0
+      "roi": -0.0,
+      "daily_change": 0.4
     },
     {
       "id": "2845",
@@ -118,7 +125,8 @@
       "note": "年線12.68",
       "buy_price": 12.75,
       "latest_price": 12.75,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": 0.39
     },
     {
       "id": "2883",
@@ -133,7 +141,8 @@
       "note": "年線16.24",
       "buy_price": 17.1,
       "latest_price": 17.1,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": -0.29
     },
     {
       "id": "3010",
@@ -148,7 +157,8 @@
       "note": "年線102.53",
       "buy_price": 120.5,
       "latest_price": 120.5,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": 0.42
     },
     {
       "id": "3028",
@@ -163,7 +173,8 @@
       "note": "年線32.71",
       "buy_price": 38.75,
       "latest_price": 38.75,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": 0.13
     },
     {
       "id": "3046",
@@ -178,7 +189,8 @@
       "note": "年線47.46",
       "buy_price": 52.4,
       "latest_price": 52.4,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": -1.13
     },
     {
       "id": "5515",
@@ -193,7 +205,8 @@
       "note": "年線27.32",
       "buy_price": 33.9,
       "latest_price": 33.9,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": 0.59
     },
     {
       "id": "6209",
@@ -208,7 +221,8 @@
       "note": "年線33.44",
       "buy_price": 59.0,
       "latest_price": 59.0,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": -5.14
     },
     {
       "id": "6541",
@@ -223,7 +237,8 @@
       "note": "年線58.71",
       "buy_price": 60.6,
       "latest_price": 60.6,
-      "roi": -0.0
+      "roi": -0.0,
+      "daily_change": 1.17
     },
     {
       "id": "1784",
@@ -238,7 +253,8 @@
       "note": "年線80.26",
       "buy_price": 102.5,
       "latest_price": 102.5,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": -3.76
     },
     {
       "id": "3162",
@@ -253,7 +269,8 @@
       "note": "年線49.59",
       "buy_price": 60.7,
       "latest_price": 60.7,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": -2.57
     },
     {
       "id": "4123",
@@ -268,7 +285,8 @@
       "note": "年線36.69",
       "buy_price": 37.6,
       "latest_price": 37.6,
-      "roi": -0.0
+      "roi": -0.0,
+      "daily_change": 0.0
     },
     {
       "id": "6261",
@@ -283,7 +301,8 @@
       "note": "年線61.49",
       "buy_price": 67.8,
       "latest_price": 67.8,
-      "roi": 0.0
+      "roi": 0.0,
+      "daily_change": 1.95
     }
   ]
 }
