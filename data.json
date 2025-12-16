@@ -1,7 +1,19 @@
 {
-  "date": "2025/12/16 09:50:34",
+  "date": "2025/12/16 10:26:55",
   "source": "GitHub Actions Auto Scan",
   "list": [
+    {
+      "id": "1312",
+      "name": "國喬",
+      "group": "塑膠",
+      "type": "上市",
+      "price": 11.7,
+      "ma5": 11.7,
+      "ma10": 11.66,
+      "changeRate": -1.68,
+      "isValid": true,
+      "note": "均線糾結 / 準備突破"
+    },
     {
       "id": "1528",
       "name": "恩德",
@@ -12,7 +24,7 @@
       "ma10": 15.43,
       "changeRate": 1.57,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "1590",
@@ -24,7 +36,7 @@
       "ma10": 926.1,
       "changeRate": -2.89,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "1714",
@@ -36,19 +48,19 @@
       "ma10": 8.3,
       "changeRate": -0.47,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
-      "id": "2236",
-      "name": "百達-KY",
-      "group": "汽車",
+      "id": "2337",
+      "name": "旺宏",
+      "group": "半導體",
       "type": "上市",
-      "price": 113.5,
-      "ma5": 114.9,
-      "ma10": 109.03,
-      "changeRate": -1.3,
+      "price": 37.15,
+      "ma5": 37.32,
+      "ma10": 36.22,
+      "changeRate": -2.11,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "2495",
@@ -60,7 +72,7 @@
       "ma10": 27.6,
       "changeRate": 0.0,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "2820",
@@ -72,7 +84,7 @@
       "ma10": 16.72,
       "changeRate": 0.3,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "2836",
@@ -84,7 +96,19 @@
       "ma10": 12.21,
       "changeRate": 0.4,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
+    },
+    {
+      "id": "2845",
+      "name": "遠東銀",
+      "group": "金融保險",
+      "type": "上市",
+      "price": 12.75,
+      "ma5": 12.7,
+      "ma10": 12.69,
+      "changeRate": 0.39,
+      "isValid": true,
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "2883",
@@ -96,7 +120,7 @@
       "ma10": 16.5,
       "changeRate": -0.29,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "3010",
@@ -108,43 +132,31 @@
       "ma10": 115.1,
       "changeRate": 0.42,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
-      "id": "3033",
-      "name": "威健",
+      "id": "3028",
+      "name": "增你強",
       "group": "電子通路",
       "type": "上市",
-      "price": 30.65,
-      "ma5": 30.62,
-      "ma10": 30.48,
-      "changeRate": 0.82,
+      "price": 38.75,
+      "ma5": 38.68,
+      "ma10": 38.02,
+      "changeRate": 0.13,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
-      "id": "3055",
-      "name": "蔚華科",
-      "group": "電子通路",
+      "id": "3046",
+      "name": "建碁",
+      "group": "電腦及週邊設備",
       "type": "上市",
-      "price": 77.4,
-      "ma5": 77.3,
-      "ma10": 72.26,
-      "changeRate": -0.77,
+      "price": 52.4,
+      "ma5": 52.26,
+      "ma10": 50.88,
+      "changeRate": -1.13,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
-    },
-    {
-      "id": "4306",
-      "name": "炎洲",
-      "group": "塑膠",
-      "type": "上市",
-      "price": 14.1,
-      "ma5": 14.07,
-      "ma10": 13.98,
-      "changeRate": -1.05,
-      "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "5515",
@@ -156,19 +168,31 @@
       "ma10": 32.74,
       "changeRate": 0.59,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     },
     {
-      "id": "5534",
-      "name": "長虹",
-      "group": "建材營造",
+      "id": "6209",
+      "name": "今國光",
+      "group": "光電",
       "type": "上市",
-      "price": 80.2,
-      "ma5": 79.08,
-      "ma10": 78.24,
-      "changeRate": 0.25,
+      "price": 59.0,
+      "ma5": 60.78,
+      "ma10": 58.77,
+      "changeRate": -5.14,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
+    },
+    {
+      "id": "6541",
+      "name": "泰福-KY",
+      "group": "生技醫療",
+      "type": "上市",
+      "price": 60.6,
+      "ma5": 59.18,
+      "ma10": 58.6,
+      "changeRate": 1.17,
+      "isValid": true,
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "0055",
@@ -180,7 +204,43 @@
       "ma10": 30.45,
       "changeRate": 0.03,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
+    },
+    {
+      "id": "1784",
+      "name": "訊聯",
+      "group": "生技醫療",
+      "type": "上櫃",
+      "price": 102.5,
+      "ma5": 101.98,
+      "ma10": 100.58,
+      "changeRate": -3.76,
+      "isValid": true,
+      "note": "均線糾結 / 準備突破"
+    },
+    {
+      "id": "3162",
+      "name": "精確",
+      "group": "電機機械",
+      "type": "上櫃",
+      "price": 60.7,
+      "ma5": 61.82,
+      "ma10": 60.5,
+      "changeRate": -2.57,
+      "isValid": true,
+      "note": "均線糾結 / 準備突破"
+    },
+    {
+      "id": "4123",
+      "name": "晟德",
+      "group": "生技醫療",
+      "type": "上櫃",
+      "price": 37.6,
+      "ma5": 37.27,
+      "ma10": 37.3,
+      "changeRate": 0.0,
+      "isValid": true,
+      "note": "均線糾結 / 準備突破"
     },
     {
       "id": "6261",
@@ -192,19 +252,7 @@
       "ma10": 65.4,
       "changeRate": 1.95,
       "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
-    },
-    {
-      "id": "6425",
-      "name": "易發",
-      "group": "電機機械",
-      "type": "上櫃",
-      "price": 86.0,
-      "ma5": 85.22,
-      "ma10": 82.89,
-      "changeRate": 1.06,
-      "isValid": true,
-      "note": "RSI強勢 / 量縮整理"
+      "note": "均線糾結 / 準備突破"
     }
   ]
 }
