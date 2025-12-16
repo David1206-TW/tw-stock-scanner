@@ -1,30 +1,18 @@
 {
-  "date": "2025/12/16 05:14:00",
+  "date": "2025/12/16 05:35:30",
   "source": "GitHub Actions Auto Scan",
   "list": [
-    {
-      "id": "1516",
-      "name": "川飛",
-      "group": "其他",
-      "type": "上市",
-      "price": 20.1,
-      "ma5": 20.09,
-      "ma10": 20.07,
-      "changeRate": -0.25,
-      "isValid": true,
-      "note": "量比0.56 / 年線16.71"
-    },
     {
       "id": "1560",
       "name": "中砂",
       "group": "電機機械",
       "type": "上市",
-      "price": 368.0,
-      "ma5": 365.5,
-      "ma10": 354.3,
-      "changeRate": -2.39,
+      "price": 369.0,
+      "ma5": 365.7,
+      "ma10": 354.4,
+      "changeRate": -2.12,
       "isValid": true,
-      "note": "量比0.96 / 年線294.69"
+      "note": "量比0.98 / 年線294.69"
     },
     {
       "id": "1714",
@@ -36,43 +24,31 @@
       "ma10": 8.3,
       "changeRate": -0.47,
       "isValid": true,
-      "note": "量比0.58 / 年線7.94"
+      "note": "量比0.6 / 年線7.94"
     },
     {
       "id": "2010",
       "name": "春源",
       "group": "鋼鐵",
       "type": "上市",
-      "price": 20.6,
-      "ma5": 20.55,
-      "ma10": 20.54,
-      "changeRate": -1.2,
+      "price": 20.65,
+      "ma5": 20.56,
+      "ma10": 20.55,
+      "changeRate": -0.96,
       "isValid": true,
-      "note": "量比0.95 / 年線19.06"
+      "note": "量比0.99 / 年線19.06"
     },
     {
       "id": "2344",
       "name": "華邦電",
       "group": "DRAM",
       "type": "上市",
-      "price": 70.7,
-      "ma5": 70.46,
-      "ma10": 66.69,
-      "changeRate": -0.56,
+      "price": 70.6,
+      "ma5": 70.44,
+      "ma10": 66.68,
+      "changeRate": -0.7,
       "isValid": true,
-      "note": "量比0.71 / 年線26.43"
-    },
-    {
-      "id": "2369",
-      "name": "菱生",
-      "group": "半導體",
-      "type": "上市",
-      "price": 23.35,
-      "ma5": 23.08,
-      "ma10": 22.6,
-      "changeRate": 1.3,
-      "isValid": true,
-      "note": "量比1.0 / 年線17.07"
+      "note": "量比0.74 / 年線26.43"
     },
     {
       "id": "2467",
@@ -84,103 +60,67 @@
       "ma10": 226.1,
       "changeRate": -1.63,
       "isValid": true,
-      "note": "量比0.6 / 年線169.22"
+      "note": "量比0.62 / 年線169.22"
     },
     {
       "id": "2836",
       "name": "高雄銀",
       "group": "金融保險",
       "type": "上市",
-      "price": 12.35,
-      "ma5": 12.3,
-      "ma10": 12.2,
-      "changeRate": 0.0,
+      "price": 12.4,
+      "ma5": 12.31,
+      "ma10": 12.21,
+      "changeRate": 0.4,
       "isValid": true,
-      "note": "量比0.5 / 年線11.43"
+      "note": "量比0.54 / 年線11.43"
     },
     {
       "id": "2845",
       "name": "遠東銀",
       "group": "金融保險",
       "type": "上市",
-      "price": 12.7,
-      "ma5": 12.69,
+      "price": 12.75,
+      "ma5": 12.7,
       "ma10": 12.69,
-      "changeRate": 0.0,
+      "changeRate": 0.39,
       "isValid": true,
-      "note": "量比0.69 / 年線12.34"
-    },
-    {
-      "id": "2908",
-      "name": "特力",
-      "group": "貿易百貨",
-      "type": "上市",
-      "price": 20.45,
-      "ma5": 20.42,
-      "ma10": 20.4,
-      "changeRate": 0.0,
-      "isValid": true,
-      "note": "量比0.74 / 年線19.77"
-    },
-    {
-      "id": "3010",
-      "name": "華立",
-      "group": "電子通路",
-      "type": "上市",
-      "price": 120.0,
-      "ma5": 118.5,
-      "ma10": 115.05,
-      "changeRate": 0.0,
-      "isValid": true,
-      "note": "量比0.98 / 年線99.71"
+      "note": "量比0.71 / 年線12.34"
     },
     {
       "id": "3025",
       "name": "星通",
       "group": "通信網路",
       "type": "上市",
-      "price": 61.5,
-      "ma5": 60.68,
-      "ma10": 57.31,
-      "changeRate": -2.69,
+      "price": 61.6,
+      "ma5": 60.7,
+      "ma10": 57.32,
+      "changeRate": -2.53,
       "isValid": true,
-      "note": "量比0.46 / 年線51.82"
+      "note": "量比0.48 / 年線51.82"
     },
     {
       "id": "4123",
       "name": "晟德",
       "group": "生技醫療",
       "type": "上櫃",
-      "price": 37.65,
-      "ma5": 37.28,
-      "ma10": 37.31,
-      "changeRate": 0.13,
+      "price": 37.7,
+      "ma5": 37.29,
+      "ma10": 37.32,
+      "changeRate": 0.27,
       "isValid": true,
-      "note": "量比0.82 / 年線36.09"
-    },
-    {
-      "id": "4130",
-      "name": "健亞",
-      "group": "生技醫療",
-      "type": "上櫃",
-      "price": 25.2,
-      "ma5": 24.92,
-      "ma10": 24.62,
-      "changeRate": 0.2,
-      "isValid": true,
-      "note": "量比0.92 / 年線20.92"
+      "note": "量比0.91 / 年線36.09"
     },
     {
       "id": "4991",
       "name": "環宇-KY",
       "group": "半導體",
       "type": "上櫃",
-      "price": 180.0,
-      "ma5": 175.7,
-      "ma10": 169.85,
-      "changeRate": -1.37,
+      "price": 181.0,
+      "ma5": 175.9,
+      "ma10": 169.95,
+      "changeRate": -0.82,
       "isValid": true,
-      "note": "量比0.84 / 年線132.47"
+      "note": "量比0.9 / 年線132.47"
     }
   ]
 }
