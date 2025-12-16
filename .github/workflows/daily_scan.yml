@@ -32,9 +32,16 @@ jobs:
       run: |
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
+        
+        # 1. 加入當日掃描結果
         git add data.json
-        git add industry.json
-        # 【新增】加入歷史績效檔
+        
+        # 2. 【修改】加入您的 CMoney 產業快取檔
+        git add cmoney_industry_cache.json
+        
+        # 3. 加入歷史績效檔
         git add history.json
-        git commit -m "Auto-update: Stock Data + Industry + History ROI [skip ci]" || exit 0
+        
+        # 提交並推送 (如果沒有變更則略過)
+        git commit -m "Auto-update: Stock Data + Industry Cache + History [skip ci]" || exit 0
         git push
