@@ -282,10 +282,18 @@
                         return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
                     });
                     
-                    // 更新排序圖示
-                    document.querySelectorAll('.sort-icon').forEach(el => el.className = 'sort-icon fa-solid fa-sort text-[10px] ml-0.5 text-slate-600');
-                    const activeIcon = document.getElementById(`sort-icon-${this.state.sortBy}`);
-                    if(activeIcon) activeIcon.className = `sort-icon fa-solid fa-sort-${this.state.sortDir === 'asc' ? 'up' : 'down'} text-[10px] ml-0.5 text-blue-400`;
+                    // 【修復點】更新排序圖示：使用 setAttribute('class', ...) 並增加錯誤防護
+                    try {
+                         document.querySelectorAll('.sort-icon').forEach(el => {
+                            el.setAttribute('class', 'sort-icon fa-solid fa-sort text-[10px] ml-0.5 text-slate-600');
+                        });
+                        const activeIcon = document.getElementById(`sort-icon-${this.state.sortBy}`);
+                        if(activeIcon) {
+                            activeIcon.setAttribute('class', `sort-icon fa-solid fa-sort-${this.state.sortDir === 'asc' ? 'up' : 'down'} text-[10px] ml-0.5 text-blue-400`);
+                        }
+                    } catch(e) {
+                         console.warn("排序圖示更新失敗 (Rtml 環境限制):", e);
+                    }
                 }
 
                 this.displayList = list;
@@ -328,7 +336,7 @@
                 if (!owner || !repo || !token) { alert("請先至設定頁填寫 Token"); this.switchTab('admin'); return; }
                 if (!confirm("確定要更新報價嗎？\n(將觸發後端 Python 抓取最新真實報價)")) return;
 
-                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i><span class="text-[10px] font-medium text-blue-400">執行中</span>`;
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
                 this.ui.btnCloudUpdate.disabled = true;
 
                 try {
@@ -399,7 +407,7 @@
                 if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-500">無符合資料</td></tr>`; return; }
                 const html = list.map(stock => {
                     const rate = parseFloat(stock.changeRate||0);
-                    const price = stock.price; // 永遠使用 JSON 裡的真實價格
+                    const price = stock.price.toFixed(2);
                     
                     let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-white font-bold');
                     let rateDisplay = rate > 0 ? `+${rate.toFixed(2)}%` : `${rate.toFixed(2)}%`;
