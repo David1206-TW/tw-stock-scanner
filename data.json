@@ -1,19 +1,7 @@
 {
-  "date": "2025/12/16 09:12:59",
+  "date": "2025/12/16 09:50:34",
   "source": "GitHub Actions Auto Scan",
   "list": [
-    {
-      "id": "1519",
-      "name": "華城",
-      "group": "重電",
-      "type": "上市",
-      "price": 798.0,
-      "ma5": 789.4,
-      "ma10": 752.5,
-      "changeRate": -0.5,
-      "isValid": true,
-      "note": "量比0.82 / 年線540.88"
-    },
     {
       "id": "1528",
       "name": "恩德",
@@ -24,19 +12,19 @@
       "ma10": 15.43,
       "changeRate": 1.57,
       "isValid": true,
-      "note": "量比0.92 / 年線14.71"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
-      "id": "1560",
-      "name": "中砂",
+      "id": "1590",
+      "name": "亞德客-KY",
       "group": "電機機械",
       "type": "上市",
-      "price": 370.0,
-      "ma5": 365.9,
-      "ma10": 354.5,
-      "changeRate": -1.86,
+      "price": 940.0,
+      "ma5": 940.4,
+      "ma10": 926.1,
+      "changeRate": -2.89,
       "isValid": true,
-      "note": "量比1.06 / 年線294.69"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
       "id": "1714",
@@ -48,103 +36,31 @@
       "ma10": 8.3,
       "changeRate": -0.47,
       "isValid": true,
-      "note": "量比0.62 / 年線7.94"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
-      "id": "2010",
-      "name": "春源",
-      "group": "鋼鐵",
+      "id": "2236",
+      "name": "百達-KY",
+      "group": "汽車",
       "type": "上市",
-      "price": 20.65,
-      "ma5": 20.56,
-      "ma10": 20.55,
-      "changeRate": -0.96,
+      "price": 113.5,
+      "ma5": 114.9,
+      "ma10": 109.03,
+      "changeRate": -1.3,
       "isValid": true,
-      "note": "量比1.06 / 年線19.06"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
-      "id": "2313",
-      "name": "華通",
-      "group": "電子零組件",
-      "type": "上市",
-      "price": 86.3,
-      "ma5": 85.82,
-      "ma10": 85.04,
-      "changeRate": -5.16,
-      "isValid": true,
-      "note": "量比1.8 / 年線67.97"
-    },
-    {
-      "id": "2323",
-      "name": "中環",
-      "group": "光電",
-      "type": "上市",
-      "price": 10.8,
-      "ma5": 10.73,
-      "ma10": 10.24,
-      "changeRate": -2.7,
-      "isValid": true,
-      "note": "量比0.57 / 年線8.76"
-    },
-    {
-      "id": "2331",
-      "name": "精英",
+      "id": "2495",
+      "name": "普安",
       "group": "電腦及週邊設備",
       "type": "上市",
-      "price": 24.1,
-      "ma5": 23.82,
-      "ma10": 22.51,
-      "changeRate": -7.66,
+      "price": 28.4,
+      "ma5": 28.57,
+      "ma10": 27.6,
+      "changeRate": 0.0,
       "isValid": true,
-      "note": "量比0.57 / 年線19.47"
-    },
-    {
-      "id": "2369",
-      "name": "菱生",
-      "group": "半導體",
-      "type": "上市",
-      "price": 23.8,
-      "ma5": 23.17,
-      "ma10": 22.64,
-      "changeRate": 3.25,
-      "isValid": true,
-      "note": "量比1.3 / 年線17.07"
-    },
-    {
-      "id": "2467",
-      "name": "志聖",
-      "group": "電子零組件",
-      "type": "上市",
-      "price": 241.5,
-      "ma5": 239.1,
-      "ma10": 226.1,
-      "changeRate": -1.63,
-      "isValid": true,
-      "note": "量比0.7 / 年線169.22"
-    },
-    {
-      "id": "2491",
-      "name": "吉祥全",
-      "group": "光電",
-      "type": "上市",
-      "price": 21.5,
-      "ma5": 20.59,
-      "ma10": 20.52,
-      "changeRate": 7.5,
-      "isValid": true,
-      "note": "量比1.21 / 年線12.56"
-    },
-    {
-      "id": "2801",
-      "name": "彰銀",
-      "group": "金融保險",
-      "type": "上市",
-      "price": 20.6,
-      "ma5": 20.6,
-      "ma10": 20.56,
-      "changeRate": -0.96,
-      "isValid": true,
-      "note": "量比1.16 / 年線18.16"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
       "id": "2820",
@@ -156,7 +72,7 @@
       "ma10": 16.72,
       "changeRate": 0.3,
       "isValid": true,
-      "note": "量比1.21 / 年線15.28"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
       "id": "2836",
@@ -168,91 +84,19 @@
       "ma10": 12.21,
       "changeRate": 0.4,
       "isValid": true,
-      "note": "量比0.58 / 年線11.43"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
-      "id": "2867",
-      "name": "三商壽",
+      "id": "2883",
+      "name": "開發金",
       "group": "金融保險",
       "type": "上市",
-      "price": 7.86,
-      "ma5": 7.74,
-      "ma10": 7.57,
-      "changeRate": 0.64,
+      "price": 17.1,
+      "ma5": 16.93,
+      "ma10": 16.5,
+      "changeRate": -0.29,
       "isValid": true,
-      "note": "量比1.1 / 年線6.07"
-    },
-    {
-      "id": "2880",
-      "name": "華南金",
-      "group": "金融保險",
-      "type": "上市",
-      "price": 31.35,
-      "ma5": 30.96,
-      "ma10": 30.79,
-      "changeRate": 0.48,
-      "isValid": true,
-      "note": "量比1.51 / 年線27.21"
-    },
-    {
-      "id": "2882",
-      "name": "國泰金",
-      "group": "金融保險",
-      "type": "上市",
-      "price": 70.2,
-      "ma5": 69.62,
-      "ma10": 69.16,
-      "changeRate": 0.14,
-      "isValid": true,
-      "note": "量比1.61 / 年線62.49"
-    },
-    {
-      "id": "2885",
-      "name": "元大金",
-      "group": "金融保險",
-      "type": "上市",
-      "price": 38.8,
-      "ma5": 38.04,
-      "ma10": 37.74,
-      "changeRate": 1.04,
-      "isValid": true,
-      "note": "量比1.44 / 年線32.47"
-    },
-    {
-      "id": "2887",
-      "name": "台新金",
-      "group": "金融保險",
-      "type": "上市",
-      "price": 20.05,
-      "ma5": 19.44,
-      "ma10": 19.27,
-      "changeRate": 3.62,
-      "isValid": true,
-      "note": "量比2.19 / 年線16.76"
-    },
-    {
-      "id": "2890",
-      "name": "永豐金",
-      "group": "金融保險",
-      "type": "上市",
-      "price": 28.05,
-      "ma5": 27.65,
-      "ma10": 27.52,
-      "changeRate": 1.08,
-      "isValid": true,
-      "note": "量比1.18 / 年線23.07"
-    },
-    {
-      "id": "2891",
-      "name": "中信金",
-      "group": "金融保險",
-      "type": "上市",
-      "price": 46.65,
-      "ma5": 45.95,
-      "ma10": 45.18,
-      "changeRate": -0.21,
-      "isValid": true,
-      "note": "量比1.53 / 年線40.29"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
       "id": "3010",
@@ -264,19 +108,19 @@
       "ma10": 115.1,
       "changeRate": 0.42,
       "isValid": true,
-      "note": "量比1.12 / 年線99.71"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
-      "id": "3046",
-      "name": "建碁",
-      "group": "電腦及週邊設備",
+      "id": "3033",
+      "name": "威健",
+      "group": "電子通路",
       "type": "上市",
-      "price": 52.4,
-      "ma5": 52.26,
-      "ma10": 50.88,
-      "changeRate": -1.13,
+      "price": 30.65,
+      "ma5": 30.62,
+      "ma10": 30.48,
+      "changeRate": 0.82,
       "isValid": true,
-      "note": "量比0.49 / 年線46.07"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
       "id": "3055",
@@ -288,7 +132,19 @@
       "ma10": 72.26,
       "changeRate": -0.77,
       "isValid": true,
-      "note": "量比0.78 / 年線61.12"
+      "note": "RSI強勢 / 量縮整理"
+    },
+    {
+      "id": "4306",
+      "name": "炎洲",
+      "group": "塑膠",
+      "type": "上市",
+      "price": 14.1,
+      "ma5": 14.07,
+      "ma10": 13.98,
+      "changeRate": -1.05,
+      "isValid": true,
+      "note": "RSI強勢 / 量縮整理"
     },
     {
       "id": "5515",
@@ -300,55 +156,19 @@
       "ma10": 32.74,
       "changeRate": 0.59,
       "isValid": true,
-      "note": "量比0.71 / 年線26.16"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
-      "id": "6431",
-      "name": "光麗-KY",
-      "group": "生技醫療",
+      "id": "5534",
+      "name": "長虹",
+      "group": "建材營造",
       "type": "上市",
-      "price": 30.8,
-      "ma5": 30.27,
-      "ma10": 28.7,
-      "changeRate": 1.32,
+      "price": 80.2,
+      "ma5": 79.08,
+      "ma10": 78.24,
+      "changeRate": 0.25,
       "isValid": true,
-      "note": "量比0.96 / 年線17.44"
-    },
-    {
-      "id": "6442",
-      "name": "光聖",
-      "group": "通信網路",
-      "type": "上市",
-      "price": 1335.0,
-      "ma5": 1319.0,
-      "ma10": 1263.0,
-      "changeRate": -5.32,
-      "isValid": true,
-      "note": "量比1.3 / 年線651.32"
-    },
-    {
-      "id": "6515",
-      "name": "穎崴",
-      "group": "半導體",
-      "type": "上市",
-      "price": 2770.0,
-      "ma5": 2741.0,
-      "ma10": 2661.5,
-      "changeRate": -0.54,
-      "isValid": true,
-      "note": "量比0.84 / 年線1456.2"
-    },
-    {
-      "id": "9902",
-      "name": "台火",
-      "group": "其他",
-      "type": "上市",
-      "price": 17.9,
-      "ma5": 17.5,
-      "ma10": 17.31,
-      "changeRate": -0.28,
-      "isValid": true,
-      "note": "量比0.83 / 年線16.18"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
       "id": "0055",
@@ -360,67 +180,7 @@
       "ma10": 30.45,
       "changeRate": 0.03,
       "isValid": true,
-      "note": "量比0.27 / 年線28.0"
-    },
-    {
-      "id": "1784",
-      "name": "訊聯",
-      "group": "生技醫療",
-      "type": "上櫃",
-      "price": 102.5,
-      "ma5": 101.98,
-      "ma10": 100.58,
-      "changeRate": -3.76,
-      "isValid": true,
-      "note": "量比0.73 / 年線79.22"
-    },
-    {
-      "id": "3081",
-      "name": "聯亞",
-      "group": "光學封裝",
-      "type": "上櫃",
-      "price": 606.0,
-      "ma5": 599.8,
-      "ma10": 578.5,
-      "changeRate": -1.78,
-      "isValid": true,
-      "note": "量比2.7 / 年線387.73"
-    },
-    {
-      "id": "3349",
-      "name": "寶德",
-      "group": "電腦及週邊設備",
-      "type": "上櫃",
-      "price": 29.9,
-      "ma5": 29.22,
-      "ma10": 28.79,
-      "changeRate": 2.4,
-      "isValid": true,
-      "note": "量比1.56 / 年線18.99"
-    },
-    {
-      "id": "3491",
-      "name": "昇達科",
-      "group": "通信網路",
-      "type": "上櫃",
-      "price": 614.0,
-      "ma5": 605.4,
-      "ma10": 577.8,
-      "changeRate": -2.23,
-      "isValid": true,
-      "note": "量比1.05 / 年線397.07"
-    },
-    {
-      "id": "4991",
-      "name": "環宇-KY",
-      "group": "半導體",
-      "type": "上櫃",
-      "price": 183.0,
-      "ma5": 176.3,
-      "ma10": 170.15,
-      "changeRate": 0.27,
-      "isValid": true,
-      "note": "量比1.04 / 年線132.48"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
       "id": "6261",
@@ -432,19 +192,7 @@
       "ma10": 65.4,
       "changeRate": 1.95,
       "isValid": true,
-      "note": "量比0.77 / 年線58.76"
-    },
-    {
-      "id": "6291",
-      "name": "沛亨",
-      "group": "半導體",
-      "type": "上櫃",
-      "price": 190.5,
-      "ma5": 181.7,
-      "ma10": 179.75,
-      "changeRate": 4.67,
-      "isValid": true,
-      "note": "量比1.67 / 年線114.91"
+      "note": "RSI強勢 / 量縮整理"
     },
     {
       "id": "6425",
@@ -456,43 +204,7 @@
       "ma10": 82.89,
       "changeRate": 1.06,
       "isValid": true,
-      "note": "量比0.72 / 年線58.44"
-    },
-    {
-      "id": "6664",
-      "name": "群翊",
-      "group": "電子零組件",
-      "type": "上櫃",
-      "price": 313.5,
-      "ma5": 310.1,
-      "ma10": 290.95,
-      "changeRate": 3.12,
-      "isValid": true,
-      "note": "量比1.14 / 年線223.77"
-    },
-    {
-      "id": "8027",
-      "name": "鈦昇",
-      "group": "電機機械",
-      "type": "上櫃",
-      "price": 108.0,
-      "ma5": 105.3,
-      "ma10": 103.23,
-      "changeRate": 0.93,
-      "isValid": true,
-      "note": "量比1.79 / 年線84.58"
-    },
-    {
-      "id": "8390",
-      "name": "金益鼎",
-      "group": "綠能環保",
-      "type": "上櫃",
-      "price": 88.6,
-      "ma5": 87.38,
-      "ma10": 85.07,
-      "changeRate": -2.85,
-      "isValid": true,
-      "note": "量比1.03 / 年線64.8"
+      "note": "RSI強勢 / 量縮整理"
     }
   ]
 }
