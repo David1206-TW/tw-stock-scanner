@@ -1,21 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V15 (雙策略引擎版)
+台股自動掃描策略機器人 (Scanner Bot) - V20 (雙策略完整修復版)
 
-【功能升級】
-1. 整合雙策略：同時執行「拉回佈局(Original)」與「VCP壓縮(New)」掃描。
-2. 效率優化：單次下載數據，同時進行兩種邏輯運算。
+【功能說明】
+1. 雙策略引擎：同時執行「拉回佈局」與「VCP壓縮」掃描。
+2. 資料修正：支援解析複雜的產業分類 JSON 格式。
+3. 績效追蹤：自動記錄歷史名單並計算 ROI。
 
-【策略 A：拉回佈局 (Original Trend & Pullback)】
-1. 收盤 > MA240, MA10 > MA20 > MA60。
-2. 乖離率 < 25%, 均線糾結 < 8%。
-3. 量縮整理 (今日量 < 5日均量), 收盤 > MA10。
+【策略 A：拉回佈局 (Original Pullback)】
+   - 核心概念：趨勢向上但在休息，量縮回檔找買點。
+   1. 長線保護：收盤 > MA240 (年線)。
+   2. 多頭排列：MA10 > MA20 > MA60。
+   3. 位階安全：乖離率 (收盤-季線)/季線 < 25%。
+   4. 均線糾結：MA5, MA10, MA20 差異 < 8%。
+   5. 量縮整理：今日成交量 < 5日均量 (關鍵！)。
+   6. 支撐確認：收盤 > MA10。
 
-【策略 B：VCP 技術面 (Volatility Contraction Pattern)】
-1. 多頭排列: MA5 > MA10 > MA20, 收盤 > MA240。
-2. 極致壓縮: 布林帶寬 (BandWidth) < 12%。
-3. 均線糾結: MA5/10/20 差異 < 2.5%。
-4. 流動性: 20日均量 > 500張。
+【策略 B：VCP 技術面 (Volatility Contraction)】
+   - 核心概念：價格波動收縮，準備突破。
+   1. 強勢多頭：MA5 > MA10 > MA20，且收盤 > MA240。
+   2. 極致壓縮：布林帶寬 (BandWidth) < 12%。
+   3. 均線糾結：MA5, MA10, MA20 差異 < 2.5%。
+   4. 流動性：20日均量 > 500張。
 """
 
 import yfinance as yf
@@ -29,7 +35,6 @@ from datetime import datetime
 # ==========================================
 # 1. 資料庫管理
 # ==========================================
-# 【修改】改用您的 CMoney 產業快取檔
 DB_INDUSTRY = 'cmoney_industry_cache.json'
 DB_HISTORY = 'history.json' 
 
@@ -47,23 +52,27 @@ def save_json(filename, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 # ==========================================
-# 2. 次產業對照表 (種子資料)
+# 2. 產業分類解析邏輯 (V19 Fix)
 # ==========================================
-SEED_INDUSTRY_MAP = {
-    # 【修改】已移除硬編碼資料，全面使用 cmoney_industry_cache.json
-}
+SEED_INDUSTRY_MAP = {} # 已移除硬編碼
 
 def get_stock_group(code, db_data):
-    # 1. 優先查您的 cmoney_industry_cache.json (已載入至 db_data)
-    if code in db_data: return db_data[code]
+    group = "其他"
     
-    # 2. 查種子表 (目前為空)
-    if code in SEED_INDUSTRY_MAP: return SEED_INDUSTRY_MAP[code]
+    if code in db_data:
+        raw_data = db_data[code]
+        if isinstance(raw_data, dict):
+            if 'sub' in raw_data and raw_data['sub']: group = raw_data['sub']
+            elif 'main' in raw_data and raw_data['main']: group = raw_data['main']
+            elif 'industry' in raw_data: group = raw_data['industry']
+        elif isinstance(raw_data, str):
+            group = raw_data
+            
+    elif code in twstock.codes:
+        group = twstock.codes[code].group.replace("工業", "").replace("業", "")
     
-    # 3. 若都沒找到，才使用 twstock 官方大分類
-    if code in twstock.codes:
-        return twstock.codes[code].group.replace("工業", "").replace("業", "")
-    return "其他"
+    if not isinstance(group, str): group = str(group)
+    return group
 
 def get_all_tickers():
     twse = twstock.twse
@@ -76,7 +85,7 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 4-A. 策略邏輯：原版 (Original)
+# 4-A. 策略邏輯：拉回佈局 (Original)
 # ==========================================
 def check_strategy_original(df):
     if len(df) < 250: return False, None
@@ -100,59 +109,56 @@ def check_strategy_original(df):
     curr_vol_ma5 = vol_ma5.iloc[-1]
 
     if math.isnan(curr_ma240) or curr_ma240 <= 0: return False, None
-    if curr_vol_ma5 < 500000: return False, None # 500張
+    if curr_vol_ma5 < 500000: return False, None 
 
-    # 條件
-    cond_life_line = curr_c > curr_ma240
-    cond_trend = (curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)
-    bias_ma60 = (curr_c - curr_ma60) / curr_ma60
-    cond_not_too_high = bias_ma60 < 0.25
+    # 1. 長線保護 (年線)
+    if curr_c <= curr_ma240: return False, None
     
+    # 2. 多頭排列
+    if not ((curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)): return False, None
+    
+    # 3. 位階控制 (乖離 < 25%)
+    bias_ma60 = (curr_c - curr_ma60) / curr_ma60
+    if bias_ma60 >= 0.25: return False, None
+    
+    # 4. 均線糾結 (5, 10, 20 差異 < 8%)
     mas = [curr_ma5, curr_ma10, curr_ma20]
     ma_divergence = (max(mas) - min(mas)) / min(mas)
-    cond_consolidation = ma_divergence < 0.08
+    if ma_divergence >= 0.08: return False, None
     
-    # 【確認新增】量縮整理：今日成交量 < 5日均量
-    cond_vol_dry = curr_v < curr_vol_ma5
+    # 5. 量縮整理 (今日量 < 5日均量)
+    if curr_v >= curr_vol_ma5: return False, None
     
-    cond_support = curr_c > curr_ma10
+    # 6. 支撐確認 (收盤 > MA10)
+    if curr_c <= curr_ma10: return False, None
 
-    is_match = cond_life_line and cond_trend and cond_not_too_high and cond_consolidation and cond_vol_dry and cond_support
-    
-    if is_match:
-        return True, {
-            "tag": "拉回佈局",
-            "price": round(curr_c, 2),
-            "ma5": round(curr_ma5, 2),
-            "ma10": round(curr_ma10, 2),
-            "ma240": round(curr_ma240, 2),
-            "vol_ratio": round(curr_v / curr_vol_ma5, 2)
-        }
-    return False, None
+    return True, {
+        "tag": "拉回佈局",
+        "price": round(curr_c, 2),
+        "ma5": round(curr_ma5, 2),
+        "ma10": round(curr_ma10, 2),
+        "ma240": round(curr_ma240, 2),
+        "vol_ratio": round(curr_v / curr_vol_ma5, 2)
+    }
 
 # ==========================================
-# 4-B. 策略邏輯：VCP 技術面 (New)
+# 4-B. 策略邏輯：VCP 技術面
 # ==========================================
 def check_strategy_vcp(df):
     if len(df) < 250: return False, None
     close = df['Close']
     volume = df['Volume']
 
-    # 計算指標
     ma5 = close.rolling(5).mean()
     ma10 = close.rolling(10).mean()
     ma20 = close.rolling(20).mean()
     ma240 = close.rolling(240).mean()
     
-    # 布林帶寬 (BandWidth)
-    # BW = (Upper - Lower) / Middle
+    # 布林帶寬
     std = close.rolling(20).std()
     bw = ( (ma20 + 2*std) - (ma20 - 2*std) ) / ma20
-    
-    # 20日均量
     vol_ma20 = volume.rolling(20).mean()
 
-    # 取得最新值
     curr_c = close.iloc[-1]
     curr_ma5 = ma5.iloc[-1]
     curr_ma10 = ma10.iloc[-1]
@@ -163,35 +169,33 @@ def check_strategy_vcp(df):
 
     if math.isnan(curr_ma240) or curr_ma240 <= 0: return False, None
 
-    # --- VCP 策略條件 ---
-    
     # 1. 守住 10 日線
     if curr_c < curr_ma10: return False, None
     
-    # 2. 強勢多頭排列 (5 > 10 > 20)
+    # 2. 強勢多頭 (5>10>20)
     if not (curr_ma5 > curr_ma10 > curr_ma20): return False, None
     
-    # 3. 站上年線 (240MA)
+    # 3. 站上年線
     if curr_c <= curr_ma240: return False, None
     
-    # 4. VCP 極致壓縮 (BandWidth < 12%)
+    # 4. 極致壓縮 (BW < 12%)
     if curr_bw > 0.12: return False, None
     
-    # 5. 成交量濾網 (20日均量 > 500張)
+    # 5. 流動性
     if curr_vol_ma20 < 500000: return False, None
     
-    # 6. 均線超級糾結 (2.5% 以內)
+    # 6. 超級糾結 (< 2.5%)
     mas = [curr_ma5, curr_ma10, curr_ma20]
     entangle_pct = (max(mas) - min(mas)) / min(mas)
     if entangle_pct > 0.025: return False, None
 
     return True, {
-        "tag": "VCP壓縮",
+        "tag": "VCP",
         "price": round(curr_c, 2),
         "ma5": round(curr_ma5, 2),
         "ma10": round(curr_ma10, 2),
         "ma240": round(curr_ma240, 2),
-        "bw": round(curr_bw * 100, 1) # 帶寬百分比
+        "bw": round(curr_bw * 100, 1)
     }
 
 # ==========================================
@@ -202,9 +206,7 @@ def update_history_roi(history_db):
     tickers_to_check = set()
     for date_str, stocks in history_db.items():
         for stock in stocks:
-            symbol = stock['id']
-            if stock['type'] == '上市': symbol += '.TW'
-            else: symbol += '.TWO'
+            symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
             tickers_to_check.add(symbol)
 
     if not tickers_to_check: return history_db
@@ -215,6 +217,7 @@ def update_history_roi(history_db):
         data = yf.download(list(tickers_to_check), period="5d", auto_adjust=False, threads=True)
         close_df = data['Close']
         
+        # 單檔與多檔的處理
         if len(tickers_to_check) == 1:
              ticker = list(tickers_to_check)[0]
              closes = close_df.dropna().values
@@ -252,7 +255,7 @@ def run_scanner():
     industry_db = load_json(DB_INDUSTRY)
     history_db = load_json(DB_HISTORY)
     
-    # 建立歷史名單快取 (防止重複建倉)
+    # 建立歷史名單快取
     existing_stock_ids = set()
     for date_str, stocks in history_db.items():
         for s in stocks:
@@ -263,7 +266,6 @@ def run_scanner():
     
     daily_results = []
     new_history_entries = []
-    
     batch_size = 100 
     
     for i in range(0, len(full_list), batch_size):
@@ -280,7 +282,7 @@ def run_scanner():
                     df = df.dropna()
                     if df.empty: continue
 
-                    # --- 雙策略引擎 ---
+                    # 雙策略檢查
                     is_match_1, info_1 = check_strategy_original(df)
                     is_match_2, info_2 = check_strategy_vcp(df)
                     
@@ -295,21 +297,19 @@ def run_scanner():
                     
                     if is_match_2:
                         final_match = True
-                        # 如果原本沒匹配 A 策略，就用 B 策略的 info
                         if not final_info: final_info = info_2
                         strategy_tags.append("VCP")
                     
                     if final_match:
                         name = raw_code
                         if raw_code in twstock.codes: name = twstock.codes[raw_code].name
+                        
                         group = get_stock_group(raw_code, industry_db)
+                        # 更新快取
                         if raw_code not in industry_db: industry_db[raw_code] = group
                         
-                        # 取得漲跌幅
                         prev_c = df['Close'].iloc[-2]
                         change_rate = round((final_info['price'] - prev_c) / prev_c * 100, 2)
-
-                        # 組合備註
                         tags_str = " & ".join(strategy_tags)
                         note_str = f"{tags_str} / 年線{final_info['ma240']}"
                         
