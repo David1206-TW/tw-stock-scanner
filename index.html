@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>台股自動化戰情室</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 仍保留給其他圖示用，但排序改用純文字 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         .tw-up { color: #ef4444; }
@@ -23,15 +24,15 @@
         }
         .tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
         .tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; }
-        /* 縮小標題欄高度和字體 */
+        
         th.sortable { 
             cursor: pointer; 
             transition: background-color 0.2s; 
             user-select: none; 
             white-space: nowrap; 
-            padding-top: 0.5rem; /* py-2 */
-            padding-bottom: 0.5rem; /* py-2 */
-            font-size: 10px; /* text-[10px] */
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            font-size: 10px; 
         }
         th.sortable:hover { background-color: #334155; }
         td { white-space: nowrap; }
@@ -39,6 +40,21 @@
         
         @keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         .animate-updating { animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #60a5fa; }
+        
+        /* 【純文字排序符號樣式】 */
+        .sort-symbol {
+            display: inline-block;
+            font-size: 8px;             /* 設定非常小的字體 */
+            margin-left: 2px;
+            vertical-align: 1px;        /* 微調垂直位置 */
+            color: #64748b;             /* 預設灰色 */
+            opacity: 0.5;
+        }
+        .sort-symbol.active {
+            color: #60a5fa;             /* 選中時變亮藍色 */
+            opacity: 1;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="h-[100dvh] flex flex-col overflow-hidden bg-slate-900">
@@ -53,7 +69,6 @@
             </div>
         </div>
         
-        <!-- 右側按鈕群組 (雲端更新/重整) -->
         <div class="flex items-center gap-1">
             <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
                 <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
@@ -77,9 +92,7 @@
 
         <!-- PAGE 2: List -->
         <div id="page-list" class="hidden flex flex-col h-full gap-2">
-            <!-- Control Area -->
             <div class="shrink-0 flex flex-col gap-2">
-                <!-- 狀態列與過濾標籤 -->
                 <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                     <div class="flex items-center gap-2">
                         <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center">
@@ -98,21 +111,21 @@
             <!-- List Panel -->
             <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
                 <div class="flex-grow overflow-auto bg-slate-900 relative">
-                    <!-- min-w 恢復到之前能容納所有欄位的寬度 -->
                     <table class="min-w-[480px] w-full text-sm text-left text-gray-400">
                         <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
+                                <!-- 改用 span class="sort-symbol" 顯示純文字符號 -->
                                 <th scope="col" class="px-2 py-2 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">
-                                    股名 <i class="sort-icon fa-solid fa-sort text-[8px] ml-0.5 text-slate-600" id="sort-icon-id"></i>
+                                    股名<span class="sort-symbol" id="sort-icon-id">⇅</span>
                                 </th>
                                 <th scope="col" class="px-2 py-2 sortable text-center" onclick="app.sortList('group')">
-                                    族群 <i class="sort-icon fa-solid fa-sort text-[8px] ml-0.5 text-slate-600" id="sort-icon-group"></i>
+                                    族群<span class="sort-symbol" id="sort-icon-group">⇅</span>
                                 </th>
                                 <th scope="col" class="px-2 py-2 text-right sortable" onclick="app.sortList('price')">
-                                    價 <i class="sort-icon fa-solid fa-sort text-[8px] ml-0.5 text-slate-600" id="sort-icon-price"></i>
+                                    價<span class="sort-symbol" id="sort-icon-price">⇅</span>
                                 </th>
                                 <th scope="col" class="px-2 py-2 text-right sortable" onclick="app.sortList('changeRate')">
-                                    漲跌 <i class="sort-icon fa-solid fa-sort text-[8px] ml-0.5 text-slate-600" id="sort-icon-changeRate"></i>
+                                    漲跌<span class="sort-symbol" id="sort-icon-changeRate">⇅</span>
                                 </th>
                                 <th scope="col" class="px-2 py-2 text-right">MA5</th>
                                 <th scope="col" class="px-2 py-2 text-right">MA10</th>
@@ -177,7 +190,7 @@
                 };
 
                 this.lastDataTime = "";
-                this.isPolling = false;
+                this.isPolling = false; 
 
                 this.ui = {
                     body: document.getElementById('result-body'),
@@ -251,11 +264,9 @@
                 this.applyStateAndRender();
             }
 
-            // === 核心狀態處理 (保持過濾與排序) ===
             applyStateAndRender() {
                 let list = [...this.stockList];
 
-                // 1. 套用族群過濾
                 if (this.state.filterGroup) {
                     list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
                     this.ui.filterTag.classList.remove('hidden');
@@ -264,7 +275,6 @@
                     this.ui.filterTag.classList.add('hidden');
                 }
 
-                // 2. 套用均線支撐過濾
                 if (this.state.filterMa) {
                     list = list.filter(s => s.price > s.ma5 && s.price > s.ma10);
                     this.ui.btnMaFilter.classList.remove('bg-slate-700', 'text-gray-300');
@@ -274,25 +284,26 @@
                     this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white');
                 }
 
-                // 3. 套用排序
                 if (this.state.sortBy) {
                     const dir = this.state.sortDir === 'asc' ? 1 : -1;
                     list.sort((a, b) => {
                         let valA = a[this.state.sortBy];
                         let valB = b[this.state.sortBy];
-                        
                         if (this.state.sortBy === 'price' || this.state.sortBy === 'changeRate') 
                             return (parseFloat(valA) - parseFloat(valB)) * dir;
                         return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
                     });
                     
-                    // 更新排序圖示 (已修復 Rtml 錯誤)
-                    document.querySelectorAll('.sort-icon').forEach(el => {
-                        el.setAttribute('class', 'sort-icon fa-solid fa-sort text-[8px] ml-0.5 text-slate-600');
+                    // 【修正點】改用純文字符號更新
+                    document.querySelectorAll('.sort-symbol').forEach(el => {
+                        el.innerText = '⇅';
+                        el.className = 'sort-symbol'; // 重置樣式
                     });
                     const activeIcon = document.getElementById(`sort-icon-${this.state.sortBy}`);
                     if(activeIcon) {
-                        activeIcon.setAttribute('class', `sort-icon fa-solid fa-sort-${this.state.sortDir === 'asc' ? 'up' : 'down'} text-[8px] ml-0.5 text-blue-400`);
+                        // 根據方向顯示不同箭頭
+                        activeIcon.innerText = this.state.sortDir === 'asc' ? '▲' : '▼';
+                        activeIcon.classList.add('active');
                     }
                 }
 
@@ -301,7 +312,6 @@
                 this.updateCount();
             }
 
-            // === 用戶操作與控制 ===
             filterByGroup(groupName) {
                 this.state.filterGroup = groupName;
                 this.state.filterMa = false;
@@ -329,7 +339,6 @@
                 this.applyStateAndRender();
             }
             
-            // 【雲端更新邏輯】
             async triggerCloudUpdate() {
                 const owner = localStorage.getItem('gh_owner');
                 const repo = localStorage.getItem('gh_repo');
@@ -367,8 +376,6 @@
                 this.ui.btnCloudUpdate.disabled = false;
             }
 
-
-            // === 渲染邏輯 ===
             renderHeatmap() {
                 if (this.stockList.length === 0) {
                     this.ui.heatmapContainer.innerHTML = `<div class="col-span-2 text-center text-gray-500 pt-10">無資料，請更新報價。</div>`;
@@ -460,3 +467,5 @@
     </script>
 </body>
 </html>
+
+
