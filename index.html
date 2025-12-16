@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>台股自動化戰情室</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome 仍保留給其他圖示用，但排序改用純文字 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
         .tw-up { color: #ef4444; }
@@ -41,19 +40,25 @@
         @keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         .animate-updating { animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #60a5fa; }
         
-        /* 【純文字排序符號樣式】 */
-        .sort-symbol {
+        .sort-icon {
             display: inline-block;
-            font-size: 8px;             /* 設定非常小的字體 */
-            margin-left: 2px;
-            vertical-align: 1px;        /* 微調垂直位置 */
-            color: #64748b;             /* 預設灰色 */
-            opacity: 0.5;
+            font-size: 8px !important;
+            transform: scale(0.8);
+            vertical-align: 1px;
+            margin-left: 0px;
+            color: #475569;
+            opacity: 0.6;
+            transition: all 0.2s;
         }
-        .sort-symbol.active {
-            color: #60a5fa;             /* 選中時變亮藍色 */
-            opacity: 1;
-            font-weight: bold;
+        .sort-icon.active { color: #60a5fa !important; opacity: 1; transform: scale(1); }
+
+        /* 自動更新開關樣式 */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #68D391;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #68D391;
         }
     </style>
 </head>
@@ -65,17 +70,24 @@
             <i class="fa-solid fa-robot text-emerald-400 text-lg"></i>
             <div class="flex flex-col">
                 <h1 class="text-sm font-bold tracking-wider leading-none">台股戰情室</h1>
-                <div class="text-[9px] text-gray-500 mt-0.5" id="last-updated">讀取中...</div>
+                <div class="text-[9px] text-gray-500 mt-0.5" id="status-text">待命</div>
             </div>
         </div>
         
-        <div class="flex items-center gap-1">
-            <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
+        <!-- 右側控制區 -->
+        <div class="flex items-center gap-3">
+            <!-- 自動更新開關 -->
+            <div class="flex items-center gap-1">
+                <span class="text-[9px] text-gray-400" id="auto-timer"></span>
+                <label for="auto-toggle" class="flex items-center cursor-pointer relative">
+                    <input type="checkbox" id="auto-toggle" class="sr-only" onchange="app.toggleAutoLoop()">
+                    <div class="w-8 h-4 bg-gray-700 rounded-full shadow-inner transition-colors duration-200 ease-in-out toggle-bg"></div>
+                    <div class="dot absolute left-0 top-0 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ease-in-out transform scale-90 translate-x-0"></div>
+                </label>
+            </div>
+
+            <button onclick="app.triggerCloudUpdate(true)" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
                 <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
-                <span class="text-[10px] font-medium">更新</span>
-            </button>
-            <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
-                <i class="fa-solid fa-rotate-right text-sm"></i>
             </button>
         </div>
     </nav>
@@ -114,18 +126,17 @@
                     <table class="min-w-[480px] w-full text-sm text-left text-gray-400">
                         <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
-                                <!-- 改用 span class="sort-symbol" 顯示純文字符號 -->
                                 <th scope="col" class="px-2 py-2 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">
-                                    股名<span class="sort-symbol" id="sort-icon-id">⇅</span>
+                                    股名<i class="sort-icon fa-solid fa-sort" id="sort-icon-id"></i>
                                 </th>
                                 <th scope="col" class="px-2 py-2 sortable text-center" onclick="app.sortList('group')">
-                                    族群<span class="sort-symbol" id="sort-icon-group">⇅</span>
+                                    族群<i class="sort-icon fa-solid fa-sort" id="sort-icon-group"></i>
                                 </th>
                                 <th scope="col" class="px-2 py-2 text-right sortable" onclick="app.sortList('price')">
-                                    價<span class="sort-symbol" id="sort-icon-price">⇅</span>
+                                    價<i class="sort-icon fa-solid fa-sort" id="sort-icon-price"></i>
                                 </th>
                                 <th scope="col" class="px-2 py-2 text-right sortable" onclick="app.sortList('changeRate')">
-                                    漲跌<span class="sort-symbol" id="sort-icon-changeRate">⇅</span>
+                                    漲跌<i class="sort-icon fa-solid fa-sort" id="sort-icon-changeRate"></i>
                                 </th>
                                 <th scope="col" class="px-2 py-2 text-right">MA5</th>
                                 <th scope="col" class="px-2 py-2 text-right">MA10</th>
@@ -191,16 +202,21 @@
 
                 this.lastDataTime = "";
                 this.isPolling = false; 
+                this.isAutoLoop = false; // 自動循環狀態
+                this.loopTimer = null;   // 倒數計時器
+                this.countdownVal = 0;   // 剩餘秒數
 
                 this.ui = {
                     body: document.getElementById('result-body'),
-                    lastUpdated: document.getElementById('last-updated'),
+                    statusText: document.getElementById('status-text'),
                     dataCount: document.getElementById('data-count'),
                     filterTag: document.getElementById('filter-tag'),
                     filterName: document.getElementById('filter-name'),
                     heatmapContainer: document.getElementById('heatmap-container'),
                     btnCloudUpdate: document.getElementById('btn-cloud-update'),
                     btnMaFilter: document.getElementById('btn-ma-filter'),
+                    autoToggle: document.getElementById('auto-toggle'),
+                    autoTimer: document.getElementById('auto-timer'),
                     
                     pageHeatmap: document.getElementById('page-heatmap'),
                     pageList: document.getElementById('page-list'),
@@ -216,11 +232,9 @@
             refresh() { location.reload(); }
 
             switchTab(tabName) {
-                // 隱藏所有頁面
                 ['pageHeatmap', 'pageList', 'pageAdmin'].forEach(p => this.ui[p].classList.add('hidden'));
                 ['tabHeatmap', 'tabList', 'tabAdmin'].forEach(t => this.ui[t].classList.remove('active'));
 
-                // 顯示目標頁面
                 if (tabName === 'heatmap') {
                     this.ui.pageHeatmap.classList.remove('hidden');
                     this.ui.tabHeatmap.classList.add('active');
@@ -253,27 +267,129 @@
                 this.stockList = data.list || [];
                 
                 if (this.lastDataTime && this.lastDataTime !== data.date) {
-                    alert(`✅ 報價已更新！\n時間: ${data.date}`);
+                    this.ui.statusText.innerText = `已更新 ${data.date.split(' ')[1]}`;
+                    this.ui.statusText.classList.add('text-green-400');
+                    setTimeout(() => this.ui.statusText.classList.remove('text-green-400'), 3000);
+                    
+                    // 資料更新後，停止輪詢
                     this.stopPolling();
+                    
+                    // 如果是自動模式，開始倒數下一輪
+                    if (this.isAutoLoop) {
+                        this.startLoopCountdown(300); // 5分鐘 (300秒)
+                    }
+                } else {
+                    this.ui.statusText.innerText = `最後更新 ${data.date.split(' ')[1] || data.date}`;
                 }
                 this.lastDataTime = data.date;
-
-                this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`;
                 
                 this.renderHeatmap();
                 this.applyStateAndRender();
             }
 
+            // === 自動循環邏輯 ===
+            toggleAutoLoop() {
+                this.isAutoLoop = this.ui.autoToggle.checked;
+                
+                // Toggle 按鈕動畫 (Tailwind class manipulation for checkbox)
+                const toggleBg = document.querySelector('.toggle-bg');
+                const dot = document.querySelector('.dot');
+                if (this.isAutoLoop) {
+                    toggleBg.classList.replace('bg-gray-700', 'bg-emerald-500');
+                    dot.classList.add('translate-x-4');
+                    // 開啟時立即執行一次
+                    this.triggerCloudUpdate(false); 
+                } else {
+                    toggleBg.classList.replace('bg-emerald-500', 'bg-gray-700');
+                    dot.classList.remove('translate-x-4');
+                    // 關閉時清除倒數
+                    clearInterval(this.loopTimer);
+                    this.ui.autoTimer.innerText = '';
+                    this.stopPolling(); // 停止可能的輪詢
+                }
+            }
+
+            startLoopCountdown(seconds) {
+                this.countdownVal = seconds;
+                clearInterval(this.loopTimer);
+                
+                this.loopTimer = setInterval(() => {
+                    this.countdownVal--;
+                    const m = Math.floor(this.countdownVal / 60);
+                    const s = this.countdownVal % 60;
+                    this.ui.autoTimer.innerText = `${m}:${s < 10 ? '0'+s : s}`;
+                    
+                    if (this.countdownVal <= 0) {
+                        clearInterval(this.loopTimer);
+                        this.ui.autoTimer.innerText = '更新中...';
+                        this.triggerCloudUpdate(false); // 時間到，觸發更新
+                    }
+                }, 1000);
+            }
+
+            // === 雲端更新邏輯 ===
+            // manual: 是否為手動點擊 (手動需要 confirm，自動不需要)
+            async triggerCloudUpdate(manual = true) {
+                const owner = localStorage.getItem('gh_owner');
+                const repo = localStorage.getItem('gh_repo');
+                const token = localStorage.getItem('gh_token');
+                
+                if (!owner || !repo || !token) { 
+                    if(manual) { alert("請先至設定頁填寫 Token"); this.switchTab('admin'); }
+                    else { this.ui.autoToggle.click(); alert("Token 遺失，自動模式停止"); }
+                    return; 
+                }
+
+                if (manual && !confirm("確定要手動更新報價嗎？")) return;
+
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
+                this.ui.btnCloudUpdate.disabled = true;
+                this.ui.statusText.innerText = "雲端運算中...";
+                this.ui.statusText.classList.add("animate-pulse", "text-blue-400");
+
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, {
+                        method: 'POST', 
+                        headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, 
+                        body: JSON.stringify({ ref: 'main' })
+                    });
+                    if (res.status === 204) { 
+                        this.startPolling(); 
+                    } else { throw new Error(`Status ${res.status}`); }
+                } catch (e) { 
+                    if(manual) alert("發送失敗：" + e.message); 
+                    this.resetUpdateButton();
+                    this.ui.statusText.innerText = "更新失敗";
+                }
+            }
+
+            startPolling() {
+                if (this.isPolling) return;
+                this.isPolling = true;
+                // 每 15 秒檢查一次 data.json
+                this.pollInterval = setInterval(() => { this.loadData(); }, 15000);
+            }
+            
+            stopPolling() {
+                this.isPolling = false;
+                clearInterval(this.pollInterval);
+                this.resetUpdateButton();
+                this.ui.statusText.classList.remove("animate-pulse", "text-blue-400");
+            }
+            
+            resetUpdateButton() {
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i>`;
+                this.ui.btnCloudUpdate.disabled = false;
+            }
+
+            // === 列表與排序邏輯 (保持不變) ===
             applyStateAndRender() {
                 let list = [...this.stockList];
-
                 if (this.state.filterGroup) {
                     list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
                     this.ui.filterTag.classList.remove('hidden');
                     this.ui.filterName.innerText = this.state.filterGroup;
-                } else {
-                    this.ui.filterTag.classList.add('hidden');
-                }
+                } else { this.ui.filterTag.classList.add('hidden'); }
 
                 if (this.state.filterMa) {
                     list = list.filter(s => s.price > s.ma5 && s.price > s.ma10);
@@ -293,20 +409,10 @@
                             return (parseFloat(valA) - parseFloat(valB)) * dir;
                         return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
                     });
-                    
-                    // 【修正點】改用純文字符號更新
-                    document.querySelectorAll('.sort-symbol').forEach(el => {
-                        el.innerText = '⇅';
-                        el.className = 'sort-symbol'; // 重置樣式
-                    });
+                    document.querySelectorAll('.sort-icon').forEach(el => { el.setAttribute('class', 'sort-icon fa-solid fa-sort'); });
                     const activeIcon = document.getElementById(`sort-icon-${this.state.sortBy}`);
-                    if(activeIcon) {
-                        // 根據方向顯示不同箭頭
-                        activeIcon.innerText = this.state.sortDir === 'asc' ? '▲' : '▼';
-                        activeIcon.classList.add('active');
-                    }
+                    if(activeIcon) { activeIcon.setAttribute('class', `sort-icon fa-solid fa-sort-${this.state.sortDir === 'asc' ? 'up' : 'down'} active`); }
                 }
-
                 this.displayList = list;
                 this.renderTable(this.displayList);
                 this.updateCount();
@@ -318,62 +424,12 @@
                 this.switchTab('list');
                 this.applyStateAndRender();
             }
-
-            clearFilter() {
-                this.state.filterGroup = null;
-                this.applyStateAndRender();
-            }
-
-            toggleMaFilter() {
-                this.state.filterMa = !this.state.filterMa;
-                this.applyStateAndRender();
-            }
-
+            clearFilter() { this.state.filterGroup = null; this.applyStateAndRender(); }
+            toggleMaFilter() { this.state.filterMa = !this.state.filterMa; this.applyStateAndRender(); }
             sortList(key) {
-                if (this.state.sortBy === key) {
-                    this.state.sortDir = this.state.sortDir === 'asc' ? 'desc' : 'asc';
-                } else {
-                    this.state.sortBy = key;
-                    this.state.sortDir = 'asc';
-                }
+                if (this.state.sortBy === key) { this.state.sortDir = this.state.sortDir === 'asc' ? 'desc' : 'asc'; } 
+                else { this.state.sortBy = key; this.state.sortDir = 'asc'; }
                 this.applyStateAndRender();
-            }
-            
-            async triggerCloudUpdate() {
-                const owner = localStorage.getItem('gh_owner');
-                const repo = localStorage.getItem('gh_repo');
-                const token = localStorage.getItem('gh_token');
-                if (!owner || !repo || !token) { alert("請先至設定頁填寫 Token"); this.switchTab('admin'); return; }
-                if (!confirm("確定要更新報價嗎？\n(將觸發後端 Python 抓取最新真實報價)")) return;
-
-                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
-                this.ui.btnCloudUpdate.disabled = true;
-
-                try {
-                    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, {
-                        method: 'POST', 
-                        headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, 
-                        body: JSON.stringify({ ref: 'main' })
-                    });
-                    if (res.status === 204) { this.startPolling(); } else { throw new Error(`Status ${res.status}`); }
-                } catch (e) { alert("發送失敗：" + e.message); this.resetUpdateButton(); }
-            }
-
-            startPolling() {
-                if (this.isPolling) return;
-                this.isPolling = true;
-                this.ui.lastUpdated.classList.add("animate-pulse", "text-blue-400");
-                this.pollInterval = setInterval(() => { this.loadData(); }, 15000);
-            }
-            stopPolling() {
-                this.isPolling = false;
-                clearInterval(this.pollInterval);
-                this.resetUpdateButton();
-                this.ui.lastUpdated.classList.remove("animate-pulse", "text-blue-400");
-            }
-            resetUpdateButton() {
-                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`;
-                this.ui.btnCloudUpdate.disabled = false;
             }
 
             renderHeatmap() {
@@ -418,15 +474,12 @@
                 const html = list.map(stock => {
                     const rate = parseFloat(stock.changeRate||0);
                     const price = stock.price.toFixed(2);
-                    
                     let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-white font-bold');
                     let rateDisplay = rate > 0 ? `+${rate.toFixed(2)}%` : `${rate.toFixed(2)}%`;
                     const typeBadge = stock.type === '上市' ? '<span class="bg-blue-900 text-blue-300 text-[9px] px-1 rounded border border-blue-800">市</span>' : '<span class="bg-purple-900 text-purple-300 text-[9px] px-1 rounded border border-purple-800">櫃</span>';
-                    
                     let shortGroup = stock.group || '-';
                     if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) shortGroup = shortGroup.substring(0, 2);
                     const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-slate-800 text-gray-400 text-[10px] px-1 py-0.5 rounded border border-slate-700">${shortGroup}</span>` : `<span class="text-gray-600 text-[10px]">-</span>`;
-                    
                     return `
                         <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
                             <td class="px-2 py-3 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10">
@@ -447,7 +500,6 @@
                 }).join('');
                 this.ui.body.innerHTML = html;
             }
-
             updateCount() { this.ui.dataCount.innerText = `${this.displayList.length} 檔`; }
         }
 
@@ -467,5 +519,3 @@
     </script>
 </body>
 </html>
-
-
