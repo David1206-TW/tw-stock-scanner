@@ -321,7 +321,7 @@
       "note": "VCP / 年線19.46",
       "buy_price": 20.65,
       "latest_price": 20.65,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": -0.96
     },
     {
@@ -361,7 +361,7 @@
       "note": "VCP / 年線85.84",
       "buy_price": 88.6,
       "latest_price": 88.6,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": -0.34
     },
     {
@@ -441,7 +441,7 @@
       "note": "VCP / 年線23.62",
       "buy_price": 28.05,
       "latest_price": 28.05,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 1.08
     },
     {
@@ -461,7 +461,7 @@
       "note": "VCP / 年線27.61",
       "buy_price": 28.9,
       "latest_price": 28.9,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 1.4
     },
     {
@@ -481,7 +481,7 @@
       "note": "VCP / 年線7.11",
       "buy_price": 7.2,
       "latest_price": 7.2,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 0.7
     },
     {
@@ -522,7 +522,7 @@
       "buy_price": 24.6,
       "latest_price": 24.6,
       "roi": 0.0,
-      "daily_change": -0.0
+      "daily_change": 0.0
     },
     {
       "id": "6477",
@@ -561,7 +561,7 @@
       "note": "VCP / 年線16.33",
       "buy_price": 17.9,
       "latest_price": 17.9,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": -0.28
     }
   ]
