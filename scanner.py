@@ -1,30 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V13 (含績效回測追蹤 + 策略說明)
+台股自動掃描策略機器人 (Scanner Bot) - V14 (完整交易系統版)
 
-【V13 新增功能】
-- 績效追蹤 (Performance Tracking)：
-  自動記錄每天選出的名單，並在後續的 14 個交易日內，
-  每天更新這些名單的最新價格與累積報酬率 (ROI)。
+【V14 功能升級】
+1. 停損機制 (Stop Loss): 累積報酬率 < -20% 自動剔除。
+2. 鎖定原始買點 (Lock Entry): 若股票已在歷史名單中，今日再次選出也不會覆蓋，保留最早買點。
+3. 完整數據 (Full Data): 新增「當日漲跌幅」與「建倉日期」欄位。
 
-【篩選條件說明 (Strategy)】
-1. 長線保護短線 (Life Line):
-   - 收盤價 > 240日均線 (MA240)。(絕對條件)
-
-2. 多頭排列 (Trend):
-   - MA10 > MA20 > MA60。
-
-3. 位階控制 (Position Control):
-   - (收盤價 - MA60) / MA60 < 25%。(避免追高)
-
-4. 均線糾結/壓縮 (Consolidation):
-   - (MA5, MA10, MA20) 差異 < 8%。
-
-5. 量縮整理 (Dry Volume):
-   - 今日成交量 < 5日均量。
-
-6. 支撐確認 (Support):
-   - 收盤價 > MA10。
+【篩選條件說明】
+1. 長線保護短線: 收盤 > MA240 (Raw Price)。
+2. 多頭排列: MA10 > MA20 > MA60。
+3. 位階控制: (收盤 - MA60)/MA60 < 25%。
+4. 均線糾結: MA5/10/20 差異 < 8%。
+5. 量縮整理: 成交量 < 5日均量。
+6. 支撐確認: 收盤 > MA10。
 """
 
 import yfinance as yf
@@ -37,10 +26,10 @@ import math
 from datetime import datetime, timedelta
 
 # ==========================================
-# 1. [核心] 資料庫管理
+# 1. 資料庫管理
 # ==========================================
 DB_INDUSTRY = 'industry.json'
-DB_HISTORY = 'history.json' # 用來存過去的名單與績效
+DB_HISTORY = 'history.json' 
 
 def load_json(filename):
     if os.path.exists(filename):
@@ -77,11 +66,7 @@ def get_stock_group(code, db_data):
         return twstock.codes[code].group.replace("工業", "").replace("業", "")
     return "其他"
 
-# ==========================================
-# 3. 取得上市上櫃股票代碼
-# ==========================================
 def get_all_tickers():
-    print("正在獲取台股上市櫃代碼清單...")
     twse = twstock.twse
     tpex = twstock.tpex
     ticker_list = []
@@ -89,11 +74,10 @@ def get_all_tickers():
         if len(code) == 4: ticker_list.append(f"{code}.TW")
     for code in tpex:
         if len(code) == 4: ticker_list.append(f"{code}.TWO")
-    print(f"共取得 {len(ticker_list)} 檔股票代碼。")
     return ticker_list
 
 # ==========================================
-# 4. 策略邏輯核心 (V12)
+# 4. 策略邏輯 (V12)
 # ==========================================
 def check_strategy(df):
     if len(df) < 250: return False, {}
@@ -150,86 +134,109 @@ def check_strategy(df):
         return False, {}
 
 # ==========================================
-# 5. [新功能] 更新歷史績效
+# 5. 更新歷史績效 (含停損與日漲跌)
 # ==========================================
 def update_history_roi(history_db):
-    """
-    遍歷歷史資料庫，更新過去 14 天內名單的最新股價與 ROI
-    """
     print("正在更新歷史名單績效...")
     
-    # 1. 收集需要查詢的股票代碼 (過去 14 天)
     tickers_to_check = set()
     today = datetime.now()
-    valid_dates = []
+    
+    # 清理過的資料庫 (移除停損或過期的)
+    new_history_db = {}
 
-    for date_str in list(history_db.keys()):
+    # 1. 收集代碼
+    for date_str, stocks in history_db.items():
         try:
-            # 簡單判斷日期，若超過 20 天的資料就視為過期 (保留一點緩衝)
             record_date = datetime.strptime(date_str.split(' ')[0], "%Y/%m/%d")
-            if (today - record_date).days <= 20: 
-                valid_dates.append(date_str)
-                for stock in history_db[date_str]:
-                    # 判斷代碼格式 (加上 .TW 或 .TWO)
+            # 追蹤 20 天內的資料 (可自行調整天數)
+            if (today - record_date).days <= 20:
+                new_history_db[date_str] = stocks # 先保留，稍後更新內容
+                for stock in stocks:
                     symbol = stock['id']
                     if stock['type'] == '上市': symbol += '.TW'
                     else: symbol += '.TWO'
                     tickers_to_check.add(symbol)
-            else:
-                # 刪除太舊的資料，保持檔案輕量
-                del history_db[date_str]
-        except:
-            continue
+        except: pass
 
     if not tickers_to_check:
         print("沒有歷史資料需要更新。")
-        return history_db
+        return {}
 
-    # 2. 批次下載最新股價
+    # 2. 批次下載最新股價 (下載 2 天以計算日漲跌)
     print(f"追蹤股票數量: {len(tickers_to_check)}")
+    current_data = {}
     try:
-        # 使用 yfinance 一次抓取所有需要的股票最新價
-        data = yf.download(list(tickers_to_check), period="1d", auto_adjust=False, threads=True)
-        # 處理單一股票與多股票的資料結構差異
-        current_prices = {}
+        # 下載 5 天避免假日剛過導致資料不足
+        data = yf.download(list(tickers_to_check), period="5d", auto_adjust=False, threads=True)
         
-        # 轉置一下方便處理，或直接取最後一列
+        # 處理多層索引
+        close_df = data['Close']
+        
         if len(tickers_to_check) == 1:
-             # 單支股票
              ticker = list(tickers_to_check)[0]
-             price = data['Close'].iloc[-1]
-             current_prices[ticker] = float(price)
+             # 單支股票處理
+             closes = close_df.dropna().values
+             if len(closes) >= 2:
+                 current_data[ticker] = {
+                     'price': float(closes[-1]),
+                     'prev': float(closes[-2])
+                 }
         else:
-            # 多支股票
             for ticker in tickers_to_check:
                 try:
-                    price = data['Close'][ticker].iloc[-1]
-                    if not math.isnan(price):
-                        current_prices[ticker] = float(price)
-                except:
-                    pass
+                    # 取得該股票的收盤價序列，並移除 NaN
+                    series = close_df[ticker].dropna()
+                    if len(series) >= 2:
+                        current_data[ticker] = {
+                            'price': float(series.iloc[-1]),
+                            'prev': float(series.iloc[-2])
+                        }
+                except: pass
     except Exception as e:
         print(f"歷史股價更新失敗: {e}")
         return history_db
 
-    # 3. 更新 ROI
-    for date_str in valid_dates:
-        for stock in history_db[date_str]:
+    # 3. 更新 ROI 並執行停損
+    final_db = {}
+    
+    for date_str, stocks in new_history_db.items():
+        active_stocks = []
+        for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
             
-            if symbol in current_prices:
-                latest_price = current_prices[symbol]
-                buy_price = stock['buy_price'] # 這是當初選出時的價格
+            if symbol in current_data:
+                latest_price = current_data[symbol]['price']
+                prev_price = current_data[symbol]['prev']
+                buy_price = stock['buy_price']
                 
-                # 計算累積報酬率
+                # 計算累積 ROI
                 roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
+                
+                # 計算當日漲跌幅
+                daily_change = round(((latest_price - prev_price) / prev_price) * 100, 2)
+                
+                # 【規則 3】停損檢查：如果 ROI < -20%，剔除
+                if roi < -20:
+                    print(f"停損觸發: {stock['name']} ROI {roi}% < -20%")
+                    continue # 跳過此股票，不加入 active_stocks
                 
                 # 更新欄位
                 stock['latest_price'] = round(latest_price, 2)
                 stock['roi'] = roi
+                stock['daily_change'] = daily_change # 【規則 6】新增欄位
                 
-    print("歷史績效更新完成。")
-    return history_db
+                active_stocks.append(stock)
+            else:
+                # 抓不到資料的股票保留原樣
+                active_stocks.append(stock)
+        
+        # 只有當該日期還有股票存活時才保留該日期
+        if active_stocks:
+            final_db[date_str] = active_stocks
+
+    print("歷史績效更新完成 (已執行停損)。")
+    return final_db
 
 # ==========================================
 # 6. 批次執行掃描
@@ -237,9 +244,18 @@ def update_history_roi(history_db):
 def run_scanner():
     full_list = get_all_tickers()
     industry_db = load_json(DB_INDUSTRY)
-    history_db = load_json(DB_HISTORY) # 載入歷史資料庫
+    history_db = load_json(DB_HISTORY)
     
-    print(f"產業庫: {len(industry_db)} 筆 | 歷史庫: {len(history_db)} 天")
+    print(f"歷史庫: {len(history_db)} 天")
+    
+    # 【規則 4】建立已存在名單的集合 (Set)，防止重複加入
+    # 如果 12/16 已經選過光聖，12/17 就不再加入，保留 12/16 的低成本位階
+    existing_stocks = set()
+    for date_str, stocks in history_db.items():
+        for s in stocks:
+            existing_stocks.add(s['id'])
+            
+    print(f"已追蹤股票數: {len(existing_stocks)} (這些股票若今日符合也不會重複新增)")
     print(f"開始掃描 (V12 原始股價)...")
     
     valid_stocks = []
@@ -252,6 +268,11 @@ def run_scanner():
             data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=False)
             for ticker in batch:
                 try:
+                    # 預先過濾：如果已經在追蹤清單中，直接跳過計算，節省時間
+                    raw_code = ticker.split('.')[0]
+                    if raw_code in existing_stocks:
+                        continue
+
                     if len(batch) > 1: df = data[ticker] if ticker in data.columns.levels[0] else pd.DataFrame()
                     else: df = data
                     
@@ -260,7 +281,6 @@ def run_scanner():
                     match, info = check_strategy(df)
                     
                     if match:
-                        raw_code = ticker.split('.')[0]
                         name = raw_code
                         if raw_code in twstock.codes: name = twstock.codes[raw_code].name
                         group = get_stock_group(raw_code, industry_db)
@@ -277,32 +297,34 @@ def run_scanner():
                             "changeRate": info['changeRate'],
                             "isValid": True,
                             "note": f"年線{info['ma240']}",
-                            # 【新增】給歷史資料用的欄位
-                            "buy_price": info['price'], # 記錄當天選出的價格
-                            "latest_price": info['price'], # 初始最新價等於現價
-                            "roi": 0.0 # 初始 ROI 為 0
+                            # 歷史追蹤欄位
+                            "buy_price": info['price'],
+                            "latest_price": info['price'],
+                            "roi": 0.0,
+                            "daily_change": info['changeRate']
                         }
                         valid_stocks.append(stock_entry)
                 except: continue
         except: continue
 
-    # 1. 儲存當日新名單到 History
-    today_str = datetime.now().strftime("%Y/%m/%d")
-    history_db[today_str] = valid_stocks
-    
-    # 2. 更新歷史 ROI (這是最重要的一步)
+    # 1. 更新歷史 ROI (先更新舊的，再加新的)
     history_db = update_history_roi(history_db)
+
+    # 2. 儲存當日新名單
+    if valid_stocks:
+        today_str = datetime.now().strftime("%Y/%m/%d")
+        history_db[today_str] = valid_stocks
+        print(f"今日新增監控: {len(valid_stocks)} 檔")
 
     # 3. 存檔
     save_json(DB_INDUSTRY, industry_db)
-    save_json(DB_HISTORY, history_db) # 儲存 history.json
-    print("所有資料庫已更新。")
-
+    save_json(DB_HISTORY, history_db)
+    
     return valid_stocks
 
 if __name__ == "__main__":
     results = run_scanner()
-    # data.json 保持只存「當日最新」，讓首頁載入快一點
+    # data.json 只存今日新增的，首頁只看當天新訊
     output_payload = {
         "date": datetime.now().strftime("%Y/%m/%d %H:%M:%S"),
         "source": "GitHub Actions",
