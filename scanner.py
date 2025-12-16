@@ -1,33 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V5 (含流動性過濾)
+台股自動掃描策略機器人 (Scanner Bot) - V6 (強勢線性趨勢版)
 
-【基本過濾 (Filter)】
-- 流動性：5日均量必須 > 500張 (避免成交量過低的冷門股)。
+【策略核心：抓取沿著均線爬升的線性強勢股】
 
-【篩選條件說明 (Strategy)】
-1. 站上年線 (Life Line): 
-   - 條件：收盤價 > 240日均線 (MA240)。
-   - 目的：確保長線趨勢偏多。
+【篩選條件說明】
+1. 基本門檻 (Filter):
+   - 5日均量 > 500張 (剔除殭屍股)。
+   - 收盤價 > 年線 (MA240) (長線多頭保護)。
 
-2. 多頭排列 (Trend): 
-   - 條件：20日均線 (月線) > 60日均線 (季線)。
-   - 條件：5日均線 (周線) > 20日均線 (月線)。
-   - 目的：確認短中長期均線同步向上。
+2. 均線完美排列 (Perfect Order):
+   - 條件：收盤價 > MA5 > MA10 > MA20 > MA60。
+   - 目的：這是「線性上漲」最強烈的特徵，代表短、中、長期趨勢一致向上。
 
-3. 均線支撐 (Support): 
-   - 條件：收盤價必須同時站上 5日均線 與 10日均線。
-   - 條件：連續3日日K「最低點」差異在 ±1% 內 (打樁確認)。
-   - 目的：確保短線強勢，且底部有特定買盤防守。
+3. 攻擊態勢 (Momentum):
+   - 條件：MA5 與 MA10 必須呈現上揚 (今日 > 昨日)。
+   - 目的：確保目前股價正在攻擊狀態，而非多頭架構下的盤整。
 
-4. 漲多拉回 (Pullback): 
-   - 條件：收盤價未創近5日新高。
-   - 條件：股價距離 5日線 乖離率 < 3%。
-   - 目的：尋找回檔整理買點。
-
-5. 量縮整理 (Volume): 
-   - 條件：今日成交量 < 3日均量。
-   - 目的：確認籌碼沉澱。
+4. 線性乖離控制 (Linearity):
+   - 條件：(收盤價 - MA10) / MA10 < 8%。
+   - 目的：我們要找的是「沿著均線爬」的股票，而不是已經噴出乖離過大的股票(避免追高)。
 """
 
 import yfinance as yf
@@ -96,7 +88,7 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 4. 策略邏輯核心 (Updated V5)
+# 4. 策略邏輯核心 (V6 - 強勢線性趨勢)
 # ==========================================
 def check_strategy(df):
     # 資料長度不足無法計算 MA240
@@ -104,14 +96,12 @@ def check_strategy(df):
 
     close = df['Close']
     volume = df['Volume']
-    high = df['High']
-    low = df['Low'] 
     
-    # 計算成交量均線 (用來過濾垃圾股)
+    # 計算成交量均線 (流動性濾網)
     vol_ma5 = volume.rolling(5).mean()
     curr_vol_ma5 = vol_ma5.iloc[-1]
 
-    # 【新增】流動性過濾：5日均量 < 500張 (500,000股) 直接淘汰
+    # 【濾網 1】流動性：5日均量 < 500張 (500,000股) 淘汰
     if curr_vol_ma5 < 500000:
         return False, {}
 
@@ -122,12 +112,6 @@ def check_strategy(df):
     ma60 = close.rolling(60).mean()
     ma240 = close.rolling(240).mean()
     
-    # 計算 3日均量 (策略用)
-    vol_ma3 = volume.rolling(3).mean()
-    
-    # 近 5 日最高價
-    recent_high = high.rolling(5).max()
-
     # 取得最新數據 (t)
     curr_c = close.iloc[-1]
     curr_v = volume.iloc[-1]
@@ -136,56 +120,54 @@ def check_strategy(df):
     curr_ma20 = ma20.iloc[-1]
     curr_ma60 = ma60.iloc[-1]
     curr_ma240 = ma240.iloc[-1]
-    curr_vol_ma3 = vol_ma3.iloc[-1]
-    curr_recent_high = recent_high.iloc[-2] 
     
-    # 取得昨日收盤價
+    # 取得昨日數據 (t-1) 用於判斷均線方向
+    prev_ma5 = ma5.iloc[-2]
+    prev_ma10 = ma10.iloc[-2]
     prev_c = close.iloc[-2]
 
-    # --- 策略條件判斷 ---
+    # --- 策略條件判斷 (尋找線性強勢股) ---
     
-    # 1. 站上年線 (Life Line)
-    cond_life_line = curr_c > curr_ma240
-    
-    # 2. 多頭排列 (Trend)
-    # MA20 > MA60 且 MA5 > MA20 
-    cond_trend = (curr_ma20 > curr_ma60) and (curr_ma5 > curr_ma20)
-    
-    # 3. 均線支撐 (Support)
-    # A. 站上 MA5 & MA10
-    cond_ma_support = (curr_c > curr_ma5) and (curr_c > curr_ma10)
-    
-    # B. 連續 3 日最低價差異 < 1%
-    if len(low) < 3: return False, {}
-    l0, l1, l2 = low.iloc[-1], low.iloc[-2], low.iloc[-3]
-    diff_1 = abs(l0 - l1) / l1
-    diff_2 = abs(l1 - l2) / l2
-    cond_low_stable = (diff_1 < 0.01) and (diff_2 < 0.01)
-    
-    cond_support = cond_ma_support and cond_low_stable
-    
-    # 4. 漲多拉回 (Pullback)
-    proximity = (curr_c - curr_ma5) / curr_ma5
-    cond_pullback = (curr_c < curr_recent_high) and (proximity < 0.03)
-    
-    # 5. 量縮整理 (Volume) - 小於 3日均量
-    cond_volume = curr_v < curr_vol_ma3
+    # 1. 均線完美多頭排列 (Perfect Order)
+    # 股價 > 5日 > 10日 > 20日 > 60日 > 240日
+    # 這是最強的趨勢型態，代表所有週期的持有者都賺錢，賣壓最小
+    cond_perfect_order = (curr_c > curr_ma5) and \
+                         (curr_ma5 > curr_ma10) and \
+                         (curr_ma10 > curr_ma20) and \
+                         (curr_ma20 > curr_ma60) and \
+                         (curr_ma60 > curr_ma240)
+
+    # 2. 攻擊態勢 (Momentum)
+    # 確保短期均線 (5MA, 10MA) 是向上的，代表動能還在
+    cond_momentum = (curr_ma5 > prev_ma5) and (curr_ma10 > prev_ma10)
+
+    # 3. 線性乖離控制 (Linearity Check)
+    # 我們要找「沿著均線爬」的股票，而不是「沖天炮」
+    # 如果股價離 10日線太遠 (乖離率 > 8%)，代表可能過熱，暫時不追
+    bias_ma10 = (curr_c - curr_ma10) / curr_ma10
+    cond_linearity = 0 < bias_ma10 < 0.08  # 正乖離且在 8% 以內
 
     # --- 最終判定 ---
-    is_match = cond_life_line and cond_trend and cond_support and cond_pullback and cond_volume
+    is_match = cond_perfect_order and cond_momentum and cond_linearity
     
     if is_match:
         change_rate = 0.0
         if prev_c > 0:
             change_rate = round((curr_c - prev_c) / prev_c * 100, 2)
             
+        # 計算 3日均量比 (量能指標)
+        vol_ma3 = volume.rolling(3).mean().iloc[-1]
+        vol_ratio = 0
+        if vol_ma3 > 0:
+            vol_ratio = round(curr_v / vol_ma3, 2)
+
         return True, {
             "price": round(curr_c, 2),
             "ma5": round(curr_ma5, 2),
             "ma10": round(curr_ma10, 2),
             "ma240": round(curr_ma240, 2),
             "changeRate": change_rate,
-            "vol_ratio": round(curr_v / curr_vol_ma3, 2)
+            "vol_ratio": vol_ratio
         }
     else:
         return False, {}
@@ -257,7 +239,7 @@ def run_scanner():
 # 主程式
 # ==========================================
 if __name__ == "__main__":
-    print("啟動自動掃描程序 (V5 含流動性過濾)...")
+    print("啟動自動掃描程序 (V6 強勢線性趨勢)...")
     results = run_scanner()
     
     output_payload = {
