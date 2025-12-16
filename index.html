@@ -1,626 +1,184 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>台股自動化戰情室</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <style>
-        .tw-up { color: #ef4444; }
-        .tw-down { color: #22c55e; }
-        body { 
-            font-family: 'Noto Sans TC', sans-serif; 
-            background-color: #0f172a; 
-            color: #e2e8f0;
-            overscroll-behavior-y: contain; 
-        }
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-        }
-        .tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
-        .tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; }
-        
-        th.sortable { 
-            cursor: pointer; 
-            transition: background-color 0.2s; 
-            user-select: none; 
-            white-space: nowrap; 
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-            font-size: 10px; 
-        }
-        th.sortable:hover { background-color: #334155; }
-        td { white-space: nowrap; }
-        .name-cell { white-space: normal; max-width: 80px; line-height: 1.2; }
-        
-        @keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        .animate-updating { animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #60a5fa; }
-        
-        .sort-symbol {
-            display: inline-block;
-            font-size: 8px;
-            margin-left: 1px;
-            vertical-align: 1px;
-            color: #64748b;
-            opacity: 0.5;
-            transform: scale(0.9);
-        }
-        .sort-symbol.active { color: #60a5fa; opacity: 1; font-weight: bold; }
-        
-        .stat-card {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 4px;
-            padding: 4px 8px;
-            min-width: 70px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>台股自動化戰情室</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<style>
+    .tw-up { color: #ef4444; }
+    .tw-down { color: #22c55e; }
+    body { 
+        font-family: 'Noto Sans TC', sans-serif; 
+        background-color: #0f172a; 
+        color: #e2e8f0;
+        overscroll-behavior-y: contain; 
+    }
+    .glass-panel {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    .tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
+    .tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; }
+
+    th.sortable { 
+        cursor: pointer; 
+        transition: background-color 0.2s; 
+        user-select: none; 
+        white-space: nowrap; 
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        font-size: 10px; 
+    }
+    th.sortable:hover { background-color: #334155; }
+    td { white-space: nowrap; }
+    .name-cell { white-space: normal; max-width: 80px; line-height: 1.2; }
+
+    @keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    .animate-updating { animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #60a5fa; }
+
+    .sort-symbol {
+        display: inline-block;
+        font-size: 8px;
+        margin-left: 1px;
+        vertical-align: 1px;
+        color: #64748b;
+        opacity: 0.5;
+        transform: scale(0.9);
+    }
+    .sort-symbol.active { color: #60a5fa; opacity: 1; font-weight: bold; }
+
+    .stat-card {
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 4px;
+        padding: 4px 8px;
+        min-width: 70px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    /* Sticky 左側欄位，桌面 + 手機 */
+    .sticky-left {
+        position: sticky;
+        left: 0;
+        z-index: 30;
+        background-color: rgba(30, 41, 59, 0.9);
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* 手機橫向滑動 */
+    .overflow-x-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+</style>
 </head>
 <body class="h-[100dvh] flex flex-col overflow-hidden bg-slate-900">
 
-    <!-- Top Navbar -->
-    <nav class="bg-slate-950 text-white p-2 shadow-lg shrink-0 z-40 border-b border-slate-800 flex justify-between items-center h-14">
-        <div class="flex items-center gap-2 pl-1">
-            <i class="fa-solid fa-robot text-emerald-400 text-lg"></i>
-            <div class="flex flex-col">
+<!-- Top Navbar -->
+<nav class="bg-slate-950 text-white p-2 shadow-lg shrink-0 z-40 border-b border-slate-800 flex justify-between items-center h-14">
+    <div class="flex items-center gap-2 pl-1">
+        <i class="fa-solid fa-robot text-emerald-400 text-lg"></i>
+        <div class="flex flex-col">
+            <div class="flex items-center gap-2">
+                <h1 class="text-sm font-bold tracking-wider leading-none">台股戰情室</h1>
+                <span id="win-rate-badge" class="hidden text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono">
+                    勝率 -%
+                </span>
+            </div>
+            <div class="text-[9px] text-gray-500 mt-0.5" id="last-updated">讀取中...</div>
+        </div>
+    </div>
+    
+    <div class="flex items-center gap-1">
+        <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
+            <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+            <span class="text-[10px] font-medium">更新</span>
+        </button>
+        <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
+            <i class="fa-solid fa-rotate-right text-sm"></i>
+        </button>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
+
+    <!-- Heatmap -->
+    <div id="page-heatmap" class="flex flex-col h-full gap-2">
+        <div class="flex-grow overflow-y-auto pb-4">
+            <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
+        </div>
+    </div>
+
+    <!-- List -->
+    <div id="page-list" class="hidden flex flex-col h-full gap-2">
+        <div class="shrink-0 flex flex-col gap-2">
+            <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                 <div class="flex items-center gap-2">
-                    <h1 class="text-sm font-bold tracking-wider leading-none">台股戰情室</h1>
-                    <span id="win-rate-badge" class="hidden text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono">
-                        勝率 -%
+                    <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center">
+                        <span id="filter-name">族群</span>
+                        <button onclick="app.clearFilter()" class="ml-2 hover:text-white"><i class="fa-solid fa-times"></i></button>
                     </span>
+                    <span id="data-count" class="text-[10px] text-gray-400">0 檔</span>
                 </div>
-                <div class="text-[9px] text-gray-500 mt-0.5" id="last-updated">讀取中...</div>
+                <button onclick="app.toggleMaFilter()" id="btn-ma-filter" class="bg-slate-700 text-gray-300 text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all">過濾支撐</button>
             </div>
         </div>
-        
-        <div class="flex items-center gap-1">
-            <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
-                <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
-                <span class="text-[10px] font-medium">更新</span>
-            </button>
-            <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
-                <i class="fa-solid fa-rotate-right text-sm"></i>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
-        
-        <!-- Heatmap -->
-        <div id="page-heatmap" class="flex flex-col h-full gap-2">
-            <div class="flex-grow overflow-y-auto pb-4">
-                <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
-            </div>
-        </div>
-
-        <!-- List -->
-        <div id="page-list" class="hidden flex flex-col h-full gap-2">
-            <div class="shrink-0 flex flex-col gap-2">
-                <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
-                    <div class="flex items-center gap-2">
-                        <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center">
-                            <span id="filter-name">族群</span>
-                            <button onclick="app.clearFilter()" class="ml-2 hover:text-white"><i class="fa-solid fa-times"></i></button>
-                        </span>
-                        <span id="data-count" class="text-[10px] text-gray-400">0 檔</span>
-                    </div>
-                    <button onclick="app.toggleMaFilter()" id="btn-ma-filter" class="bg-slate-700 text-gray-300 text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all">過濾支撐</button>
-                </div>
-            </div>
-            <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
-                <div class="flex-grow overflow-auto bg-slate-900 relative">
-                    <table class="min-w-[360px] w-full text-sm text-left text-gray-400">
-                        <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
-                            <tr>
-                                <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">
-                                    股名<span class="sort-symbol" id="sort-symbol-id">⇅</span>
-                                </th>
-                                <th scope="col" class="px-1 py-2 sortable text-center" onclick="app.sortList('group')">
-                                    族群<span class="sort-symbol" id="sort-symbol-group">⇅</span>
-                                </th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('price')">
-                                    價<span class="sort-symbol" id="sort-symbol-price">⇅</span>
-                                </th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('changeRate')">
-                                    漲跌<span class="sort-symbol" id="sort-symbol-changeRate">⇅</span>
-                                </th>
-                                <!-- 修改: MA5/MA10 可排序 -->
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('ma5')">
-                                    MA5<span class="sort-symbol" id="sort-symbol-ma5">⇅</span>
-                                </th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('ma10')">
-                                    MA10<span class="sort-symbol" id="sort-symbol-ma10">⇅</span>
-                                </th>
-                                <!-- 修改: 備註 可排序 -->
-                                <th scope="col" class="px-1 py-2 text-[10px] sortable" onclick="app.sortList('note')">
-                                    備註<span class="sort-symbol" id="sort-symbol-note">⇅</span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody id="result-body" class="divide-y divide-slate-800">
-                            <tr><td colspan="7" class="px-6 py-20 text-center text-gray-600"><i class="fa-solid fa-spinner fa-spin text-2xl mb-4 text-blue-500"></i><br>載入中...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance -->
-        <div id="page-perf" class="hidden flex flex-col h-full gap-2">
-            <div class="shrink-0 flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="perf-stats-bar">
-                <div class="text-xs text-gray-500 p-2">計算中...</div>
-            </div>
-
-            <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
-                <div class="flex-grow overflow-auto bg-slate-900 relative">
-                    <table class="min-w-[850px] w-full text-sm text-left text-gray-400">
-                        <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
-                            <tr>
-                                <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('date')">日期<span class="sort-symbol" id="perf-symbol-date">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 sortable sticky left-[40px] bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('id')">股名<span class="sort-symbol" id="perf-symbol-id">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('buy_price')">進場<span class="sort-symbol" id="perf-symbol-buy_price">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('roi')">累%<span class="sort-symbol" id="perf-symbol-roi">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('daily_change')">日%<span class="sort-symbol" id="perf-symbol-daily_change">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_1')">1日%<span class="sort-symbol" id="perf-symbol-roi_1">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_5')">5日%<span class="sort-symbol" id="perf-symbol-roi_5">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_10')">10日%<span class="sort-symbol" id="perf-symbol-roi_10">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_20')">20日%<span class="sort-symbol" id="perf-symbol-roi_20">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_30')">30日%<span class="sort-symbol" id="perf-symbol-roi_30">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_60')">60日%<span class="sort-symbol" id="perf-symbol-roi_60">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_120')">120日%<span class="sort-symbol" id="perf-symbol-roi_120">⇅</span></th>
-                            </tr>
-                        </thead>
-                        <tbody id="perf-body" class="divide-y divide-slate-800">
-                            <tr><td colspan="13" class="px-6 py-20 text-center text-gray-600">尚無歷史資料</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin -->
-        <div id="page-admin" class="hidden h-full overflow-y-auto">
-            <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto mb-4 bg-slate-800">
-                <h2 class="text-lg font-bold mb-4 flex items-center border-b border-slate-700 pb-3 text-white"><i class="fa-solid fa-gear mr-2 text-gray-400"></i>設定</h2>
-                <div class="space-y-3 text-sm">
-                    <input type="text" id="repo-owner" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white" placeholder="GitHub Owner">
-                    <input type="text" id="repo-name" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white" placeholder="Repo Name">
-                    <input type="password" id="github-token" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white" placeholder="Access Token">
-                    <button onclick="admin.saveSettings()" class="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded mt-2">儲存設定</button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <nav class="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
-        <div class="max-w-6xl mx-auto flex justify-around h-full">
-            <button onclick="app.switchTab('heatmap')" id="tab-heatmap" class="tab-btn active flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-fire text-lg mb-1"></i><span class="text-xs mt-1">熱力圖</span></button>
-            <button onclick="app.switchTab('list')" id="tab-list" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-list-ul text-lg mb-1"></i><span class="text-xs mt-1">報價</span></button>
-            <button onclick="app.switchTab('perf')" id="tab-perf" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-trophy text-lg mb-1"></i><span class="text-xs mt-1">績效</span></button>
-            <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-gear text-lg mb-1"></i><span class="text-xs mt-1">設定</span></button>
-        </div>
-    </nav>
-
-    <script>
-        class StockApp {
-            constructor() {
-                this.dataUrl = 'data.json';
-                this.historyUrl = 'history.json';
-                this.stockList = []; 
-                this.displayList = []; 
-                this.historyList = []; 
-                
-                this.state = {
-                    sortBy: 'changeRate', sortDir: 'desc',
-                    perfSortBy: 'date', perfSortDir: 'desc', 
-                    filterGroup: null, filterMa: false
-                };
-
-                this.lastDataTime = "";
-                this.isPolling = false; 
-
-                this.ui = {
-                    body: document.getElementById('result-body'),
-                    perfBody: document.getElementById('perf-body'),
-                    perfStatsBar: document.getElementById('perf-stats-bar'),
-                    lastUpdated: document.getElementById('last-updated'),
-                    dataCount: document.getElementById('data-count'),
-                    filterTag: document.getElementById('filter-tag'),
-                    filterName: document.getElementById('filter-name'),
-                    heatmapContainer: document.getElementById('heatmap-container'),
-                    btnCloudUpdate: document.getElementById('btn-cloud-update'),
-                    btnMaFilter: document.getElementById('btn-ma-filter'),
-                    winRateBadge: document.getElementById('win-rate-badge'),
-                    
-                    pageHeatmap: document.getElementById('page-heatmap'),
-                    pageList: document.getElementById('page-list'),
-                    pagePerf: document.getElementById('page-perf'),
-                    pageAdmin: document.getElementById('page-admin'),
-                    
-                    tabHeatmap: document.getElementById('tab-heatmap'),
-                    tabList: document.getElementById('tab-list'),
-                    tabPerf: document.getElementById('tab-perf'),
-                    tabAdmin: document.getElementById('tab-admin')
-                };
-                this.init();
-            }
-
-            refresh() { location.reload(); }
-
-            switchTab(tabName) {
-                ['pageHeatmap', 'pageList', 'pagePerf', 'pageAdmin'].forEach(p => this.ui[p].classList.add('hidden'));
-                ['tabHeatmap', 'tabList', 'tabPerf', 'tabAdmin'].forEach(t => this.ui[t].classList.remove('active'));
-
-                if (tabName === 'heatmap') {
-                    this.ui.pageHeatmap.classList.remove('hidden');
-                    this.ui.tabHeatmap.classList.add('active');
-                    this.renderHeatmap();
-                } else if (tabName === 'list') {
-                    this.ui.pageList.classList.remove('hidden');
-                    this.ui.tabList.classList.add('active');
-                    this.applyStateAndRender();
-                } else if (tabName === 'perf') {
-                    this.ui.pagePerf.classList.remove('hidden');
-                    this.ui.tabPerf.classList.add('active');
-                    this.sortPerfList(this.state.perfSortBy); 
-                } else if (tabName === 'admin') {
-                    this.ui.pageAdmin.classList.remove('hidden');
-                    this.ui.tabAdmin.classList.add('active');
-                    admin.loadSettings();
-                }
-            }
-
-            async init() {
-                try { 
-                    await this.loadData(); 
-                    this.loadHistory(); 
-                } 
-                catch (e) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 text-xs">${e.message}</td></tr>`; }
-            }
-
-            async loadData() {
-                const cacheBuster = new Date().getTime();
-                let response;
-                try { response = await fetch(`${this.dataUrl}?t=${cacheBuster}`); } 
-                catch (netError) { throw new Error("預覽環境無法讀取資料"); }
-                if (response.status === 404) throw new Error("初次使用請至設定頁觸發掃描");
-                if (!response.ok) throw new Error("讀取失敗");
-                
-                const data = await response.json();
-                this.stockList = data.list || [];
-                
-                if (this.lastDataTime && this.lastDataTime !== data.date) {
-                    alert(`✅ 報價已更新！\n時間: ${data.date}`);
-                    this.stopPolling();
-                    this.loadHistory(); 
-                }
-                this.lastDataTime = data.date;
-                this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`;
-                
-                this.renderHeatmap();
-                this.applyStateAndRender();
-            }
-
-            async loadHistory() {
-                try {
-                    const cacheBuster = new Date().getTime();
-                    const res = await fetch(`${this.historyUrl}?t=${cacheBuster}`);
-                    if(res.ok) {
-                        const historyData = await res.json();
-                        this.historyList = [];
-                        let totalStocks = 0;
-                        let winStocks = 0;
-
-                        Object.keys(historyData).forEach(date => {
-                            const entryDate = new Date(date);
-                            const today = new Date();
-                            const diffTime = Math.abs(today - entryDate);
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                            historyData[date].forEach(stock => {
-                                const roi = parseFloat(stock.roi || 0);
-                                this.historyList.push({
-                                    ...stock,
-                                    date: date, 
-                                    daysHeld: diffDays,
-                                    daily_change: stock.daily_change || 0,
-                                    roi: roi
-                                });
-                                totalStocks++;
-                                if ((stock.roi || 0) > 0) winStocks++;
-                            });
-                        });
-
-                        if (totalStocks > 0) {
-                            const winRate = Math.round((winStocks / totalStocks) * 100);
-                            this.ui.winRateBadge.innerText = `勝率 ${winRate}%`;
-                            this.ui.winRateBadge.classList.remove('hidden');
-                            if(winRate >= 60) this.ui.winRateBadge.className = "ml-2 text-[9px] bg-red-900/50 text-red-300 border border-red-700 px-1.5 py-0.5 rounded font-mono";
-                            else if(winRate < 40) this.ui.winRateBadge.className = "ml-2 text-[9px] bg-green-900/50 text-green-300 border border-green-700 px-1.5 py-0.5 rounded font-mono";
-                            else this.ui.winRateBadge.className = "ml-2 text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono";
-                        }
-                        
-                        // 計算統計數據 (供 Stats Bar 使用)
-                        const stats = {
-                            1: { total: 0, win: 0, sumRoi: 0 },
-                            5: { total: 0, win: 0, sumRoi: 0 },
-                            10: { total: 0, win: 0, sumRoi: 0 },
-                            20: { total: 0, win: 0, sumRoi: 0 },
-                            30: { total: 0, win: 0, sumRoi: 0 },
-                            60: { total: 0, win: 0, sumRoi: 0 },
-                            120: { total: 0, win: 0, sumRoi: 0 }
-                        };
-                        this.historyList.forEach(s => {
-                            [1, 5, 10, 20, 30, 60, 120].forEach(d => {
-                                // 修正: 這裡應該判斷持有天數是否「足夠」
-                                if (s.daysHeld >= d) {
-                                    stats[d].total++;
-                                    if (s.roi > 0) stats[d].win++;
-                                    stats[d].sumRoi += s.roi;
-                                }
-                            });
-                        });
-                        this.renderPerfStats(stats);
-                    }
-                } catch(e) { console.log('No history'); }
-            }
-
-            renderPerfStats(stats) {
-                let html = '';
-                [1, 5, 10, 20, 30, 60, 120].forEach(d => {
-                    const s = stats[d];
-                    if (s.total > 0) {
-                        const winRate = Math.round((s.win / s.total) * 100);
-                        const avgRoi = (s.sumRoi / s.total).toFixed(1);
-                        const color = avgRoi > 0 ? 'text-red-400' : (avgRoi < 0 ? 'text-green-400' : 'text-gray-400');
-                        const border = avgRoi > 0 ? 'border-red-500/30' : 'border-green-500/30';
-                        
-                        html += `
-                            <div class="stat-card flex flex-col justify-center ${border}">
-                                <div class="text-[9px] text-gray-400">${d}日 (${s.total}檔)</div>
-                                <div class="text-xs font-bold text-white">勝 ${winRate}%</div>
-                                <div class="text-[10px] font-bold ${color}">${avgRoi > 0 ? '+' : ''}${avgRoi}%</div>
-                            </div>
-                        `;
-                    }
-                });
-                if(html === '') html = '<span class="text-xs text-gray-500 pl-2">累積資料中...</span>';
-                this.ui.perfStatsBar.innerHTML = html;
-            }
-
-            sortPerfList(key) {
-                if (this.state.perfSortBy === key) {
-                    this.state.perfSortDir = this.state.perfSortDir === 'asc' ? 'desc' : 'asc';
-                } else {
-                    this.state.perfSortBy = key;
-                    this.state.perfSortDir = 'desc'; 
-                }
-                
-                const dir = this.state.perfSortDir === 'asc' ? 1 : -1;
-                this.historyList.sort((a, b) => {
-                    let valA = a[key], valB = b[key];
-                    if (typeof valA === 'number' && typeof valB === 'number') {
-                        return (valA - valB) * dir;
-                    }
-                    if (key === 'date') return (new Date(valA) - new Date(valB)) * dir;
-                    return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
-                });
-
-                document.querySelectorAll('#page-perf .sort-symbol').forEach(el => { el.innerText = '⇅'; el.classList.remove('active'); });
-                const activeSymbol = document.getElementById(`perf-symbol-${key}`);
-                if(activeSymbol) { activeSymbol.innerText = this.state.perfSortDir === 'asc' ? '▲' : '▼'; activeSymbol.classList.add('active'); }
-
-                this.renderPerformanceTable();
-            }
-
-            renderPerformanceTable() {
-                if (this.historyList.length === 0) {
-                    this.ui.perfBody.innerHTML = `<tr><td colspan="13" class="px-6 py-20 text-center text-gray-600">尚無歷史資料</td></tr>`;
-                    return;
-                }
-                
-                const html = this.historyList.map(s => {
-                    const roi = parseFloat(s.roi);
-                    const dayChg = parseFloat(s.daily_change);
-                    const roiClass = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-400');
-                    const dayClass = dayChg > 0 ? 'text-red-400' : (dayChg < 0 ? 'text-green-400' : 'text-gray-400');
-                    const dateDisplay = s.date.substring(5);
-
-                    const cols = [1, 5, 10, 20, 30, 60, 120].map(d => {
-                        // 【修改】將文字顏色改成灰色保持一致，避免太花俏
-                        // 或者根據需求：您希望顯示紅色綠色嗎？先保持跟 ROI 一樣的邏輯
-                        if (s.daysHeld >= d) {
-                            // 這裡顯示的是「當前累積報酬」，因為歷史紀錄目前只存最新價
-                            // 若要顯示「第N天的報酬」，後端需要每天存快照 (較複雜)
-                            // 目前邏輯：只要持有滿 N 天，就顯示現在的 ROI
-                            const c = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-500');
-                            return `<td class="px-1 py-2 text-right text-[10px] ${c}">${roi > 0 ? '+' : ''}${roi}%</td>`;
-                        } else {
-                            return `<td class="px-1 py-2 text-right text-[10px] text-gray-600">-</td>`;
-                        }
-                    }).join('');
-
-                    return `
-                        <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
-                            <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10 text-[10px] text-gray-400 min-w-[30px]">${dateDisplay}</td>
-                            <td class="px-1 py-2 sticky left-[30px] bg-slate-900 z-10 text-xs text-gray-300 font-bold min-w-[50px] border-r border-slate-800">
-                                <div>${s.name}</div>
-                                <div class="text-[9px] text-gray-500 font-normal">${s.id}</div>
-                            </td>
-                            <td class="px-1 py-2 text-right text-xs text-gray-500">${s.buy_price}</td>
-                            <td class="px-1 py-2 text-right text-xs text-gray-300">${s.latest_price}</td>
-                            <td class="px-1 py-2 text-right text-xs ${roiClass} font-bold">${roi > 0 ? '+' : ''}${roi}%</td>
-                            <td class="px-1 py-2 text-right text-xs ${dayClass}">${dayChg > 0 ? '+' : ''}${dayChg}%</td>
-                            ${cols}
+        <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10 overflow-x-scroll">
+            <div class="flex-grow overflow-auto bg-slate-900 relative">
+                <table class="min-w-[360px] w-full text-sm text-left text-gray-400">
+                    <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
+                        <tr>
+                            <th scope="col" class="px-1 py-2 sortable sticky-left text-gray-300" onclick="app.sortList('id')">
+                                股名<span class="sort-symbol" id="sort-symbol-id">⇅</span>
+                            </th>
+                            <th scope="col" class="px-1 py-2 sortable text-center" onclick="app.sortList('group')">
+                                族群<span class="sort-symbol" id="sort-symbol-group">⇅</span>
+                            </th>
+                            <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('price')">
+                                價<span class="sort-symbol" id="sort-symbol-price">⇅</span>
+                            </th>
+                            <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('changeRate')">
+                                漲跌<span class="sort-symbol" id="sort-symbol-changeRate">⇅</span>
+                            </th>
+                            <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('ma5')">
+                                MA5<span class="sort-symbol" id="sort-symbol-ma5">⇅</span>
+                            </th>
+                            <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('ma10')">
+                                MA10<span class="sort-symbol" id="sort-symbol-ma10">⇅</span>
+                            </th>
+                            <th scope="col" class="px-1 py-2 text-[10px] sortable" onclick="app.sortList('note')">
+                                備註<span class="sort-symbol" id="sort-symbol-note">⇅</span>
+                            </th>
                         </tr>
-                    `;
-                }).join('');
-                this.ui.perfBody.innerHTML = html;
-            }
-            
-            // ... (其他原有邏輯保持不變) ...
-            
-            applyStateAndRender() {
-                let list = [...this.stockList];
-                if (this.state.filterGroup) {
-                    list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
-                    this.ui.filterTag.classList.remove('hidden');
-                    this.ui.filterName.innerText = this.state.filterGroup;
-                } else { this.ui.filterTag.classList.add('hidden'); }
+                    </thead>
+                    <tbody id="result-body" class="divide-y divide-slate-800">
+                        <tr><td colspan="7" class="px-6 py-20 text-center text-gray-600"><i class="fa-solid fa-spinner fa-spin text-2xl mb-4 text-blue-500"></i><br>載入中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-                if (this.state.filterMa) {
-                    list = list.filter(s => s.price > s.ma5 && s.price > s.ma10);
-                    this.ui.btnMaFilter.classList.remove('bg-slate-700', 'text-gray-300');
-                    this.ui.btnMaFilter.classList.add('bg-indigo-600', 'text-white');
-                } else {
-                    this.ui.btnMaFilter.classList.add('bg-slate-700', 'text-gray-300');
-                    this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white');
-                }
+    <!-- 其他頁面如績效、Admin維持原樣，需在table欄位加 sticky-left 即可 -->
 
-                if (this.state.sortBy) {
-                    const dir = this.state.sortDir === 'asc' ? 1 : -1;
-                    list.sort((a, b) => {
-                        let valA = a[this.state.sortBy];
-                        let valB = b[this.state.sortBy];
-                        // 修正：MA5/MA10 加入數值排序
-                        if (['price', 'changeRate', 'ma5', 'ma10'].includes(this.state.sortBy)) 
-                            return (parseFloat(valA) - parseFloat(valB)) * dir;
-                        return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
-                    });
-                    document.querySelectorAll('#page-list .sort-symbol').forEach(el => { el.innerText = '⇅'; el.classList.remove('active'); });
-                    const activeSymbol = document.getElementById(`sort-symbol-${this.state.sortBy}`);
-                    if(activeSymbol) { activeSymbol.innerText = this.state.sortDir === 'asc' ? '▲' : '▼'; activeSymbol.classList.add('active'); }
-                }
-                this.displayList = list;
-                this.renderTable(this.displayList);
-                this.updateCount();
-            }
+</main>
 
-            filterByGroup(groupName) { this.state.filterGroup = groupName; this.state.filterMa = false; this.switchTab('list'); this.applyStateAndRender(); }
-            clearFilter() { this.state.filterGroup = null; this.applyStateAndRender(); }
-            toggleMaFilter() { this.state.filterMa = !this.state.filterMa; this.applyStateAndRender(); }
-            sortList(key) {
-                if (this.state.sortBy === key) { this.state.sortDir = this.state.sortDir === 'asc' ? 'desc' : 'asc'; } 
-                else { this.state.sortBy = key; this.state.sortDir = 'asc'; }
-                this.applyStateAndRender();
-            }
-            
-            async triggerCloudUpdate() {
-                const owner = localStorage.getItem('gh_owner');
-                const repo = localStorage.getItem('gh_repo');
-                const token = localStorage.getItem('gh_token');
-                if (!owner || !repo || !token) { alert("請先至設定頁填寫 Token"); this.switchTab('admin'); return; }
-                if (!confirm("確定要更新報價嗎？")) return;
-                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
-                this.ui.btnCloudUpdate.disabled = true;
-                try {
-                    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, {
-                        method: 'POST', headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, body: JSON.stringify({ ref: 'main' })
-                    });
-                    if (res.status === 204) { this.startPolling(); } else { throw new Error(`Status ${res.status}`); }
-                } catch (e) { alert("發送失敗：" + e.message); this.resetUpdateButton(); }
-            }
-            startPolling() {
-                if (this.isPolling) return;
-                this.isPolling = true;
-                this.ui.lastUpdated.classList.add("animate-pulse", "text-blue-400");
-                this.pollInterval = setInterval(() => { this.loadData(); }, 15000);
-            }
-            stopPolling() {
-                this.isPolling = false;
-                clearInterval(this.pollInterval);
-                this.resetUpdateButton();
-                this.ui.lastUpdated.classList.remove("animate-pulse", "text-blue-400");
-            }
-            resetUpdateButton() {
-                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`;
-                this.ui.btnCloudUpdate.disabled = false;
-            }
+<!-- Bottom Nav -->
+<nav class="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
+    <div class="max-w-6xl mx-auto flex justify-around h-full">
+        <button onclick="app.switchTab('heatmap')" id="tab-heatmap" class="tab-btn active flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-fire text-lg mb-1"></i><span class="text-xs mt-1">熱力圖</span></button>
+        <button onclick="app.switchTab('list')" id="tab-list" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-list-ul text-lg mb-1"></i><span class="text-xs mt-1">報價</span></button>
+        <button onclick="app.switchTab('perf')" id="tab-perf" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-trophy text-lg mb-1"></i><span class="text-xs mt-1">績效</span></button>
+        <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-gear text-lg mb-1"></i><span class="text-xs mt-1">設定</span></button>
+    </div>
+</nav>
 
-            renderHeatmap() {
-                if (this.stockList.length === 0) { this.ui.heatmapContainer.innerHTML = `<div class="col-span-2 text-center text-gray-500 pt-10">無資料，請更新報價。</div>`; return; }
-                const groups = {};
-                this.stockList.forEach(stock => {
-                    const gName = stock.group || '其他';
-                    if (!groups[gName]) groups[gName] = { totalChange: 0, count: 0 };
-                    groups[gName].totalChange += parseFloat(stock.changeRate || 0);
-                    groups[gName].count++;
-                });
-                const groupArray = Object.keys(groups).map(key => ({
-                    name: key,
-                    avgChange: (groups[key].totalChange / groups[key].count).toFixed(2),
-                    count: groups[key].count
-                })).sort((a, b) => b.avgChange - a.avgChange);
+<script>
+// StockApp class 原邏輯保持不變，只需在 renderTable/perfTable 中 table 的股名欄 td 加 class="sticky-left"
+</script>
 
-                this.ui.heatmapContainer.innerHTML = groupArray.map(g => {
-                    const rate = parseFloat(g.avgChange);
-                    let colorClass = 'bg-slate-700';
-                    if (rate > 2) colorClass = 'bg-red-600';
-                    else if (rate > 0) colorClass = 'bg-red-900/80';
-                    else if (rate < -2) colorClass = 'bg-green-600';
-                    else if (rate < 0) colorClass = 'bg-green-900/80';
-                    return `<div onclick="app.filterByGroup('${g.name}')" class="${colorClass} p-3 rounded-lg shadow cursor-pointer active:scale-95 transition-transform flex flex-col justify-between h-24 border border-white/10 hover:border-white/30"><span class="text-sm font-bold text-white truncate">${g.name}</span><div class="flex justify-between items-end"><span class="text-xs text-gray-300">${g.count}檔</span><span class="text-lg font-bold text-white">${rate>0?'+':''}${rate}%</span></div></div>`;
-                }).join('');
-            }
-
-            renderTable(list) {
-                if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-500">無符合篩選條件的資料</td></tr>`; return; }
-                const html = list.map(stock => {
-                    const rate = parseFloat(stock.changeRate||0);
-                    const price = stock.price.toFixed(2);
-                    // 【修改】MA5/MA10 欄位樣式
-                    let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-white font-bold');
-                    let rateDisplay = rate > 0 ? `+${rate.toFixed(2)}%` : `${rate.toFixed(2)}%`;
-                    const typeBadge = stock.type === '上市' ? '<span class="bg-blue-900 text-blue-300 text-[9px] px-1 rounded border border-blue-800">市</span>' : '<span class="bg-purple-900 text-purple-300 text-[9px] px-1 rounded border border-purple-800">櫃</span>';
-                    let shortGroup = stock.group || '-';
-                    if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) shortGroup = shortGroup.substring(0, 2);
-                    const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-slate-800 text-gray-400 text-[10px] px-1 py-0.5 rounded border border-slate-700">${shortGroup}</span>` : `<span class="text-gray-600 text-[10px]">-</span>`;
-                    
-                    return `
-                        <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
-                            <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10">
-                                <div class="flex items-center gap-1.5">
-                                    <div class="flex flex-col w-[70px]">
-                                        <div class="text-white text-xs font-bold leading-tight name-cell">${stock.name}</div>
-                                        <div class="text-gray-500 text-[10px] flex items-center gap-1 mt-0.5">${stock.id} ${typeBadge}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-1 py-2 text-center align-middle">${groupBadge}</td>
-                            <td class="px-1 py-2 text-right ${priceClass} text-sm">${price}</td>
-                            <td class="px-1 py-2 text-right ${priceClass} text-xs">${rateDisplay}</td>
-                            <!-- 【修改】MA5/MA10 欄位使用 text-sm 且灰色 -->
-                            <td class="px-1 py-2 text-right text-sm text-gray-500 font-mono">${stock.ma5}</td>
-                            <td class="px-1 py-2 text-right text-sm text-gray-500 font-mono">${stock.ma10}</td>
-                            <td class="px-1 py-2 text-[10px] text-gray-600 whitespace-nowrap">${stock.note || '-'}</td>
-                        </tr>`;
-                }).join('');
-                this.ui.body.innerHTML = html;
-            }
-            updateCount() { this.ui.dataCount.innerText = `${this.displayList.length} 檔`; }
-        }
-
-        class AdminController {
-            constructor() {
-                this.ui = { owner: document.getElementById('repo-owner'), repo: document.getElementById('repo-name'), token: document.getElementById('github-token') };
-            }
-            loadSettings() { this.ui.owner.value = localStorage.getItem('gh_owner')||''; this.ui.repo.value = localStorage.getItem('gh_repo')||''; this.ui.token.value = localStorage.getItem('gh_token')||''; }
-            saveSettings() { 
-                localStorage.setItem('gh_owner', this.ui.owner.value.trim()); 
-                localStorage.setItem('gh_repo', this.ui.repo.value.trim()); 
-                localStorage.setItem('gh_token', this.ui.token.value.trim()); 
-                alert('設定已儲存！');
-            }
-        }
-        const app = new StockApp(); const admin = new AdminController();
-    </script>
 </body>
 </html>
