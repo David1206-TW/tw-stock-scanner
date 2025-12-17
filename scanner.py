@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V35 (週線嚴格執法版)
+台股自動掃描策略機器人 (Scanner Bot) - V38 (週線嚴格剔除版)
 
-【V35 修正說明】
-針對 VCP 策略條件 8 (週線架構) 進行邏輯修復：
-1. 移除 try-except 隱藏錯誤的漏洞，防止空頭股票因運算錯誤而偷渡。
-2. 邏輯確立：
-   - 若有足夠數據計算週MA60 -> 必須符合 週MA5 > 週MA60，否則剔除。
-   - 若無足夠數據 (新股) -> 才予以放行。
+【V38 修正重點】
+修正 VCP 策略中週線檢查的邏輯漏洞：
+- 原本：計算失敗或資料不足時 -> 放行 (Pass)。(導致空頭股偷渡)
+- 現在：計算失敗或資料不足時 -> 剔除 (Reject)。(寧可錯殺，不可放過)
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -22,12 +20,12 @@
 【策略 B：VCP 技術面】
    1. 長線保護：收盤 > MA240, MA120, MA60。
    2. 強勢多頭：MA5 > MA10 > MA20。
-   3. 極致壓縮：布林帶寬 < 18%。
+   3. 極致壓縮：布林帶寬 < 9%。
    4. 均線超級糾結：差異 < 5%。
    5. 流動性：5日均量 > 500張。
    6. 守住攻擊線：收盤 > MA10。
    7. 避免追高：當日漲幅 <= 6%。
-   8. 【V35修正】週線架構：週MA5 > 週MA60 (資料足夠者嚴格執行)。
+   8. 【V38嚴格】週線架構：必須確認 週MA5 > 週MA60，否則一律剔除。
 """
 
 import yfinance as yf
@@ -59,7 +57,7 @@ def save_json(filename, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 # ==========================================
-# 2. 產業分類解析
+# 2. 產業分類解析邏輯
 # ==========================================
 SEED_INDUSTRY_MAP = {} 
 
@@ -139,7 +137,6 @@ def check_strategy_original(df):
     if curr_v >= curr_vol_ma5: return False, None
     # 6. 支撐確認
     if curr_c <= curr_ma10: return False, None
-
     # 7. 底部打樁
     if prev_l > 0:
         low_diff_pct = abs(curr_l - prev_l) / prev_l
@@ -155,7 +152,7 @@ def check_strategy_original(df):
     }
 
 # ==========================================
-# 4-B. 策略邏輯：VCP 技術面 (V35 修正)
+# 4-B. 策略邏輯：VCP 技術面 (V38 嚴格版)
 # ==========================================
 def check_strategy_vcp(df):
     if len(df) < 250: return False, None
@@ -171,8 +168,6 @@ def check_strategy_vcp(df):
     
     std = close.rolling(20).std()
     bw = ( (ma20 + 2*std) - (ma20 - 2*std) ) / ma20
-    
-    # 4. 流動性 (5日均量)
     vol_ma5 = volume.rolling(5).mean()
 
     curr_c = close.iloc[-1]
@@ -189,12 +184,12 @@ def check_strategy_vcp(df):
 
     if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
 
-    # 1. 長線保護
+    # 1. 長線保護 (三線之上)
     if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     # 2. 強勢多頭
     if not (curr_ma5 > curr_ma10 > curr_ma20): return False, None
-    # 3. 極致壓縮
-    if curr_bw > 0.18: return False, None
+    # 3. 極致壓縮 (9%)
+    if curr_bw > 0.09: return False, None
     # 4. 流動性
     if curr_vol_ma5 < 500000: return False, None
     # 5. 超級糾結
@@ -208,28 +203,31 @@ def check_strategy_vcp(df):
         daily_change = (curr_c - prev_c) / prev_c
         if daily_change > 0.06: return False, None
 
-    # 8. 【V35 修正】週線架構確認 (Weekly Check)
-    # 移除 try-except，改用明確判斷
-    weekly_df = df.resample('W-FRI').agg({'Close': 'last'})
-    
-    # 確保有週線數據
-    if not weekly_df.empty:
-        w_close = weekly_df['Close']
-        w_ma5_series = w_close.rolling(5).mean()
-        w_ma60_series = w_close.rolling(60).mean()
+    # 8. 【V38 嚴格版】週線架構確認
+    # 改為：只要計算失敗或資料不足，一律 Return False (不放行)
+    try:
+        # 將日線資料 Resample 成週線
+        weekly_df = df.resample('W-FRI').agg({'Close': 'last'})
         
-        # 取得最新一週的均線值
-        if len(w_ma5_series) > 0 and len(w_ma60_series) > 0:
-            w_ma5 = w_ma5_series.iloc[-1]
-            w_ma60 = w_ma60_series.iloc[-1]
+        # 嚴格條件 1: 資料長度必須足夠計算 60 週均線
+        if len(weekly_df) < 60:
+            return False, None 
             
-            # 如果週MA60是有效數值 (代表上市夠久)
-            if not math.isnan(w_ma60) and w_ma60 > 0:
-                # 必須檢查 MA5 是否存在
-                if not math.isnan(w_ma5):
-                    # 【核心檢查】
-                    if w_ma5 <= w_ma60:
-                        return False, None
+        w_close = weekly_df['Close']
+        w_ma5 = w_close.rolling(5).mean().iloc[-1]
+        w_ma60 = w_close.rolling(60).mean().iloc[-1]
+        
+        # 嚴格條件 2: 數值必須有效
+        if math.isnan(w_ma5) or math.isnan(w_ma60):
+            return False, None
+            
+        # 嚴格條件 3: 週MA5 必須大於 週MA60
+        if w_ma5 <= w_ma60:
+            return False, None
+
+    except Exception:
+        # 嚴格條件 4: 任何運算錯誤都視為不合格
+        return False, None
 
     return True, {
         "tag": "VCP",
@@ -329,7 +327,7 @@ def run_scanner():
             existing_stock_ids.add(s['id'])
             
     print(f"歷史已追蹤: {len(existing_stock_ids)} 檔")
-    print(f"開始雙策略掃描 (V35 週線強化版)...")
+    print(f"開始雙策略掃描 (V38)...")
     
     daily_results = []
     new_history_entries = []
