@@ -5,6 +5,7 @@
 【修正說明】
 1. 修正策略函式呼叫名稱錯誤 (check_strategy_vcp -> check_strategy_vcp_pro)
 2. 在 try-except 中加入錯誤列印，以便 Debug
+3. VCP 策略新增過濾：剔除收盤 < MA240 且 成交量 < 500張 的標的
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -16,11 +17,11 @@
    7. 底部打樁：|今日最低 - 昨日最低| < 100%。
    8. 流動性：5日均量 > 500張。
 
-【策略 B：VCP 技術面】
-  1.  股價必須在年線之上
-  2. 價格位階 (靠近 52 週新高)VCP 通常發生在股價已經漲了一段之後的整理
-  3. 波動收縮 (核心 VCP 精神) 最近 20 天的波動範圍被壓縮在 15% 以內
-  4. 量能遞減 (量縮整理)5日均量 < 20日均量 (短期量縮)
+【策略 B：VCP 技術面 (VCP-Lite)】
+  1. 硬指標過濾：股價必須 > MA240 (年線) 且 成交量 > 500張
+  2. 價格位階：靠近 52 週新高 (High Tight Flag 特徵)
+  3. 波動收縮：布林帶寬度 < 15% (代表籌碼沉澱)
+  4. 量能遞減：5日均量 < 20日均量 (短期量縮)
  
 """
 
@@ -152,7 +153,7 @@ def check_strategy_vcp_pro(df):
         close = df['Close']
         volume = df['Volume']
 
-        # 資料長度不足直接跳過
+        # 資料長度不足直接跳過 (需計算 MA240)
         if len(close) < 260:
             return False, None
 
@@ -162,6 +163,7 @@ def check_strategy_vcp_pro(df):
         ma50 = close.rolling(50).mean()
         ma150 = close.rolling(150).mean()
         ma200 = close.rolling(200).mean()
+        ma240 = close.rolling(240).mean() # 新增 MA240 計算
         
         # 布林帶 (20日, 2倍標準差)
         std20 = close.rolling(20).std()
@@ -172,14 +174,24 @@ def check_strategy_vcp_pro(df):
 
         # 當前數值
         curr_c = close.iloc[-1]
+        curr_v = volume.iloc[-1] # 當天成交量
+
         curr_ma20 = ma20.iloc[-1]
         curr_ma50 = ma50.iloc[-1]
         curr_ma150 = ma150.iloc[-1]
         curr_ma200 = ma200.iloc[-1]
+        curr_ma240 = ma240.iloc[-1] # MA240 數值
         curr_bb_width = bb_width.iloc[-1]
 
-        # ===== 條件 1：大趨勢確認 (Mark Minervini 趨勢模板簡化版) =====
-        # 股價必須在年線之上
+        # ===== 新增條件：基本面濾網 =====
+        # 1. 股價必須站上 MA240 (年線) -> 過濾長線空頭
+        if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
+        
+        # 2. 當天成交量必須 > 500 張 (500,000股) -> 過濾流動性差
+        if curr_v < 500000: return False, None
+
+        # ===== 條件 1：趨勢確認 =====
+        # 股價必須在 200MA 之上 (雙重確認長線趨勢)
         if curr_c < curr_ma200: return False, None
         # 年線必須大致向上 (當前年線 > 1個月前年線)
         if curr_ma200 <= ma200.iloc[-20]: return False, None
@@ -187,32 +199,29 @@ def check_strategy_vcp_pro(df):
         if curr_c < curr_ma150: return False, None
 
         # ===== 條件 2：價格位階 (靠近 52 週新高) =====
-        # VCP 通常發生在股價已經漲了一段之後的整理
         high_52w = close.iloc[-250:].max()
         low_52w = close.iloc[-250:].min()
         
-        # 股價至少要比 52 週低點高 30% (過濾掉還在底部的爛股)
+        # 股價至少要比 52 週低點高 30%
         if curr_c < low_52w * 1.3: return False, None
-        # 股價距離 52 週新高不能太遠 (例如在 25% 以內)，代表正在消化前高壓力
+        # 股價距離 52 週新高不能太遠 (25% 以內)
         if curr_c < high_52w * 0.75: return False, None
 
         # ===== 條件 3：波動收縮 (核心 VCP 精神) =====
-        # 放寬：原本 0.12 (12%) 太嚴，台股改為 0.15~0.18 (15%~18%) 較合理
-        # 意思：股價在最近 20 天的波動範圍被壓縮在 15% 以內
+        # 布林帶寬度 < 15%
         if curr_bb_width > 0.15: return False, None
         
-        # 額外檢查：股價必須站在月線 (20MA) 之上或附近 (不能是破底的收縮)
+        # 額外檢查：股價必須站在月線 (20MA) 之上或附近
         if curr_c < curr_ma20 * 0.98: return False, None
 
-        # ===== 條件 4：量能遞減 (量縮整理) =====
-        # 5日均量 < 20日均量 (短期量縮)
+        # ===== 條件 4：量能遞減 =====
         vol_ma5 = volume.rolling(5).mean()
         vol_ma20 = volume.rolling(20).mean()
         
-        # 如果成交量沒有明顯縮小，則不符合 VCP 左側特徵
+        # 5日均量 < 20日均量 (短期量縮)
         if vol_ma5.iloc[-1] > vol_ma20.iloc[-1]: return False, None
         
-        # 排除流動性太差的股票 (5日均量至少 300 張)
+        # 5日均量也稍微過濾一下 (至少 300 張)
         if vol_ma5.iloc[-1] < 300000: return False, None
 
     except Exception:
@@ -224,9 +233,9 @@ def check_strategy_vcp_pro(df):
         "ma5": round(close.rolling(5).mean().iloc[-1], 2),
         "ma10": round(ma10.iloc[-1], 2),
         "ma20": round(curr_ma20, 2),
-        "ma60": round(close.rolling(60).mean().iloc[-1], 2), # 雖然條件沒用但前端可能要顯示
         "ma150": round(curr_ma150, 2),
         "ma200": round(curr_ma200, 2),
+        "ma240": round(curr_ma240, 2),
         "bb_width": round(curr_bb_width * 100, 1)
     }
 
