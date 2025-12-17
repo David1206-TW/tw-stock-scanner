@@ -1,29 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V30 (寬鬆 VCP 攻擊版)
+台股自動掃描策略機器人 (Scanner Bot) - V30 (修正版：T+1 績效計算)
 
-【V30 修正說明】
-針對「剛發動攻擊」的股票 (如 12/16 合晶) 進行 VCP 策略微調：
-1. 放寬布林帶寬限制：12% -> 18% (允許通道剛開口)。
-2. 放寬均線糾結限制：2.5% -> 5% (允許均線開始發散)。
+【修正說明】
+- 在計算 ROI 時加入日期檢查。
+- 規則：只有當 (今天日期 > 建倉日期) 時，才計算 ROI。
+- 目的：避免同日盤中更新時出現虛假的「當日績效」，確保績效是從 T+1 開始計算。
 
-【策略 A：拉回佈局】(維持 V29)
-   1. 長線保護：收盤 > MA240, MA120, MA60。
-   2. 多頭排列：MA10 > MA20 > MA60。
-   3. 位階控制：乖離率 < 25%。
-   4. 均線糾結：差異 < 8%。
-   5. 量縮整理：成交量 < 5日均量。
-   6. 支撐確認：收盤 > MA10。
-   7. 底部打樁：|今日最低 - 昨日最低| < 1%。
-
-【策略 B：VCP 技術面】(V30 放寬版)
-   1. 長線保護：收盤 > MA240, MA120, MA60。
-   2. 強勢多頭：MA5 > MA10 > MA20。
-   3. 【放寬】極致壓縮：布林帶寬 < 18% (原 12%)。
-   4. 【放寬】均線超級糾結：差異 < 5% (原 2.5%)。
-   5. 流動性：20日均量 > 500張。
-   6. 守住攻擊線：收盤 > MA10。
-   7. 避免追高：當日漲幅 <= 6%。
+(其餘策略邏輯保持 V29 不變)
 """
 
 import yfinance as yf
@@ -35,9 +19,7 @@ import math
 from datetime import datetime, time as dt_time
 import pytz
 
-# ==========================================
-# 1. 資料庫管理
-# ==========================================
+# ... (前面 import 與 DB 設定保持不變) ...
 DB_INDUSTRY = 'cmoney_industry_cache.json'
 DB_HISTORY = 'history.json' 
 
@@ -54,11 +36,9 @@ def save_json(filename, data):
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# ==========================================
-# 2. 產業分類解析
-# ==========================================
+# ... (get_stock_group, get_all_tickers, check_strategy 函式保持不變) ...
+# (為節省篇幅，請保留您原本 V29 的策略函式內容)
 SEED_INDUSTRY_MAP = {} 
-
 def get_stock_group(code, db_data):
     group = "其他"
     if code in db_data:
@@ -84,15 +64,11 @@ def get_all_tickers():
         if len(code) == 4: ticker_list.append(f"{code}.TWO")
     return ticker_list
 
-# ==========================================
-# 4-A. 策略邏輯：拉回佈局 (Original)
-# ==========================================
 def check_strategy_original(df):
     if len(df) < 250: return False, None
     close = df['Close']
     volume = df['Volume']
-    low = df['Low'] 
-    
+    low = df['Low']
     ma5 = close.rolling(5).mean()
     ma10 = close.rolling(10).mean()
     ma20 = close.rolling(20).mean()
@@ -100,11 +76,8 @@ def check_strategy_original(df):
     ma120 = close.rolling(120).mean()
     ma240 = close.rolling(240).mean()
     vol_ma5 = volume.rolling(5).mean()
-    
     curr_c = close.iloc[-1]
     curr_v = volume.iloc[-1]
-    curr_l = low.iloc[-1]
-    
     curr_ma5 = ma5.iloc[-1]
     curr_ma10 = ma10.iloc[-1]
     curr_ma20 = ma20.iloc[-1]
@@ -112,33 +85,22 @@ def check_strategy_original(df):
     curr_ma120 = ma120.iloc[-1] 
     curr_ma240 = ma240.iloc[-1]
     curr_vol_ma5 = vol_ma5.iloc[-1]
-    
     prev_l = low.iloc[-2]
-
+    curr_l = low.iloc[-1]
     if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
     if curr_vol_ma5 < 500000: return False, None 
-
-    # 1. 長線保護
     if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
-    # 2. 多頭排列
     if not ((curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)): return False, None
-    # 3. 位階控制
     bias_ma60 = (curr_c - curr_ma60) / curr_ma60
     if bias_ma60 >= 0.25: return False, None
-    # 4. 均線糾結
     mas = [curr_ma5, curr_ma10, curr_ma20]
     ma_divergence = (max(mas) - min(mas)) / min(mas)
     if ma_divergence >= 0.08: return False, None
-    # 5. 量縮整理
     if curr_v >= curr_vol_ma5: return False, None
-    # 6. 支撐確認
     if curr_c <= curr_ma10: return False, None
-
-    # 7. 底部打樁
     if prev_l > 0:
         low_diff_pct = abs(curr_l - prev_l) / prev_l
         if low_diff_pct > 0.01: return False, None
-
     return True, {
         "tag": "拉回佈局",
         "price": round(curr_c, 2),
@@ -148,25 +110,19 @@ def check_strategy_original(df):
         "vol_ratio": round(curr_v / curr_vol_ma5, 2)
     }
 
-# ==========================================
-# 4-B. 策略邏輯：VCP 技術面
-# ==========================================
 def check_strategy_vcp(df):
     if len(df) < 250: return False, None
     close = df['Close']
     volume = df['Volume']
-
     ma5 = close.rolling(5).mean()
     ma10 = close.rolling(10).mean()
     ma20 = close.rolling(20).mean()
     ma60 = close.rolling(60).mean()
     ma120 = close.rolling(120).mean()
     ma240 = close.rolling(240).mean()
-    
     std = close.rolling(20).std()
     bw = ( (ma20 + 2*std) - (ma20 - 2*std) ) / ma20
     vol_ma20 = volume.rolling(20).mean()
-
     curr_c = close.iloc[-1]
     curr_ma5 = ma5.iloc[-1]
     curr_ma10 = ma10.iloc[-1]
@@ -176,35 +132,19 @@ def check_strategy_vcp(df):
     curr_ma240 = ma240.iloc[-1]
     curr_bw = bw.iloc[-1]
     curr_vol_ma20 = vol_ma20.iloc[-1]
-    
     prev_c = close.iloc[-2]
-
     if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
-
-    # 1. 長線保護
     if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
-    # 2. 強勢多頭
     if not (curr_ma5 > curr_ma10 > curr_ma20): return False, None
-    
-    # 3. 【修改點 1】極致壓縮：放寬到 18% (原 12%)
     if curr_bw > 0.18: return False, None
-    
-    # 4. 流動性
     if curr_vol_ma20 < 500000: return False, None
-    
-    # 5. 【修改點 2】超級糾結：放寬到 5% (原 2.5%)
     mas = [curr_ma5, curr_ma10, curr_ma20]
     entangle_pct = (max(mas) - min(mas)) / min(mas)
     if entangle_pct > 0.05: return False, None
-
-    # 6. 守住 10 日線
     if curr_c <= curr_ma10: return False, None
-
-    # 7. 避免追高
     if prev_c > 0:
         daily_change = (curr_c - prev_c) / prev_c
         if daily_change > 0.06: return False, None
-
     return True, {
         "tag": "VCP",
         "price": round(curr_c, 2),
@@ -215,10 +155,16 @@ def check_strategy_vcp(df):
     }
 
 # ==========================================
-# 5. 更新歷史績效
+# 5. 更新歷史績效 (修正版：加入 T+1 檢查)
 # ==========================================
 def update_history_roi(history_db):
     print("正在更新歷史名單績效...")
+    
+    # 取得台北時間的今天日期 (格式 YYYY/MM/DD)
+    tw_tz = pytz.timezone('Asia/Taipei')
+    today_str = datetime.now(tw_tz).strftime("%Y/%m/%d")
+    today_date = datetime.strptime(today_str, "%Y/%m/%d")
+
     tickers_to_check = set()
     for date_str, stocks in history_db.items():
         for stock in stocks:
@@ -248,6 +194,15 @@ def update_history_roi(history_db):
     except: return history_db
 
     for date_str, stocks in history_db.items():
+        # 解析這批名單的建倉日期
+        try:
+            entry_date = datetime.strptime(date_str, "%Y/%m/%d")
+        except:
+            continue
+
+        # 計算持有天數差
+        days_diff = (today_date - entry_date).days
+
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
             if symbol in current_data:
@@ -255,15 +210,24 @@ def update_history_roi(history_db):
                 prev_price = current_data[symbol]['prev']
                 buy_price = stock['buy_price']
                 
+                # 【關鍵修改】T+1 規則：
+                # 如果 (今天 <= 建倉日)，代表是當天建倉，ROI 強制為 0
+                if days_diff <= 0:
+                    roi = 0.0
+                    daily_change = 0.0 # 或者您想看當日漲跌也可以保留計算，但 ROI 建議歸零
+                else:
+                    roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
+                    daily_change = round(((latest_price - prev_price) / prev_price) * 100, 2)
+                
                 stock['latest_price'] = round(latest_price, 2)
-                stock['roi'] = round(((latest_price - buy_price) / buy_price) * 100, 2)
-                stock['daily_change'] = round(((latest_price - prev_price) / prev_price) * 100, 2)
+                stock['roi'] = roi
+                stock['daily_change'] = daily_change
 
     print("歷史績效更新完成。")
     return history_db
 
 # ==========================================
-# 6. 主程式
+# 6. 主程式 (V29 雙策略優化版)
 # ==========================================
 def run_scanner():
     tw_tz = pytz.timezone('Asia/Taipei')
@@ -284,7 +248,7 @@ def run_scanner():
             existing_stock_ids.add(s['id'])
             
     print(f"歷史已追蹤: {len(existing_stock_ids)} 檔")
-    print(f"開始雙策略掃描 (V30 寬鬆 VCP 版)...")
+    print(f"開始雙策略掃描...")
     
     daily_results = []
     new_history_entries = []
@@ -292,7 +256,6 @@ def run_scanner():
     
     for i in range(0, len(full_list), batch_size):
         batch = full_list[i:i+batch_size]
-        print(f"Processing batch {i//batch_size + 1}...")
         try:
             data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=False)
             for ticker in batch:
@@ -351,14 +314,17 @@ def run_scanner():
                         
                         daily_results.append(stock_entry)
                         
+                        # 僅當非重複且在收盤後，才加入歷史待存區
                         if raw_code not in existing_stock_ids and is_after_market:
                             new_history_entries.append(stock_entry)
                             
                 except: continue
         except: continue
 
+    # 更新歷史 ROI (這裡會套用 T+1 規則)
     history_db = update_history_roi(history_db)
 
+    # 寫入新名單
     if new_history_entries and is_after_market:
         today_str = datetime.now().strftime("%Y/%m/%d")
         if today_str in history_db:
