@@ -18,7 +18,7 @@
 【策略 B：VCP 技術面】
    1. 長線保護：收盤 > MA240, MA120, MA60。
    2. 強勢多頭：MA5 > MA10 > MA20。
-   3. 【修改】極致壓縮：布林帶寬 < 9%
+   3. 【修改】極致壓縮：布林帶寬 < 5%
    4. 均線超級糾結：差異 < 5%。
    5. 流動性：5日均量 > 500張。
    6. 守住攻擊線：收盤 > MA10。
@@ -185,8 +185,8 @@ def check_strategy_vcp(df):
     # 2. 強勢多頭
     if not (curr_ma5 > curr_ma10 > curr_ma20): return False, None
     
-    # 3. 【修改】極致壓縮：布林帶寬 < 9%
-    if curr_bw > 0.09: return False, None
+    # 3. 【修改】極致壓縮：布林帶寬 < 5%
+    if curr_bw > 0.05: return False, None
     
     # 4. 流動性
     if curr_vol_ma5 < 500000: return False, None
