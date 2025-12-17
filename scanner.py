@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V41
+台股自動掃描策略機器人 (Scanner Bot) - V40 (布林帶寬放寬版)
+
+【V40 修正說明】
+策略 B (VCP) 的布林帶寬限制由 9% 放寬至 15%，增加選股廣度。
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -13,12 +16,14 @@
    8. 流動性：5日均量 > 500張。
 
 【策略 B：VCP 技術面】
-  1. 價格結構 MA200必須上升
-  2. 低點階梯式墊高
-  3. 回檔幅度遞減
-  4. 波動收縮（布林帶)
-  5. 量能遞減
-  6. 週線MA5斜率向上
+   1. 長線保護：收盤 > MA240, MA120, MA60。
+   2. 強勢多頭：MA5 > MA10 > MA20。
+   3. 【修改】極致壓縮：布林帶寬 < 10%
+   4. 均線超級糾結：差異 < 5%。
+   5. 流動性：5日均量 > 500張。
+   6. 守住攻擊線：收盤 > MA10。
+   7. 避免追高：當日漲幅 <= 6%。
+   8. 週線架構：週MA5 > 週MA60 (資料足夠者嚴格執行)。
 """
 
 import yfinance as yf
@@ -145,127 +150,80 @@ def check_strategy_original(df):
 # ==========================================
 # 4-B. 策略邏輯：VCP 技術面 (V40 修改)
 # ==========================================
-# ===============================
-# 策略 B：VCP Pro（V41）
-# ===============================
-def check_strategy_vcp_pro(df):
+def check_strategy_vcp(df):
+    if len(df) < 250: return False, None
+    close = df['Close']
+    volume = df['Volume']
+
+    ma5 = close.rolling(5).mean()
+    ma10 = close.rolling(10).mean()
+    ma20 = close.rolling(20).mean()
+    ma60 = close.rolling(60).mean()
+    ma120 = close.rolling(120).mean()
+    ma240 = close.rolling(240).mean()
+    
+    std = close.rolling(20).std()
+    bw = ( (ma20 + 2*std) - (ma20 - 2*std) ) / ma20
+    vol_ma5 = volume.rolling(5).mean()
+
+    curr_c = close.iloc[-1]
+    curr_ma5 = ma5.iloc[-1]
+    curr_ma10 = ma10.iloc[-1]
+    curr_ma20 = ma20.iloc[-1]
+    curr_ma60 = ma60.iloc[-1]
+    curr_ma120 = ma120.iloc[-1]
+    curr_ma240 = ma240.iloc[-1]
+    curr_bw = bw.iloc[-1]
+    curr_vol_ma5 = vol_ma5.iloc[-1]
+    
+    prev_c = close.iloc[-2]
+
+    if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
+
+    # 1. 長線保護
+    if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
+    # 2. 強勢多頭
+    if not (curr_ma5 > curr_ma10 > curr_ma20): return False, None
+    
+    # 3. 【修改】極致壓縮：布林帶寬 < 10%
+    if curr_bw > 0.10: return False, None
+    
+    # 4. 流動性
+    if curr_vol_ma5 < 500000: return False, None
+    # 5. 超級糾結
+    mas = [curr_ma5, curr_ma10, curr_ma20]
+    entangle_pct = (max(mas) - min(mas)) / min(mas)
+    if entangle_pct > 0.05: return False, None
+    # 6. 守住 10 日線
+    if curr_c <= curr_ma10: return False, None
+    # 7. 避免追高
+    if prev_c > 0:
+        daily_change = (curr_c - prev_c) / prev_c
+        if daily_change > 0.06: return False, None
+
+    # 8. 週線架構確認 (嚴格執行)
     try:
-        close = df['Close']
-        volume = df['Volume']
+        weekly_df = df.resample('W-FRI').agg({'Close': 'last'})
+        if len(weekly_df) >= 60:
+            w_close = weekly_df['Close']
+            w_ma5 = w_close.rolling(5).mean().iloc[-1]
+            w_ma60 = w_close.rolling(60).mean().iloc[-1]
+            
+            if not math.isnan(w_ma5) and not math.isnan(w_ma60):
+                if w_ma5 <= w_ma60:
+                    return False, None
+    except:
+        pass
 
-        if len(close) < 260:
-            return False, None
-
-        # ===== 日線均線 =====
-        ma5 = close.rolling(5).mean()
-        ma10 = close.rolling(10).mean()
-        ma20 = close.rolling(20).mean()
-        ma60 = close.rolling(60).mean()
-        ma150 = close.rolling(150).mean()
-        ma200 = close.rolling(200).mean()
-
-        curr_c = close.iloc[-1]
-        curr_ma5 = ma5.iloc[-1]
-        curr_ma10 = ma10.iloc[-1]
-        curr_ma20 = ma20.iloc[-1]
-        curr_ma60 = ma60.iloc[-1]
-        curr_ma150 = ma150.iloc[-1]
-        curr_ma200 = ma200.iloc[-1]
-
-        # ===== 條件 1：價格結構 =====
-        if curr_c <= curr_ma200:
-            return False, None
-
-        # MA200 必須上升
-        if curr_ma200 <= ma200.iloc[-20]:
-            return False, None
-
-        # MA150 > MA200
-        if curr_ma150 <= curr_ma200:
-            return False, None
-
-        # 短中期多頭排列
-        if not (curr_ma5 > curr_ma10 > curr_ma20 > curr_ma60):
-            return False, None
-
-        # ===== 條件 2：低點階梯式墊高 =====
-        lows = close.rolling(20).min().dropna()
-        if len(lows) < 3:
-            return False, None
-
-        low1, low2, low3 = lows.iloc[-3:]
-        if not (low1 < low2 < low3):
-            return False, None
-
-        # ===== 條件 3：回檔幅度遞減 =====
-        window = close.iloc[-120:]
-        peak = window.rolling(10).max()
-        trough = window.rolling(10).min()
-        retrace = (peak - trough) / peak
-        retrace = retrace.dropna()
-
-        if len(retrace) < 3:
-            return False, None
-
-        r1, r2, r3 = retrace.iloc[-3:]
-        if not (r1 > r2 > r3):
-            return False, None
-
-        # ===== 條件 4：波動收縮（布林帶） =====
-        std20 = close.rolling(20).std()
-        bb_width = (4 * std20) / ma20
-
-        if bb_width.iloc[-1] > 0.12:
-            return False, None
-
-        # ===== 條件 5：量能遞減 =====
-        vol_short = volume.iloc[-10:].mean()
-        vol_long = volume.iloc[-40:-10].mean()
-
-        if vol_short >= vol_long:
-            return False, None
-
-        # ===== 條件 6：週線確認 =====
-        if not isinstance(df.index, pd.DatetimeIndex):
-            return False, None
-
-        weekly = (
-            df[['Close']]
-            .sort_index()
-            .resample('W-FRI')
-            .last()
-            .dropna()
-            .iloc[:-1]
-        )
-
-        if len(weekly) < 61:
-            return False, None
-
-        w_close = weekly['Close']
-        w_ma5 = w_close.rolling(5).mean()
-        w_ma60 = w_close.rolling(60).mean()
-
-        if w_ma5.iloc[-1] <= w_ma60.iloc[-1]:
-            return False, None
-
-        # 週 MA5 斜率向上
-        if w_ma5.iloc[-1] <= w_ma5.iloc[-2]:
-            return False, None
-
-    except Exception:
-        return False, None
-
-    # ===== 通過所有條件 =====
     return True, {
-        "tag": "VCP-Pro",
+        "tag": "VCP",
         "price": round(curr_c, 2),
         "ma5": round(curr_ma5, 2),
         "ma10": round(curr_ma10, 2),
-        "ma20": round(curr_ma20, 2),
-        "ma150": round(curr_ma150, 2),
-        "ma200": round(curr_ma200, 2),
-        "bb_width": round(bb_width.iloc[-1] * 100, 1)
+        "ma240": round(curr_ma240, 2),
+        "bw": round(curr_bw * 100, 1)
     }
+
 # ==========================================
 # 5. 更新歷史績效 (T+1)
 # ==========================================
