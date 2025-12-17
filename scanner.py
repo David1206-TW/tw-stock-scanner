@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V38 (週線嚴格剔除版)
+台股自動掃描策略機器人 (Scanner Bot) - V40 (布林帶寬放寬版)
 
-【V38 修正重點】
-修正 VCP 策略中週線檢查的邏輯漏洞：
-- 原本：計算失敗或資料不足時 -> 放行 (Pass)。(導致空頭股偷渡)
-- 現在：計算失敗或資料不足時 -> 剔除 (Reject)。(寧可錯殺，不可放過)
+【V40 修正說明】
+策略 B (VCP) 的布林帶寬限制由 9% 放寬至 15%，增加選股廣度。
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -20,12 +18,12 @@
 【策略 B：VCP 技術面】
    1. 長線保護：收盤 > MA240, MA120, MA60。
    2. 強勢多頭：MA5 > MA10 > MA20。
-   3. 極致壓縮：布林帶寬 < 9%。
+   3. 【修改】極致壓縮：布林帶寬 < 15% (原 9%)。
    4. 均線超級糾結：差異 < 5%。
    5. 流動性：5日均量 > 500張。
    6. 守住攻擊線：收盤 > MA10。
    7. 避免追高：當日漲幅 <= 6%。
-   8. 【V38嚴格】週線架構：必須確認 週MA5 > 週MA60，否則一律剔除。
+   8. 週線架構：週MA5 > 週MA60 (資料足夠者嚴格執行)。
 """
 
 import yfinance as yf
@@ -118,8 +116,6 @@ def check_strategy_original(df):
     prev_l = low.iloc[-2]
 
     if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
-    
-    # 8. 流動性
     if curr_vol_ma5 < 500000: return False, None 
 
     # 1. 長線保護
@@ -152,7 +148,7 @@ def check_strategy_original(df):
     }
 
 # ==========================================
-# 4-B. 策略邏輯：VCP 技術面 (V38 嚴格版)
+# 4-B. 策略邏輯：VCP 技術面 (V40 修改)
 # ==========================================
 def check_strategy_vcp(df):
     if len(df) < 250: return False, None
@@ -184,12 +180,14 @@ def check_strategy_vcp(df):
 
     if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
 
-    # 1. 長線保護 (三線之上)
+    # 1. 長線保護
     if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     # 2. 強勢多頭
     if not (curr_ma5 > curr_ma10 > curr_ma20): return False, None
-    # 3. 極致壓縮 (9%)
-    if curr_bw > 0.09: return False, None
+    
+    # 3. 【修改】極致壓縮：布林帶寬 < 15% (原 9%)
+    if curr_bw > 0.15: return False, None
+    
     # 4. 流動性
     if curr_vol_ma5 < 500000: return False, None
     # 5. 超級糾結
@@ -203,31 +201,19 @@ def check_strategy_vcp(df):
         daily_change = (curr_c - prev_c) / prev_c
         if daily_change > 0.06: return False, None
 
-    # 8. 【V38 嚴格版】週線架構確認
-    # 改為：只要計算失敗或資料不足，一律 Return False (不放行)
+    # 8. 週線架構確認 (嚴格執行)
     try:
-        # 將日線資料 Resample 成週線
         weekly_df = df.resample('W-FRI').agg({'Close': 'last'})
-        
-        # 嚴格條件 1: 資料長度必須足夠計算 60 週均線
-        if len(weekly_df) < 60:
-            return False, None 
+        if len(weekly_df) >= 60:
+            w_close = weekly_df['Close']
+            w_ma5 = w_close.rolling(5).mean().iloc[-1]
+            w_ma60 = w_close.rolling(60).mean().iloc[-1]
             
-        w_close = weekly_df['Close']
-        w_ma5 = w_close.rolling(5).mean().iloc[-1]
-        w_ma60 = w_close.rolling(60).mean().iloc[-1]
-        
-        # 嚴格條件 2: 數值必須有效
-        if math.isnan(w_ma5) or math.isnan(w_ma60):
-            return False, None
-            
-        # 嚴格條件 3: 週MA5 必須大於 週MA60
-        if w_ma5 <= w_ma60:
-            return False, None
-
-    except Exception:
-        # 嚴格條件 4: 任何運算錯誤都視為不合格
-        return False, None
+            if not math.isnan(w_ma5) and not math.isnan(w_ma60):
+                if w_ma5 <= w_ma60:
+                    return False, None
+    except:
+        pass
 
     return True, {
         "tag": "VCP",
@@ -327,7 +313,7 @@ def run_scanner():
             existing_stock_ids.add(s['id'])
             
     print(f"歷史已追蹤: {len(existing_stock_ids)} 檔")
-    print(f"開始雙策略掃描 (V38)...")
+    print(f"開始雙策略掃描 (V40 布林15%版)...")
     
     daily_results = []
     new_history_entries = []
@@ -425,3 +411,5 @@ if __name__ == "__main__":
         "list": results
     }
     save_json('data.json', output_payload)
+
+
