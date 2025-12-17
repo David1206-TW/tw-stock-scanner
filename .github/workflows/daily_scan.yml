@@ -2,7 +2,10 @@ name: Daily Stock Scanner
 
 on:
   schedule:
+    # UTC 16:00 = 台灣時間 00:00 (半夜)
+    # 配合 scanner.py 的邏輯：半夜執行時，會將資料歸檔為「昨天的日期」
     - cron: '0 16 * * *'
+  # 允許手動從 Actions 頁面或透過 API (HTML按鈕) 觸發
   workflow_dispatch:
 
 permissions:
@@ -22,10 +25,12 @@ jobs:
         python-version: '3.9'
 
     - name: Install dependencies
+      # 確保安裝 scanner.py 需要的所有套件
       run: |
         pip install yfinance twstock pandas lxml pytz
 
     - name: Run scanner script
+      # 執行掃描與更新歷史績效
       run: python scanner.py
 
     - name: Commit and push changes
@@ -33,16 +38,20 @@ jobs:
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
         
-        # 加入檔案，如果不存在則忽略錯誤
+        # 加入所有可能被更新的 JSON 檔案
         git add data.json || true
         git add cmoney_industry_cache.json || true
         git add history.json || true
         
-        # 提交 (若無變更則不報錯)
-        git commit -m "Auto-update: Stock Data [skip ci]" || exit 0
-        
-        # 拉取遠端更新並重定基底 (避免衝突)
-        git pull --rebase origin main
-        
-        # 推送
-        git push
+        # 優化：檢查狀態，只有在真的有變更時才執行 Commit 與 Push
+        # 這可以避免當天無新資料或休市時，Workflow 顯示失敗
+        if [[ -n $(git status -s) ]]; then
+          echo "Changes detected, committing..."
+          git commit -m "Auto-update: Stock Data [skip ci]"
+          
+          # 拉取遠端最新變更並重定基底 (避免多人協作或多次觸發時的衝突)
+          git pull --rebase origin main
+          git push
+        else
+          echo "No changes to commit. Skipping push."
+        fi
