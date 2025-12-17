@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V24 (雙策略詳盡註釋版)
+台股自動掃描策略機器人 (Scanner Bot) - V26 (雙策略註釋最終版)
 
 =============================================================
                           功能說明
@@ -12,7 +12,7 @@
 =============================================================
                         策略 A：拉回佈局
 =============================================================
-   核心概念：趨勢向上但在休息，量縮回檔找買點 (類似旗形整理)。
+   核心概念：趨勢向上但在休息，量縮回檔找支撐買點 (類似旗形整理)。
    
    [長線與位階]
    1. 長線保護 (三線之上)：收盤價 > MA240, 且 > MA120, 且 > MA60。
@@ -22,7 +22,7 @@
    [整理與進場]
    4. 均線糾結 (壓縮準備)：MA5, MA10, MA20 的最大差異 < 8%。
    5. 量縮整理 (籌碼沉澱)：今日成交量 < 5日均量 (V < V_MA5)。
-   6. 支撐確認：收盤價 > MA10。
+   6. 支撐確認：收盤 > MA10。
 
 =============================================================
                         策略 B：VCP 技術面
@@ -224,7 +224,6 @@ def check_strategy_vcp(df):
 # ==========================================
 def update_history_roi(history_db):
     print("Python 端只做歷史資料格式化和清洗...")
-    # 這裡只確保 history.json 的結構
     for date_str, stocks in history_db.items():
         for stock in stocks:
             if 'latest_price' not in stock:
@@ -249,14 +248,15 @@ def run_scanner():
             existing_stock_ids.add(s['id'])
             
     print(f"歷史已追蹤: {len(existing_stock_ids)} 檔")
-    print(f"開始雙策略掃描 (V24 詳盡註釋版)...")
+    print(f"開始雙策略掃描 (V26 註釋修正版)...")
     
     daily_results = []
     new_history_entries = []
     batch_size = 100 
     
     for i in range(0, len(full_list), batch_size):
-        batch = full_list[i:i+batch_tickers]
+        # 修正：確保使用 batch_size
+        batch = full_list[i:i+batch_size] 
         print(f"Processing batch {i//batch_size + 1}...")
         try:
             data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=False)
@@ -302,16 +302,16 @@ def run_scanner():
                             "name": name,
                             "group": group,
                             "type": "上櫃" if ".TWO" in ticker else "上市",
-                            "price": final_info['price'], # 昨收價 (待前端覆蓋)
+                            "price": final_info['price'], 
                             "ma5": final_info['ma5'],
                             "ma10": final_info['ma10'],
-                            "changeRate": 0.0, # 待前端計算
+                            "changeRate": 0.0, 
                             "isValid": True,
                             "note": note_str,
-                            "buy_price": final_info['price'], # 買入成本 (昨收價)
-                            "latest_price": final_info['price'], # 初始值
-                            "roi": 0.0, # 初始值
-                            "daily_change": 0.0 # 初始值
+                            "buy_price": final_info['price'], 
+                            "latest_price": final_info['price'], 
+                            "roi": 0.0, 
+                            "daily_change": 0.0
                         }
                         
                         daily_results.append(stock_entry)
@@ -345,4 +345,3 @@ if __name__ == "__main__":
         "list": results
     }
     save_json('data.json', output_payload)
-
