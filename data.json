@@ -1,5 +1,5 @@
 {
-  "date": "2025/12/17 11:21:08",
+  "date": "2025/12/17 11:57:59",
   "source": "GitHub Actions",
   "list": [
     {
@@ -17,22 +17,6 @@
       "latest_price": 15.4,
       "roi": 0.0,
       "daily_change": 1.65
-    },
-    {
-      "id": "1419",
-      "name": "新紡",
-      "group": "紡織纖維",
-      "type": "上市",
-      "price": 71.4,
-      "ma5": 71.18,
-      "ma10": 70.8,
-      "changeRate": 1.28,
-      "isValid": true,
-      "note": "VCP / 年線53.37",
-      "buy_price": 71.4,
-      "latest_price": 71.4,
-      "roi": 0.0,
-      "daily_change": 1.28
     },
     {
       "id": "1714",
