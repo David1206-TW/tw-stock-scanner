@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V27 (後端全權運算版)
+台股自動掃描策略機器人 (Scanner Bot) - V28 (完整雙策略收盤確認版)
 
-【架構修正】
-1. 資料統一由後端 Python 處理，前端不再進行任何運算或 API 請求。
-2. 解決手機端顯示 0.00 或報價不一致的問題。
-3. 確保 data.json (報價頁) 與 history.json (績效頁) 的數據一致性。
+【V28 修正說明】
+- 補回 VCP 策略，恢復雙引擎運作。
+- 加入「收盤時間檢查」：
+  13:30 後執行 -> 更新 data.json (看板) 並將新股寫入 history.json (績效)。
+  盤中執行 -> 只更新 data.json，不寫入 history.json。
 
 【策略 A：拉回佈局】
-   1. 長線保護：收盤價 > MA240, MA120, MA60。
+   1. 長線保護：收盤 > MA240, MA120, MA60。
    2. 多頭排列：MA10 > MA20 > MA60。
-   3. 位階安全：乖離率 < 25%。
+   3. 位階控制：乖離率 < 25%。
    4. 均線糾結：差異 < 8%。
-   5. 量縮整理：今日量 < 5日均量。
+   5. 量縮整理：成交量 < 5日均量。
    6. 支撐確認：收盤 > MA10。
 
 【策略 B：VCP 技術面】
-   1. 長線保護：收盤價 > MA240, MA120, MA60。
+   1. 長線保護：收盤 > MA240, MA120, MA60。
    2. 強勢多頭：MA5 > MA10 > MA20。
    3. 極致壓縮：布林帶寬 < 12%。
    4. 均線超級糾結：差異 < 2.5%。
    5. 流動性：20日均量 > 500張。
-   6. 守住攻擊線：收盤價 > MA10。
+   6. 守住攻擊線：收盤 > MA10。
 """
 
 import yfinance as yf
@@ -30,7 +31,8 @@ import twstock
 import json
 import os
 import math
-from datetime import datetime
+from datetime import datetime, time as dt_time
+import pytz
 
 # ==========================================
 # 1. 資料庫管理
@@ -68,7 +70,6 @@ def get_stock_group(code, db_data):
             group = raw_data
     elif code in twstock.codes:
         group = twstock.codes[code].group.replace("工業", "").replace("業", "")
-    
     if not isinstance(group, str): group = str(group)
     return group
 
@@ -83,7 +84,7 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 4. 策略邏輯
+# 4-A. 策略邏輯：拉回佈局 (Original)
 # ==========================================
 def check_strategy_original(df):
     if len(df) < 250: return False, None
@@ -115,16 +116,16 @@ def check_strategy_original(df):
     if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     # 2. 多頭排列
     if not ((curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)): return False, None
-    # 3. 位階控制
+    # 3. 位階控制 (乖離 < 25%)
     bias_ma60 = (curr_c - curr_ma60) / curr_ma60
     if bias_ma60 >= 0.25: return False, None
-    # 4. 均線糾結
+    # 4. 均線糾結 (5, 10, 20 差異 < 8%)
     mas = [curr_ma5, curr_ma10, curr_ma20]
     ma_divergence = (max(mas) - min(mas)) / min(mas)
     if ma_divergence >= 0.08: return False, None
-    # 5. 量縮整理
+    # 5. 量縮整理 (今日量 < 5日均量)
     if curr_v >= curr_vol_ma5: return False, None
-    # 6. 支撐確認
+    # 6. 支撐確認 (收盤 > MA10)
     if curr_c <= curr_ma10: return False, None
 
     return True, {
@@ -136,6 +137,9 @@ def check_strategy_original(df):
         "vol_ratio": round(curr_v / curr_vol_ma5, 2)
     }
 
+# ==========================================
+# 4-B. 策略邏輯：VCP 技術面 (New)
+# ==========================================
 def check_strategy_vcp(df):
     if len(df) < 250: return False, None
     close = df['Close']
@@ -156,21 +160,23 @@ def check_strategy_vcp(df):
     curr_ma5 = ma5.iloc[-1]
     curr_ma10 = ma10.iloc[-1]
     curr_ma20 = ma20.iloc[-1]
+    curr_ma60 = ma60.iloc[-1]
+    curr_ma120 = ma120.iloc[-1]
     curr_ma240 = ma240.iloc[-1]
     curr_bw = bw.iloc[-1]
     curr_vol_ma20 = vol_ma20.iloc[-1]
 
     if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
 
-    # 1. 長線保護
+    # 1. 長線保護 (三線之上)
     if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
-    # 2. 強勢多頭
+    # 2. 強勢多頭 (5>10>20)
     if not (curr_ma5 > curr_ma10 > curr_ma20): return False, None
-    # 3. 極致壓縮
+    # 3. 極致壓縮 (BW < 12%)
     if curr_bw > 0.12: return False, None
     # 4. 流動性
     if curr_vol_ma20 < 500000: return False, None
-    # 5. 超級糾結
+    # 5. 超級糾結 (< 2.5%)
     mas = [curr_ma5, curr_ma10, curr_ma20]
     entangle_pct = (max(mas) - min(mas)) / min(mas)
     if entangle_pct > 0.025: return False, None
@@ -190,7 +196,7 @@ def check_strategy_vcp(df):
 # 5. 更新歷史績效 (後端計算版)
 # ==========================================
 def update_history_roi(history_db):
-    print("正在更新歷史名單績效 (後端計算)...")
+    print("正在更新歷史名單績效...")
     tickers_to_check = set()
     for date_str, stocks in history_db.items():
         for stock in stocks:
@@ -202,11 +208,8 @@ def update_history_roi(history_db):
     print(f"追蹤股票數量: {len(tickers_to_check)}")
     current_data = {}
     try:
-        # 下載 5 天數據以計算日漲跌和最新價
         data = yf.download(list(tickers_to_check), period="5d", auto_adjust=False, threads=True)
         close_df = data['Close']
-        
-        # 處理單檔與多檔
         if len(tickers_to_check) == 1:
              ticker = list(tickers_to_check)[0]
              closes = close_df.dropna().values
@@ -219,9 +222,7 @@ def update_history_roi(history_db):
                     if len(series) >= 2:
                         current_data[ticker] = { 'price': float(series.iloc[-1]), 'prev': float(series.iloc[-2]) }
                 except: pass
-    except Exception as e:
-        print(f"歷史股價更新失敗: {e}")
-        return history_db
+    except: return history_db
 
     for date_str, stocks in history_db.items():
         for stock in stocks:
@@ -230,25 +231,11 @@ def update_history_roi(history_db):
                 latest_price = current_data[symbol]['price']
                 prev_price = current_data[symbol]['prev']
                 buy_price = stock['buy_price']
-                
-                # 計算累積 ROI
                 roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
-                # 計算當日漲跌幅
                 daily_change = round(((latest_price - prev_price) / prev_price) * 100, 2)
-                
-                # 更新寫入 JSON
                 stock['latest_price'] = round(latest_price, 2)
                 stock['roi'] = roi
                 stock['daily_change'] = daily_change
-                
-                # 計算週期績效 (供前端顯示)
-                # 簡單邏輯：持有至今的 ROI 就是該天期的 ROI
-                days_held = (datetime.now() - datetime.strptime(date_str, "%Y/%m/%d")).days
-                stock['days_held'] = days_held
-                
-                # 這裡我們只存當前 ROI，前端會根據天數決定顯示在哪一格
-                # 但為了方便，我們也可以預先標記
-                stock['roi_current'] = roi
 
     print("歷史績效更新完成。")
     return history_db
@@ -257,6 +244,15 @@ def update_history_roi(history_db):
 # 6. 主程式
 # ==========================================
 def run_scanner():
+    # 時區設定
+    tw_tz = pytz.timezone('Asia/Taipei')
+    now = datetime.now(tw_tz)
+    current_time = now.time()
+    market_close_time = dt_time(13, 30)
+    is_after_market = current_time >= market_close_time
+    
+    print(f"目前時間: {now.strftime('%H:%M:%S')}, 收盤後: {is_after_market}")
+
     full_list = get_all_tickers()
     industry_db = load_json(DB_INDUSTRY)
     history_db = load_json(DB_HISTORY)
@@ -267,7 +263,7 @@ def run_scanner():
             existing_stock_ids.add(s['id'])
             
     print(f"歷史已追蹤: {len(existing_stock_ids)} 檔")
-    print(f"開始雙策略掃描 (V27 後端運算版)...")
+    print(f"開始雙策略掃描...")
     
     daily_results = []
     new_history_entries = []
@@ -287,6 +283,7 @@ def run_scanner():
                     df = df.dropna()
                     if df.empty: continue
 
+                    # 雙策略檢查
                     is_match_1, info_1 = check_strategy_original(df)
                     is_match_2, info_2 = check_strategy_vcp(df)
                     
@@ -306,15 +303,11 @@ def run_scanner():
                     if final_match:
                         name = raw_code
                         if raw_code in twstock.codes: name = twstock.codes[raw_code].name
-                        
                         group = get_stock_group(raw_code, industry_db)
                         if raw_code not in industry_db: industry_db[raw_code] = group
                         
-                        # 取得漲跌幅 (後端計算)
                         prev_c = df['Close'].iloc[-2]
-                        curr_c = final_info['price']
-                        change_rate = round((curr_c - prev_c) / prev_c * 100, 2)
-                        
+                        change_rate = round((final_info['price'] - prev_c) / prev_c * 100, 2)
                         tags_str = " & ".join(strategy_tags)
                         note_ma240 = round(final_info.get('ma240', 0), 2)
                         note_str = f"{tags_str} / 年線{note_ma240}"
@@ -327,10 +320,9 @@ def run_scanner():
                             "price": final_info['price'], 
                             "ma5": final_info['ma5'],
                             "ma10": final_info['ma10'],
-                            "changeRate": change_rate, # 由後端計算並填入
+                            "changeRate": change_rate,
                             "isValid": True,
                             "note": note_str,
-                            # 歷史欄位初始化
                             "buy_price": final_info['price'], 
                             "latest_price": final_info['price'], 
                             "roi": 0.0, 
@@ -339,26 +331,28 @@ def run_scanner():
                         
                         daily_results.append(stock_entry)
                         
-                        if raw_code not in existing_stock_ids:
+                        # 僅當非重複且在收盤後，才加入歷史待存區
+                        if raw_code not in existing_stock_ids and is_after_market:
                             new_history_entries.append(stock_entry)
                             
                 except: continue
         except: continue
 
-    # 1. 更新歷史績效 (這步現在會真正去抓股價並計算 ROI)
     history_db = update_history_roi(history_db)
 
-    # 2. 寫入新名單 (如果今天是 12/17 且有新股，會寫入)
-    if new_history_entries:
+    # 只有收盤後執行，才寫入 history.json
+    if new_history_entries and is_after_market:
         today_str = datetime.now().strftime("%Y/%m/%d")
         if today_str in history_db:
              history_db[today_str].extend(new_history_entries)
         else:
              history_db[today_str] = new_history_entries
-        print(f"今日新納入歷史庫: {len(new_history_entries)} 檔")
+        print(f"✅ 收盤後掃描：已將 {len(new_history_entries)} 檔新股加入歷史庫。")
+        save_json(DB_HISTORY, history_db)
+    elif not is_after_market:
+        print("⚠️ 盤中執行模式：僅更新即時看板，不寫入歷史績效庫。")
 
     save_json(DB_INDUSTRY, industry_db)
-    save_json(DB_HISTORY, history_db)
     
     return daily_results
 
