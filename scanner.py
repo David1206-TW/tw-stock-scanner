@@ -224,6 +224,19 @@ def check_strategy_vcp_pro(df):
         # 5日均量也稍微過濾一下 (至少 300 張)
         if vol_ma5.iloc[-1] < 300000: return False, None
 
+        # ===== 條件 5 (新增項目)：回檔幅度遞減 (r1 > r2 > r3) =====
+        # r1 (60天), r2 (20天), r3 (10天) 的最大回檔深度
+        def calc_retrace(series):
+            peak = series.max()
+            trough = series.min()
+            return (peak - trough) / peak if peak > 0 else 1.0
+
+        r1 = calc_retrace(close.iloc[-60:])
+        r2 = calc_retrace(close.iloc[-20:])
+        r3 = calc_retrace(close.iloc[-10:])
+        
+        if not (r1 > r2 > r3): return False, None
+
     except Exception:
         return False, None
 
