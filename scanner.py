@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V41 Fix
+台股自動掃描策略機器人 (Scanner Bot) - V42 Split Logic
+"""
 
 【修正說明】
 1. 修正策略函式呼叫名稱錯誤 (check_strategy_vcp -> check_strategy_vcp_pro)
@@ -31,7 +32,7 @@ import twstock
 import json
 import os
 import math
-from datetime import datetime, time as dt_time
+from datetime import datetime, time as dt_time, timedelta
 import pytz
 
 # ==========================================
@@ -39,6 +40,7 @@ import pytz
 # ==========================================
 DB_INDUSTRY = 'cmoney_industry_cache.json'
 DB_HISTORY = 'history.json' 
+DATA_JSON = 'data.json'
 
 def load_json(filename):
     if os.path.exists(filename):
@@ -56,8 +58,7 @@ def save_json(filename, data):
 # ==========================================
 # 2. 產業分類解析邏輯
 # ==========================================
-SEED_INDUSTRY_MAP = {} 
-
+# ... (此處代碼保持不變，為節省篇幅省略，請保留原本的 get_stock_group 與 get_all_tickers) ...
 def get_stock_group(code, db_data):
     group = "其他"
     if code in db_data:
@@ -84,8 +85,10 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 4-A. 策略邏輯：拉回佈局 (Original)
+# 4. 策略邏輯 (保持不變)
 # ==========================================
+# ... (請保留原本的 check_strategy_original 與 check_strategy_vcp_pro) ...
+
 def check_strategy_original(df):
     if len(df) < 250: return False, None
     close = df['Close']
@@ -146,9 +149,6 @@ def check_strategy_original(df):
         "vol_ratio": round(curr_v / curr_vol_ma5, 2)
     }
 
-# =========================================
-# 4-B. 策略邏輯：VCP Pro
-# =========================================
 def check_strategy_vcp_pro(df):
     try:
         close = df['Close']
@@ -174,29 +174,16 @@ def check_strategy_vcp_pro(df):
         curr_ma200 = ma200.iloc[-1]
 
         # ===== 條件 1：價格結構 =====
-        if curr_c <= curr_ma200:
-            return False, None
-
-        # MA200 必須上升
-        if curr_ma200 <= ma200.iloc[-20]:
-            return False, None
-
-        # MA150 > MA200
-        if curr_ma150 <= curr_ma200:
-            return False, None
-
-        # 短中期多頭排列
-        if not (curr_ma5 > curr_ma10 > curr_ma20 > curr_ma60):
-            return False, None
+        if curr_c <= curr_ma200: return False, None
+        if curr_ma200 <= ma200.iloc[-20]: return False, None
+        if curr_ma150 <= curr_ma200: return False, None
+        if not (curr_ma5 > curr_ma10 > curr_ma20 > curr_ma60): return False, None
 
         # ===== 條件 2：低點階梯式墊高 =====
         lows = close.rolling(20).min().dropna()
-        if len(lows) < 3:
-            return False, None
-
+        if len(lows) < 3: return False, None
         low1, low2, low3 = lows.iloc[-3:]
-        if not (low1 < low2 < low3):
-            return False, None
+        if not (low1 < low2 < low3): return False, None
 
         # ===== 條件 3：回檔幅度遞減 =====
         window = close.iloc[-120:]
@@ -204,32 +191,22 @@ def check_strategy_vcp_pro(df):
         trough = window.rolling(10).min()
         retrace = (peak - trough) / peak
         retrace = retrace.dropna()
-
-        if len(retrace) < 3:
-            return False, None
-
+        if len(retrace) < 3: return False, None
         r1, r2, r3 = retrace.iloc[-3:]
-        if not (r1 > r2 > r3):
-            return False, None
+        if not (r1 > r2 > r3): return False, None
 
         # ===== 條件 4：波動收縮（布林帶） =====
         std20 = close.rolling(20).std()
         bb_width = (4 * std20) / ma20
-
-        if bb_width.iloc[-1] > 0.12:
-            return False, None
+        if bb_width.iloc[-1] > 0.12: return False, None
 
         # ===== 條件 5：量能遞減 =====
         vol_short = volume.iloc[-10:].mean()
         vol_long = volume.iloc[-40:-10].mean()
-
-        if vol_short >= vol_long:
-            return False, None
+        if vol_short >= vol_long: return False, None
 
         # ===== 條件 6：週線確認 =====
-        if not isinstance(df.index, pd.DatetimeIndex):
-            return False, None
-
+        if not isinstance(df.index, pd.DatetimeIndex): return False, None
         weekly = (
             df[['Close']]
             .sort_index()
@@ -238,25 +215,17 @@ def check_strategy_vcp_pro(df):
             .dropna()
             .iloc[:-1]
         )
-
-        if len(weekly) < 61:
-            return False, None
-
+        if len(weekly) < 61: return False, None
         w_close = weekly['Close']
         w_ma5 = w_close.rolling(5).mean()
         w_ma60 = w_close.rolling(60).mean()
 
-        if w_ma5.iloc[-1] <= w_ma60.iloc[-1]:
-            return False, None
-
-        # 週 MA5 斜率向上
-        if w_ma5.iloc[-1] <= w_ma5.iloc[-2]:
-            return False, None
+        if w_ma5.iloc[-1] <= w_ma60.iloc[-1]: return False, None
+        if w_ma5.iloc[-1] <= w_ma5.iloc[-2]: return False, None
 
     except Exception:
         return False, None
 
-    # ===== 通過所有條件 =====
     return True, {
         "tag": "VCP-Pro",
         "price": round(curr_c, 2),
@@ -267,12 +236,12 @@ def check_strategy_vcp_pro(df):
         "ma200": round(curr_ma200, 2),
         "bb_width": round(bb_width.iloc[-1] * 100, 1)
     }
+
 # ==========================================
-# 5. 更新歷史績效 (T+1)
+# 5. 更新歷史績效 (保持不變)
 # ==========================================
 def update_history_roi(history_db):
     print("正在更新歷史名單績效...")
-    
     tw_tz = pytz.timezone('Asia/Taipei')
     today_str = datetime.now(tw_tz).strftime("%Y/%m/%d")
     today_date = datetime.strptime(today_str, "%Y/%m/%d")
@@ -291,26 +260,21 @@ def update_history_roi(history_db):
         data = yf.download(list(tickers_to_check), period="5d", auto_adjust=False, threads=True)
         close_df = data['Close']
         
-        # Handle cases where only one ticker is requested (returns Series) or multiple (returns DataFrame)
         if len(tickers_to_check) == 1:
              ticker = list(tickers_to_check)[0]
-             # yfinance sometimes returns DataFrame even for single ticker in recent versions
              if isinstance(close_df, pd.DataFrame):
                  closes = close_df[ticker].dropna().values if ticker in close_df.columns else close_df.iloc[:, 0].dropna().values
              else:
                  closes = close_df.dropna().values
-                 
              if len(closes) >= 2:
                  current_data[ticker] = { 'price': float(closes[-1]), 'prev': float(closes[-2]) }
         else:
             for ticker in tickers_to_check:
                 try:
-                    # yfinance structure check
                     if ticker in close_df.columns:
                         series = close_df[ticker].dropna()
                     else:
                         continue
-                        
                     if len(series) >= 2:
                         current_data[ticker] = { 'price': float(series.iloc[-1]), 'prev': float(series.iloc[-2]) }
                 except: pass
@@ -332,7 +296,6 @@ def update_history_roi(history_db):
                 prev_price = current_data[symbol]['prev']
                 buy_price = stock['buy_price']
                 
-                # T+1 規則
                 if days_diff <= 0:
                     roi = 0.0
                     daily_change = 0.0
@@ -348,69 +311,51 @@ def update_history_roi(history_db):
     return history_db
 
 # ==========================================
-# 6. 主程式
+# 6. 主程式 (核心修改處)
 # ==========================================
 def run_scanner():
     tw_tz = pytz.timezone('Asia/Taipei')
     now = datetime.now(tw_tz)
-    current_time = now.time()
-    market_close_time = dt_time(13, 30)
-    is_after_market = current_time >= market_close_time
     
-    print(f"目前時間: {now.strftime('%H:%M:%S')}, 收盤後: {is_after_market}")
-
-    full_list = get_all_tickers()
+    # 讀取現有資料
     industry_db = load_json(DB_INDUSTRY)
     history_db = load_json(DB_HISTORY)
     
-    existing_stock_ids = set()
-    for date_str, stocks in history_db.items():
-        for s in stocks:
-            existing_stock_ids.add(s['id'])
-            
-    print(f"歷史已追蹤: {len(existing_stock_ids)} 檔")
-    print(f"開始雙策略掃描 (V40 布林15%版)...")
+    # 步驟 1: 先更新舊的歷史績效 (無論幾點都做，確保 ROI 是新的)
+    history_db = update_history_roi(history_db)
+
+    # 開始掃描
+    full_list = get_all_tickers()
+    print(f"開始掃描... 時間: {now.strftime('%H:%M:%S')}")
     
     daily_results = []
-    new_history_entries = []
     batch_size = 100 
     
     for i in range(0, len(full_list), batch_size):
         batch = full_list[i:i+batch_size]
         print(f"Processing batch {i//batch_size + 1}/{len(full_list)//batch_size + 1}...")
         try:
-            # yfinance updated structure handling
             data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=False)
             
             for ticker in batch:
                 try:
                     raw_code = ticker.split('.')[0]
-                    
-                    # Safe DataFrame Extraction
                     df = pd.DataFrame()
                     if len(batch) > 1:
                         if ticker in data.columns.levels[0]:
                             df = data[ticker].copy()
                     else:
-                        # For single ticker batch
                         df = data.copy()
                     
                     df = df.dropna()
                     if df.empty: continue
-
-                    # 修正：確保欄位名稱正確 (yfinance 可能會有多層索引)
                     if isinstance(df.columns, pd.MultiIndex):
-                        df.columns = df.columns.droplevel(0) # 嘗試簡化索引
+                        df.columns = df.columns.droplevel(0)
 
-                    # 檢查必要欄位
                     required_cols = ['Close', 'Volume', 'Low']
-                    if not all(col in df.columns for col in required_cols):
-                        continue
+                    if not all(col in df.columns for col in required_cols): continue
 
-                    # 執行策略
                     is_match_1, info_1 = check_strategy_original(df)
-                    
-                    # [修正重點] 這裡原本寫 check_strategy_vcp，但定義是 check_strategy_vcp_pro
                     is_match_2, info_2 = check_strategy_vcp_pro(df)
                     
                     final_match = False
@@ -432,7 +377,6 @@ def run_scanner():
                         group = get_stock_group(raw_code, industry_db)
                         if raw_code not in industry_db: industry_db[raw_code] = group
                         
-                        # Calculate change rate
                         try:
                             prev_c = df['Close'].iloc[-2]
                             change_rate = round((final_info['price'] - prev_c) / prev_c * 100, 2)
@@ -463,39 +407,59 @@ def run_scanner():
                         daily_results.append(stock_entry)
                         print(f" -> Found: {raw_code} {name} [{tags_str}]")
                         
-                        if raw_code not in existing_stock_ids and is_after_market:
-                            new_history_entries.append(stock_entry)
-                            
-                except Exception as inner_e:
-                    # print(f"Error processing {ticker}: {inner_e}") # Debug use
-                    continue
+                except Exception: continue
         except Exception as e:
             print(f"Batch error: {e}")
             continue
 
-    history_db = update_history_roi(history_db)
-
-    if new_history_entries and is_after_market:
-        today_str = datetime.now(tw_tz).strftime("%Y/%m/%d")
-        if today_str in history_db:
-             history_db[today_str].extend(new_history_entries)
-        else:
-             history_db[today_str] = new_history_entries
-        print(f"✅ 收盤後掃描：已將 {len(new_history_entries)} 檔新股加入歷史庫。")
-        save_json(DB_HISTORY, history_db)
-    elif not is_after_market:
-        print("⚠️ 盤中執行模式：僅更新即時看板，不寫入歷史績效庫。")
-
     save_json(DB_INDUSTRY, industry_db)
     
-    print(f"Scan complete. Found {len(daily_results)} stocks.")
+    # ==========================================
+    # 處理 output 分流邏輯
+    # ==========================================
+    
+    # 1. 總是更新 data.json (即時看板用)
+    print(f"掃描結束，共發現 {len(daily_results)} 檔。更新 data.json...")
+    data_payload = {
+        "date": now.strftime("%Y/%m/%d %H:%M:%S"),
+        "source": "GitHub Actions",
+        "list": daily_results
+    }
+    save_json(DATA_JSON, data_payload)
+
+    # 2. 條件更新 history.json
+    current_time = now.time()
+    market_open = dt_time(9, 0, 0)
+    market_close = dt_time(13, 30, 0)
+    
+    # 判斷是否為「不寫入時段」 (09:00 ~ 13:30)
+    is_market_session = market_open <= current_time <= market_close
+
+    if is_market_session:
+        print(f"⚠️ 現在是盤中時間 ({current_time.strftime('%H:%M')})，跳過 History 歸檔。")
+    else:
+        # 計算歸檔日期 Key
+        # 如果是下午 13:30 以後 -> 今天
+        # 如果是凌晨 00:00~08:59 -> 昨天
+        if current_time > market_close:
+            record_date_str = now.strftime("%Y/%m/%d")
+        else:
+            yesterday = now - timedelta(days=1)
+            record_date_str = yesterday.strftime("%Y/%m/%d")
+
+        print(f"✅ 盤後時段，準備將資料寫入 History，歸檔日期: {record_date_str}")
+        
+        # 將今日掃描結果存入對應日期 Key (使用 Dictionary 結構可避免重複 append)
+        if daily_results:
+            history_db[record_date_str] = daily_results
+            # 排序日期 (可選)
+            sorted_history = dict(sorted(history_db.items(), reverse=True))
+            save_json(DB_HISTORY, sorted_history)
+            print("History.json 已更新。")
+        else:
+            print("今日無符合策略標的，不更新 History。")
+
     return daily_results
 
 if __name__ == "__main__":
-    results = run_scanner()
-    output_payload = {
-        "date": datetime.now(pytz.timezone('Asia/Taipei')).strftime("%Y/%m/%d %H:%M:%S"),
-        "source": "GitHub Actions",
-        "list": results
-    }
-    save_json('data.json', output_payload)
+    run_scanner()
