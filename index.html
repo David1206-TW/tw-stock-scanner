@@ -7,23 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
+        /* 台股紅漲綠跌 */
         .tw-up { color: #ef4444; }
         .tw-down { color: #22c55e; }
+        
         body { 
             font-family: 'Noto Sans TC', sans-serif; 
             background-color: #0f172a; 
             color: #e2e8f0;
             overscroll-behavior-y: contain; 
         }
+        
         .glass-panel {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
+        
         .tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
         .tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; }
         
+        /* 排序欄位樣式 */
         th.sortable { 
             cursor: pointer; 
             transition: background-color 0.2s; 
@@ -34,13 +39,14 @@
             font-size: 10px; 
         }
         th.sortable:hover { background-color: #334155; }
+        
         td { white-space: nowrap; }
         .name-cell { white-space: normal; max-width: 80px; line-height: 1.2; }
         
         @keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         .animate-updating { animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #60a5fa; }
         
-        /* 排序符號樣式 (純文字) */
+        /* 純文字排序符號 */
         .sort-symbol {
             display: inline-block;
             font-size: 8px;
@@ -52,6 +58,7 @@
         }
         .sort-symbol.active { color: #60a5fa; opacity: 1; font-weight: bold; }
         
+        /* 統計小卡片 */
         .stat-card {
             background: rgba(30, 41, 59, 0.5);
             border: 1px solid rgba(255,255,255,0.1);
@@ -76,6 +83,7 @@
             <div class="flex flex-col">
                 <div class="flex items-center gap-2">
                     <h1 class="text-sm font-bold tracking-wider leading-none">台股戰情室</h1>
+                    <!-- 整體勝率徽章 -->
                     <span id="win-rate-badge" class="hidden text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono">
                         勝率 -%
                     </span>
@@ -85,10 +93,12 @@
         </div>
         
         <div class="flex items-center gap-1">
+            <!-- 雲端更新按鈕 -->
             <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
                 <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
                 <span class="text-[10px] font-medium">更新</span>
             </button>
+            <!-- 重新整理按鈕 -->
             <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
                 <i class="fa-solid fa-rotate-right text-sm"></i>
             </button>
@@ -98,16 +108,17 @@
     <!-- Main Content -->
     <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
         
-        <!-- PAGE 1: Heatmap (熱力圖) -->
+        <!-- Tab 1: Heatmap (熱力圖) -->
         <div id="page-heatmap" class="flex flex-col h-full gap-2">
             <div class="flex-grow overflow-y-auto pb-4">
                 <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
             </div>
         </div>
 
-        <!-- PAGE 2: List (報價列表) -->
+        <!-- Tab 2: List (報價列表) -->
         <div id="page-list" class="hidden flex flex-col h-full gap-2">
             <div class="shrink-0 flex flex-col gap-2">
+                <!-- 控制列 -->
                 <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar flex-grow mr-2">
                         <!-- 過濾標籤 -->
@@ -136,16 +147,31 @@
             
             <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
                 <div class="flex-grow overflow-auto bg-slate-900 relative">
-                    <table class="min-w-[360px] w-full text-sm text-left text-gray-400">
+                    <!-- 報價表格 (含 Sticky Columns) -->
+                    <table class="min-w-[480px] w-full text-sm text-left text-gray-400">
                         <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
-                                <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">股名<span class="sort-symbol" id="sort-symbol-id">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 sortable text-center" onclick="app.sortList('group')">族群<span class="sort-symbol" id="sort-symbol-group">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('price')">價<span class="sort-symbol" id="sort-symbol-price">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('changeRate')">漲跌<span class="sort-symbol" id="sort-symbol-changeRate">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-400" onclick="app.sortList('ma5')">MA5<span class="sort-symbol" id="sort-symbol-ma5">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-400" onclick="app.sortList('ma10')">MA10<span class="sort-symbol" id="sort-symbol-ma10">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-[10px] sortable" onclick="app.sortList('note')">備註<span class="sort-symbol" id="sort-symbol-note">⇅</span></th>
+                                <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">
+                                    股名<span class="sort-symbol" id="sort-symbol-id">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 sortable text-center" onclick="app.sortList('group')">
+                                    族群<span class="sort-symbol" id="sort-symbol-group">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('price')">
+                                    價<span class="sort-symbol" id="sort-symbol-price">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortList('changeRate')">
+                                    漲跌<span class="sort-symbol" id="sort-symbol-changeRate">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-400" onclick="app.sortList('ma5')">
+                                    MA5<span class="sort-symbol" id="sort-symbol-ma5">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable text-gray-400" onclick="app.sortList('ma10')">
+                                    MA10<span class="sort-symbol" id="sort-symbol-ma10">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-[10px] sortable" onclick="app.sortList('note')">
+                                    備註<span class="sort-symbol" id="sort-symbol-note">⇅</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="result-body" class="divide-y divide-slate-800">
@@ -156,25 +182,42 @@
             </div>
         </div>
 
-        <!-- PAGE 3: Performance (績效回測) -->
+        <!-- Tab 3: Performance (績效回測) -->
         <div id="page-perf" class="hidden flex flex-col h-full gap-2">
+            <!-- 統計條 -->
             <div class="shrink-0 flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="perf-stats-bar">
                 <div class="text-xs text-gray-500 p-2">計算中...</div>
             </div>
 
             <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
                 <div class="flex-grow overflow-auto bg-slate-900 relative">
-                    <!-- 超寬表格 -->
+                    <!-- 績效表格 (含 Sticky Columns) -->
                     <table class="min-w-[850px] w-full text-sm text-left text-gray-400">
                         <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
-                                <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('date')">日期<span class="sort-symbol" id="perf-symbol-date">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 sortable sticky left-[40px] bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('id')">股名<span class="sort-symbol" id="perf-symbol-id">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('buy_price')">進場<span class="sort-symbol" id="perf-symbol-buy_price">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('roi')">累%<span class="sort-symbol" id="perf-symbol-roi">⇅</span></th>
-                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('daily_change')">日%<span class="sort-symbol" id="perf-symbol-daily_change">⇅</span></th>
+                                <!-- Sticky 1: 日期 -->
+                                <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('date')">
+                                    日期<span class="sort-symbol" id="perf-symbol-date">⇅</span>
+                                </th>
+                                <!-- Sticky 2: 股名 -->
+                                <th scope="col" class="px-1 py-2 sortable sticky left-[40px] bg-slate-950 z-30 border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]" onclick="app.sortPerfList('id')">
+                                    股名<span class="sort-symbol" id="perf-symbol-id">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('buy_price')">
+                                    進場<span class="sort-symbol" id="perf-symbol-buy_price">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">
+                                    現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span>
+                                </th>
+                                <!-- 累積 ROI 移到現價旁邊 -->
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('roi')">
+                                    累%<span class="sort-symbol" id="perf-symbol-roi">⇅</span>
+                                </th>
+                                <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('daily_change')">
+                                    日%<span class="sort-symbol" id="perf-symbol-daily_change">⇅</span>
+                                </th>
                                 
+                                <!-- 天數欄位 -->
                                 <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_1')">1日%<span class="sort-symbol" id="perf-symbol-roi_1">⇅</span></th>
                                 <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_5')">5日%<span class="sort-symbol" id="perf-symbol-roi_5">⇅</span></th>
                                 <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_10')">10日%<span class="sort-symbol" id="perf-symbol-roi_10">⇅</span></th>
@@ -192,20 +235,24 @@
             </div>
         </div>
 
-        <!-- PAGE 4: Admin -->
+        <!-- Tab 4: Admin (設定) -->
         <div id="page-admin" class="hidden h-full overflow-y-auto">
             <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto mb-4 bg-slate-800">
                 <h2 class="text-lg font-bold mb-4 flex items-center border-b border-slate-700 pb-3 text-white"><i class="fa-solid fa-gear mr-2 text-gray-400"></i>設定</h2>
                 <div class="space-y-3 text-sm">
-                    <input type="text" id="repo-owner" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white" placeholder="GitHub Owner">
-                    <input type="text" id="repo-name" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white" placeholder="Repo Name">
-                    <input type="password" id="github-token" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white" placeholder="Access Token">
+                    <p class="text-xs text-yellow-500 bg-yellow-900/20 p-2 rounded border border-yellow-800">
+                        <i class="fa-solid fa-circle-info mr-1"></i> 請填寫 Token 以啟用雲端更新。
+                    </p>
+                    <input type="text" id="repo-owner" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white placeholder-gray-500" placeholder="GitHub Owner">
+                    <input type="text" id="repo-name" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white placeholder-gray-500" placeholder="Repo Name">
+                    <input type="password" id="github-token" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white placeholder-gray-500" placeholder="Access Token">
                     <button onclick="admin.saveSettings()" class="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded mt-2">儲存設定</button>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Bottom Navigation -->
     <nav class="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
         <div class="max-w-6xl mx-auto flex justify-around h-full">
             <button onclick="app.switchTab('heatmap')" id="tab-heatmap" class="tab-btn active flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-fire text-lg mb-1"></i><span class="text-xs mt-1">熱力圖</span></button>
@@ -290,7 +337,7 @@
             async init() {
                 try { 
                     await this.loadData(); 
-                    await this.loadHistory(); 
+                    this.loadHistory(); 
                 } 
                 catch (e) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 text-xs">${e.message}</td></tr>`; }
             }
@@ -341,7 +388,6 @@
                                     ...stock,
                                     date: date, 
                                     daysHeld: diffDays,
-                                    // 確保數值存在
                                     daily_change: parseFloat(stock.daily_change || 0),
                                     roi: roi,
                                     latest_price: parseFloat(stock.latest_price || 0)
@@ -351,15 +397,17 @@
                             });
                         });
 
+                        // 更新勝率徽章
                         if (totalStocks > 0) {
                             const winRate = Math.round((winStocks / totalStocks) * 100);
-                            this.ui.winRateBadge.innerText = `勝率 ${winRate}%`;
+                            this.ui.winRateBadge.innerText = `總勝率 ${winRate}%`;
                             this.ui.winRateBadge.classList.remove('hidden');
                             if(winRate >= 60) this.ui.winRateBadge.className = "ml-2 text-[9px] bg-red-900/50 text-red-300 border border-red-700 px-1.5 py-0.5 rounded font-mono";
                             else if(winRate < 40) this.ui.winRateBadge.className = "ml-2 text-[9px] bg-green-900/50 text-green-300 border border-green-700 px-1.5 py-0.5 rounded font-mono";
                             else this.ui.winRateBadge.className = "ml-2 text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono";
                         }
                         
+                        // 計算統計數據
                         const stats = {
                             1: { total: 0, win: 0, sumRoi: 0 },
                             5: { total: 0, win: 0, sumRoi: 0 },
@@ -392,6 +440,7 @@
                         const avgRoi = (s.sumRoi / s.total).toFixed(1);
                         const color = avgRoi > 0 ? 'text-red-400' : (avgRoi < 0 ? 'text-green-400' : 'text-gray-400');
                         const border = avgRoi > 0 ? 'border-red-500/30' : 'border-green-500/30';
+                        
                         html += `
                             <div class="stat-card flex flex-col justify-center ${border}">
                                 <div class="text-[9px] text-gray-400">${d}日 (${s.total}檔)</div>
@@ -417,7 +466,6 @@
                 this.historyList.sort((a, b) => {
                     let valA = a[key], valB = b[key];
                     if (['latest_price', 'daily_change', 'roi', 'buy_price'].includes(key) || key.startsWith('roi_')) {
-                        // 數值處理: 無效值視為極小
                         valA = (valA === undefined || valA === null) ? -999999 : parseFloat(valA);
                         valB = (valB === undefined || valB === null) ? -999999 : parseFloat(valB);
                         return (valA - valB) * dir;
@@ -445,13 +493,11 @@
                     const roiClass = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-400');
                     const dayClass = dayChg > 0 ? 'text-red-400' : (dayChg < 0 ? 'text-green-400' : 'text-gray-400');
                     const dateDisplay = s.date.substring(5);
-                    
+
                     const suffix = s.type === '上市' ? '.TW' : '.TWO';
                     const linkUrl = `https://tw.stock.yahoo.com/quote/${s.id}${suffix}/technical-analysis`;
 
-                    // 1-120日 欄位顯示邏輯
                     const cols = [1, 5, 10, 20, 30, 60, 120].map(d => {
-                        // 後端 V27 已計算好並更新到 roi 欄位，我們用天數判斷是否顯示
                         if (s.daysHeld >= d) {
                             const c = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-500');
                             return `<td class="px-1 py-2 text-right text-[10px] ${c}">${roi > 0 ? '+' : ''}${roi}%</td>`;
@@ -480,43 +526,95 @@
                 this.ui.perfBody.innerHTML = html;
             }
             
-            // ... (List/Heatmap 邏輯省略) ...
+            // ... (其他原有邏輯) ...
             applyStateAndRender() {
                 let list = [...this.stockList];
-                let pbCount = 0; let vcpCount = 0;
-                list.forEach(s => { if (s.note && s.note.includes('拉回佈局')) pbCount++; if (s.note && s.note.includes('VCP')) vcpCount++; });
-                this.ui.countPullback.innerText = pbCount; this.ui.countVcp.innerText = vcpCount;
+                
+                let pbCount = 0;
+                let vcpCount = 0;
+                list.forEach(s => {
+                    if (s.note && s.note.includes('拉回佈局')) pbCount++;
+                    if (s.note && s.note.includes('VCP')) vcpCount++;
+                });
+                
+                this.ui.countPullback.innerText = pbCount;
+                this.ui.countVcp.innerText = vcpCount;
                 this.ui.dataCount.innerText = `總: ${list.length}`; 
 
-                if (this.state.filterGroup) { list = list.filter(s => (s.group || '其他') === this.state.filterGroup); this.ui.filterTag.classList.remove('hidden'); this.ui.filterName.innerText = this.state.filterGroup; } else { this.ui.filterTag.classList.add('hidden'); }
-                if (this.state.filterMa) { list = list.filter(s => parseFloat(s.price) > parseFloat(s.ma5) && parseFloat(s.price) > parseFloat(s.ma10)); this.ui.btnMaFilter.classList.remove('bg-slate-700', 'text-gray-300'); this.ui.btnMaFilter.classList.add('bg-indigo-600', 'text-white'); } else { this.ui.btnMaFilter.classList.add('bg-slate-700', 'text-gray-300'); this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white'); }
+                if (this.state.filterGroup) {
+                    list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
+                    this.ui.filterTag.classList.remove('hidden');
+                    this.ui.filterName.innerText = this.state.filterGroup;
+                } else { this.ui.filterTag.classList.add('hidden'); }
+
+                if (this.state.filterMa) {
+                    list = list.filter(s => parseFloat(s.price) > parseFloat(s.ma5) && parseFloat(s.price) > parseFloat(s.ma10));
+                    this.ui.btnMaFilter.classList.remove('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    this.ui.btnMaFilter.classList.add('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white');
+                }
+
                 if (this.state.sortBy) {
                     const dir = this.state.sortDir === 'asc' ? 1 : -1;
                     list.sort((a, b) => {
-                        let valA = a[this.state.sortBy]; let valB = b[this.state.sortBy];
-                        if (['price', 'changeRate', 'ma5', 'ma10'].includes(this.state.sortBy)) return (parseFloat(valA) - parseFloat(valB)) * dir;
+                        let valA = a[this.state.sortBy];
+                        let valB = b[this.state.sortBy];
+                        if (['price', 'changeRate', 'ma5', 'ma10'].includes(this.state.sortBy)) 
+                            return (parseFloat(valA) - parseFloat(valB)) * dir;
                         return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
                     });
                     document.querySelectorAll('#page-list .sort-symbol').forEach(el => { el.innerText = '⇅'; el.classList.remove('active'); });
                     const activeSymbol = document.getElementById(`sort-symbol-${this.state.sortBy}`);
                     if(activeSymbol) { activeSymbol.innerText = this.state.sortDir === 'asc' ? '▲' : '▼'; activeSymbol.classList.add('active'); }
                 }
-                this.displayList = list; this.renderTable(this.displayList); this.updateCount();
+                this.displayList = list;
+                this.renderTable(this.displayList);
+                this.updateCount();
             }
+
             filterByGroup(groupName) { this.state.filterGroup = groupName; this.state.filterMa = false; this.switchTab('list'); this.applyStateAndRender(); }
             clearFilter() { this.state.filterGroup = null; this.applyStateAndRender(); }
             toggleMaFilter() { this.state.filterMa = !this.state.filterMa; this.applyStateAndRender(); }
-            sortList(key) { if (this.state.sortBy === key) { this.state.sortDir = this.state.sortDir === 'asc' ? 'desc' : 'asc'; } else { this.state.sortBy = key; this.state.sortDir = 'asc'; } this.applyStateAndRender(); }
+            sortList(key) {
+                if (this.state.sortBy === key) { this.state.sortDir = this.state.sortDir === 'asc' ? 'desc' : 'asc'; } 
+                else { this.state.sortBy = key; this.state.sortDir = 'asc'; }
+                this.applyStateAndRender();
+            }
+            
             async triggerCloudUpdate() {
-                const owner = localStorage.getItem('gh_owner'); const repo = localStorage.getItem('gh_repo'); const token = localStorage.getItem('gh_token');
+                const owner = localStorage.getItem('gh_owner');
+                const repo = localStorage.getItem('gh_repo');
+                const token = localStorage.getItem('gh_token');
                 if (!owner || !repo || !token) { alert("請先至設定頁填寫 Token"); this.switchTab('admin'); return; }
                 if (!confirm("確定要更新報價嗎？")) return;
-                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`; this.ui.btnCloudUpdate.disabled = true;
-                try { const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, { method: 'POST', headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, body: JSON.stringify({ ref: 'main' }) }); if (res.status === 204) { this.startPolling(); } else { throw new Error(`Status ${res.status}`); } } catch (e) { alert("發送失敗：" + e.message); this.resetUpdateButton(); }
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
+                this.ui.btnCloudUpdate.disabled = true;
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/workflows/daily_scan.yml/dispatches`, {
+                        method: 'POST', headers: { 'Accept': 'application/vnd.github.v3+json', 'Authorization': `token ${token}` }, body: JSON.stringify({ ref: 'main' })
+                    });
+                    if (res.status === 204) { this.startPolling(); } else { throw new Error(`Status ${res.status}`); }
+                } catch (e) { alert("發送失敗：" + e.message); this.resetUpdateButton(); }
             }
-            startPolling() { if (this.isPolling) return; this.isPolling = true; this.ui.lastUpdated.classList.add("animate-pulse", "text-blue-400"); this.pollInterval = setInterval(() => { this.loadData(); }, 15000); }
-            stopPolling() { this.isPolling = false; clearInterval(this.pollInterval); this.resetUpdateButton(); this.ui.lastUpdated.classList.remove("animate-pulse", "text-blue-400"); }
-            resetUpdateButton() { this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`; this.ui.btnCloudUpdate.disabled = false; }
+            startPolling() {
+                if (this.isPolling) return;
+                this.isPolling = true;
+                this.ui.lastUpdated.classList.add("animate-pulse", "text-blue-400");
+                this.pollInterval = setInterval(() => { this.loadData(); }, 15000);
+            }
+            stopPolling() {
+                this.isPolling = false;
+                clearInterval(this.pollInterval);
+                this.resetUpdateButton();
+                this.ui.lastUpdated.classList.remove("animate-pulse", "text-blue-400");
+            }
+            resetUpdateButton() {
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`;
+                this.ui.btnCloudUpdate.disabled = false;
+            }
+
             renderHeatmap() {
                 if (this.stockList.length === 0) { this.ui.heatmapContainer.innerHTML = `<div class="col-span-2 text-center text-gray-500 pt-10">無資料，請更新報價。</div>`; return; }
                 const groups = {};
@@ -526,34 +624,72 @@
                     groups[gName].totalChange += parseFloat(stock.changeRate || 0);
                     groups[gName].count++;
                 });
-                const groupArray = Object.keys(groups).map(key => ({ name: key, avgChange: (groups[key].totalChange / groups[key].count).toFixed(2), count: groups[key].count })).sort((a, b) => b.avgChange - a.avgChange);
+                const groupArray = Object.keys(groups).map(key => ({
+                    name: key,
+                    avgChange: (groups[key].totalChange / groups[key].count).toFixed(2),
+                    count: groups[key].count
+                })).sort((a, b) => b.avgChange - a.avgChange);
+
                 this.ui.heatmapContainer.innerHTML = groupArray.map(g => {
-                    const rate = parseFloat(g.avgChange); let colorClass = 'bg-slate-700';
-                    if (rate > 2) colorClass = 'bg-red-600'; else if (rate > 0) colorClass = 'bg-red-900/80'; else if (rate < -2) colorClass = 'bg-green-600'; else if (rate < 0) colorClass = 'bg-green-900/80';
+                    const rate = parseFloat(g.avgChange);
+                    let colorClass = 'bg-slate-700';
+                    if (rate > 2) colorClass = 'bg-red-600';
+                    else if (rate > 0) colorClass = 'bg-red-900/80';
+                    else if (rate < -2) colorClass = 'bg-green-600';
+                    else if (rate < 0) colorClass = 'bg-green-900/80';
                     return `<div onclick="app.filterByGroup('${g.name}')" class="${colorClass} p-3 rounded-lg shadow cursor-pointer active:scale-95 transition-transform flex flex-col justify-between h-24 border border-white/10 hover:border-white/30"><span class="text-sm font-bold text-white truncate">${g.name}</span><div class="flex justify-between items-end"><span class="text-xs text-gray-300">${g.count}檔</span><span class="text-lg font-bold text-white">${rate>0?'+':''}${rate}%</span></div></div>`;
                 }).join('');
             }
+
             renderTable(list) {
                 if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-500">無符合篩選條件的資料</td></tr>`; return; }
                 const html = list.map(stock => {
-                    const rate = parseFloat(stock.changeRate||0); const price = parseFloat(stock.price||0).toFixed(2);
+                    const rate = parseFloat(stock.changeRate||0);
+                    const price = parseFloat(stock.price||0).toFixed(2);
                     let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-white font-bold');
                     let rateDisplay = rate > 0 ? `+${rate.toFixed(2)}%` : `${rate.toFixed(2)}%`;
                     const typeBadge = stock.type === '上市' ? '<span class="bg-blue-900 text-blue-300 text-[9px] px-1 rounded border border-blue-800">市</span>' : '<span class="bg-purple-900 text-purple-300 text-[9px] px-1 rounded border border-purple-800">櫃</span>';
-                    let shortGroup = stock.group || '-'; if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) shortGroup = shortGroup.substring(0, 2);
+                    let shortGroup = stock.group || '-';
+                    if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) shortGroup = shortGroup.substring(0, 2);
                     const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-slate-800 text-gray-400 text-[10px] px-1 py-0.5 rounded border border-slate-700">${shortGroup}</span>` : `<span class="text-gray-600 text-[10px]">-</span>`;
-                    const suffix = stock.type === '上市' ? '.TW' : '.TWO'; const linkUrl = `https://tw.stock.yahoo.com/quote/${stock.id}${suffix}/technical-analysis`;
-                    return `<tr class="hover:bg-slate-800 transition-colors border-b border-slate-800"><td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10"><a href="${linkUrl}" target="_blank" class="flex items-center gap-1.5 block hover:opacity-80 group"><div class="flex flex-col w-[70px]"><div class="text-blue-400 text-xs font-bold leading-tight name-cell underline decoration-blue-400/30 group-hover:text-blue-300">${stock.name}</div><div class="text-gray-500 text-[10px] flex items-center gap-1 mt-0.5 no-underline">${stock.id} ${typeBadge}</div></div></a></td><td class="px-1 py-2 text-center align-middle">${groupBadge}</td><td class="px-1 py-2 text-right ${priceClass} text-sm">${price}</td><td class="px-1 py-2 text-right ${priceClass} text-xs">${rateDisplay}</td><td class="px-1 py-2 text-right text-sm text-gray-500 font-mono">${stock.ma5}</td><td class="px-1 py-2 text-right text-sm text-gray-500 font-mono">${stock.ma10}</td><td class="px-1 py-2 text-[10px] text-gray-600 whitespace-nowrap">${stock.note || '-'}</td></tr>`;
+                    
+                    const suffix = stock.type === '上市' ? '.TW' : '.TWO';
+                    const linkUrl = `https://tw.stock.yahoo.com/quote/${stock.id}${suffix}/technical-analysis`;
+
+                    return `
+                        <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
+                            <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10">
+                                <a href="${linkUrl}" target="_blank" class="flex items-center gap-1.5 block hover:opacity-80 group">
+                                    <div class="flex flex-col w-[70px]">
+                                        <div class="text-blue-400 text-xs font-bold leading-tight name-cell underline decoration-blue-400/30 group-hover:text-blue-300">${stock.name}</div>
+                                        <div class="text-gray-500 text-[10px] flex items-center gap-1 mt-0.5 no-underline">${stock.id} ${typeBadge}</div>
+                                    </div>
+                                </a>
+                            </td>
+                            <td class="px-1 py-2 text-center align-middle">${groupBadge}</td>
+                            <td class="px-1 py-2 text-right ${priceClass} text-sm">${price}</td>
+                            <td class="px-1 py-2 text-right ${priceClass} text-xs">${rateDisplay}</td>
+                            <td class="px-1 py-2 text-right text-sm text-gray-500 font-mono">${stock.ma5}</td>
+                            <td class="px-1 py-2 text-right text-sm text-gray-500 font-mono">${stock.ma10}</td>
+                            <td class="px-1 py-2 text-[10px] text-gray-600 whitespace-nowrap">${stock.note || '-'}</td>
+                        </tr>`;
                 }).join('');
                 this.ui.body.innerHTML = html;
             }
-            updateCount() { this.ui.dataCount.innerText = `${this.displayList.length} 檔`; }
+            updateCount() { this.ui.dataCount.innerText = `總: ${this.displayList.length}`; }
         }
 
         class AdminController {
-            constructor() { this.ui = { owner: document.getElementById('repo-owner'), repo: document.getElementById('repo-name'), token: document.getElementById('github-token') }; }
+            constructor() {
+                this.ui = { owner: document.getElementById('repo-owner'), repo: document.getElementById('repo-name'), token: document.getElementById('github-token') };
+            }
             loadSettings() { this.ui.owner.value = localStorage.getItem('gh_owner')||''; this.ui.repo.value = localStorage.getItem('gh_repo')||''; this.ui.token.value = localStorage.getItem('gh_token')||''; }
-            saveSettings() { localStorage.setItem('gh_owner', this.ui.owner.value.trim()); localStorage.setItem('gh_repo', this.ui.repo.value.trim()); localStorage.setItem('gh_token', this.ui.token.value.trim()); alert('設定已儲存！'); }
+            saveSettings() { 
+                localStorage.setItem('gh_owner', this.ui.owner.value.trim()); 
+                localStorage.setItem('gh_repo', this.ui.repo.value.trim()); 
+                localStorage.setItem('gh_token', this.ui.token.value.trim()); 
+                alert('設定已儲存！');
+            }
         }
         const app = new StockApp(); const admin = new AdminController();
     </script>
