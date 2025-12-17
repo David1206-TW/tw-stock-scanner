@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V32 (週線 VCP 強化版)
+台股自動掃描策略機器人 (Scanner Bot) - V33 (流動性條件修正版)
 
-【策略說明】
+【V33 修正說明】
+1. 策略 A 與 B 同步流動性標準：5日均量皆須 > 500 張。
+2. 修正 VCP 策略原使用 20日均量 的設定，改為 5日均量以貼近近期熱度。
 
 【策略 A：拉回佈局 (Pullback Setup)】
    核心概念：長線多頭架構下，短線量縮回檔尋找支撐。
@@ -12,7 +14,8 @@
    4. 均線糾結：MA5, MA10, MA20 差異 < 8%。
    5. 量縮整理：今日成交量 < 5日均量。
    6. 支撐確認：收盤價 > MA10。
-   7. 底部打樁：|今日最低 - 昨日最低| < 1% (V29特徵)。
+   7. 底部打樁：|今日最低 - 昨日最低| < 1%。
+   8. 【必要】流動性：5日均量 > 500張。
 
 【策略 B：VCP 技術面 (Volatility Contraction)】
    核心概念：股價高檔壓縮，籌碼換手成功，準備突破。
@@ -20,10 +23,10 @@
    2. 強勢多頭：MA5 > MA10 > MA20。
    3. 極致壓縮：布林帶寬 (BandWidth) < 12%。
    4. 均線糾結：MA5, MA10, MA20 差異 < 2.5%。
-   5. 流動性：20日均量 > 500張。
+   5. 【修改】流動性：5日均量 > 500張 (原為20日)。
    6. 守住攻擊線：收盤價 > MA10。
    7. 避免追高：當日漲幅 <= 6%。
-   8. 【V32新增】週線架構：週線 MA5 > 週線 MA60 (確保中長線大趨勢向上)。
+   8. 週線架構：週線 MA5 > 週線 MA60。
 """
 
 import yfinance as yf
@@ -116,6 +119,8 @@ def check_strategy_original(df):
     prev_l = low.iloc[-2]
 
     if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
+    
+    # 8. 【確認】流動性：5日均量 > 500張
     if curr_vol_ma5 < 500000: return False, None 
 
     # 1. 長線保護 (三線之上)
@@ -155,7 +160,7 @@ def check_strategy_original(df):
     }
 
 # ==========================================
-# 4-B. 策略邏輯：VCP 技術面 (V32 更新)
+# 4-B. 策略邏輯：VCP 技術面 (V33 更新)
 # ==========================================
 def check_strategy_vcp(df):
     if len(df) < 250: return False, None
@@ -172,17 +177,19 @@ def check_strategy_vcp(df):
     
     std = close.rolling(20).std()
     bw = ( (ma20 + 2*std) - (ma20 - 2*std) ) / ma20
-    vol_ma20 = volume.rolling(20).mean()
+    
+    # 【修改】使用 5日均量
+    vol_ma5 = volume.rolling(5).mean() 
 
     curr_c = close.iloc[-1]
     curr_ma5 = ma5.iloc[-1]
     curr_ma10 = ma10.iloc[-1]
     curr_ma20 = ma20.iloc[-1]
     curr_ma60 = ma60.iloc[-1]
-    curr_ma120 = ma120.iloc[-1] 
+    curr_ma120 = ma120.iloc[-1]
     curr_ma240 = ma240.iloc[-1]
     curr_bw = bw.iloc[-1]
-    curr_vol_ma20 = vol_ma20.iloc[-1]
+    curr_vol_ma5 = vol_ma5.iloc[-1]
     
     prev_c = close.iloc[-2]
 
@@ -200,8 +207,8 @@ def check_strategy_vcp(df):
     # 3. 極致壓縮 (BW < 12%)
     if curr_bw > 0.12: return False, None
     
-    # 4. 流動性
-    if curr_vol_ma20 < 500000: return False, None
+    # 4. 【修改】流動性：5日均量 > 500張 (原20日)
+    if curr_vol_ma5 < 500000: return False, None
     
     # 5. 超級糾結 (< 2.5%)
     mas = [curr_ma5, curr_ma10, curr_ma20]
@@ -216,7 +223,7 @@ def check_strategy_vcp(df):
         daily_change = (curr_c - prev_c) / prev_c
         if daily_change > 0.06: return False, None
 
-    # 8. 【V32新增】週線架構確認 (Weekly MA5 > Weekly MA60)
+    # 8. 週線架構確認 (Weekly MA5 > Weekly MA60)
     try:
         # 將日線資料轉換為週線 (以週五為結算)
         weekly_df = df.resample('W-FRI').last()
@@ -332,7 +339,7 @@ def run_scanner():
             existing_stock_ids.add(s['id'])
             
     print(f"歷史已追蹤: {len(existing_stock_ids)} 檔")
-    print(f"開始雙策略掃描 (V32 週線 VCP 版)...")
+    print(f"開始雙策略掃描 (V33 流動性修正版)...")
     
     daily_results = []
     new_history_entries = []
