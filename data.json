@@ -1,5 +1,5 @@
 {
-  "date": "2025/12/17 07:55:37",
+  "date": "2025/12/17 10:52:31",
   "source": "GitHub Actions",
   "list": [
     {
@@ -35,6 +35,38 @@
       "daily_change": 1.28
     },
     {
+      "id": "1528",
+      "name": "恩德",
+      "group": "電機機械",
+      "type": "上市",
+      "price": 15.8,
+      "ma5": 15.78,
+      "ma10": 15.53,
+      "changeRate": -2.47,
+      "isValid": true,
+      "note": "VCP / 年線14.78",
+      "buy_price": 15.8,
+      "latest_price": 15.8,
+      "roi": 0.0,
+      "daily_change": -2.47
+    },
+    {
+      "id": "1587",
+      "name": "吉茂",
+      "group": "汽車工業",
+      "type": "上市",
+      "price": 49.7,
+      "ma5": 45.89,
+      "ma10": 45.13,
+      "changeRate": 4.85,
+      "isValid": true,
+      "note": "VCP / 年線34.69",
+      "buy_price": 49.7,
+      "latest_price": 49.7,
+      "roi": 0.0,
+      "daily_change": 4.85
+    },
+    {
       "id": "1714",
       "name": "和桐",
       "group": "化學工業",
@@ -67,6 +99,22 @@
       "daily_change": -0.48
     },
     {
+      "id": "2303",
+      "name": "聯電",
+      "group": "半導體業",
+      "type": "上市",
+      "price": 50.4,
+      "ma5": 49.18,
+      "ma10": 49.1,
+      "changeRate": 2.44,
+      "isValid": true,
+      "note": "VCP / 年線44.16",
+      "buy_price": 50.4,
+      "latest_price": 50.4,
+      "roi": 0.0,
+      "daily_change": 2.44
+    },
+    {
       "id": "2312",
       "name": "金寶",
       "group": "其他電子業",
@@ -81,6 +129,38 @@
       "latest_price": 23.2,
       "roi": 0.0,
       "daily_change": -0.85
+    },
+    {
+      "id": "2329",
+      "name": "華泰",
+      "group": "半導體業",
+      "type": "上市",
+      "price": 51.6,
+      "ma5": 49.32,
+      "ma10": 47.83,
+      "changeRate": 5.85,
+      "isValid": true,
+      "note": "VCP / 年線39.97",
+      "buy_price": 51.6,
+      "latest_price": 51.6,
+      "roi": 0.0,
+      "daily_change": 5.85
+    },
+    {
+      "id": "2495",
+      "name": "普安",
+      "group": "電腦及週邊設備業",
+      "type": "上市",
+      "price": 28.65,
+      "ma5": 28.58,
+      "ma10": 27.81,
+      "changeRate": 0.88,
+      "isValid": true,
+      "note": "VCP / 年線25.24",
+      "buy_price": 28.65,
+      "latest_price": 28.65,
+      "roi": 0.0,
+      "daily_change": 0.88
     },
     {
       "id": "2548",
@@ -163,6 +243,22 @@
       "daily_change": 0.39
     },
     {
+      "id": "2880",
+      "name": "華南金",
+      "group": "金融保險業",
+      "type": "上市",
+      "price": 31.8,
+      "ma5": 31.21,
+      "ma10": 30.94,
+      "changeRate": 1.44,
+      "isValid": true,
+      "note": "VCP / 年線27.99",
+      "buy_price": 31.8,
+      "latest_price": 31.8,
+      "roi": 0.0,
+      "daily_change": 1.44
+    },
+    {
       "id": "2881",
       "name": "富邦金",
       "group": "金融保險業",
@@ -179,6 +275,54 @@
       "daily_change": 1.35
     },
     {
+      "id": "2882",
+      "name": "國泰金",
+      "group": "金融保險業",
+      "type": "上市",
+      "price": 73.2,
+      "ma5": 70.56,
+      "ma10": 69.72,
+      "changeRate": 4.27,
+      "isValid": true,
+      "note": "VCP / 年線64.2",
+      "buy_price": 73.2,
+      "latest_price": 73.2,
+      "roi": 0.0,
+      "daily_change": 4.27
+    },
+    {
+      "id": "2885",
+      "name": "元大金",
+      "group": "金融保險業",
+      "type": "上市",
+      "price": 39.35,
+      "ma5": 38.43,
+      "ma10": 38.02,
+      "changeRate": 1.42,
+      "isValid": true,
+      "note": "VCP / 年線33.27",
+      "buy_price": 39.35,
+      "latest_price": 39.35,
+      "roi": 0.0,
+      "daily_change": 1.42
+    },
+    {
+      "id": "2887",
+      "name": "台新金",
+      "group": "金融保險業",
+      "type": "上市",
+      "price": 21.25,
+      "ma5": 19.86,
+      "ma10": 19.52,
+      "changeRate": 5.99,
+      "isValid": true,
+      "note": "VCP / 年線17.37",
+      "buy_price": 21.25,
+      "latest_price": 21.25,
+      "roi": 0.0,
+      "daily_change": 5.99
+    },
+    {
       "id": "2890",
       "name": "永豐金",
       "group": "金融保險業",
@@ -193,6 +337,22 @@
       "latest_price": 28.9,
       "roi": 0.0,
       "daily_change": 3.03
+    },
+    {
+      "id": "2891",
+      "name": "中信金",
+      "group": "金融保險業",
+      "type": "上市",
+      "price": 48.95,
+      "ma5": 46.78,
+      "ma10": 45.71,
+      "changeRate": 4.93,
+      "isValid": true,
+      "note": "VCP / 年線41.51",
+      "buy_price": 48.95,
+      "latest_price": 48.95,
+      "roi": 0.0,
+      "daily_change": 4.93
     },
     {
       "id": "2892",
@@ -225,6 +385,22 @@
       "latest_price": 51.4,
       "roi": 0.0,
       "daily_change": -1.91
+    },
+    {
+      "id": "5515",
+      "name": "建國",
+      "group": "建材營造業",
+      "type": "上市",
+      "price": 35.5,
+      "ma5": 33.94,
+      "ma10": 33.08,
+      "changeRate": 4.72,
+      "isValid": true,
+      "note": "VCP / 年線27.36",
+      "buy_price": 35.5,
+      "latest_price": 35.5,
+      "roi": 0.0,
+      "daily_change": 4.72
     },
     {
       "id": "5880",
@@ -307,6 +483,22 @@
       "daily_change": -0.99
     },
     {
+      "id": "6770",
+      "name": "力積電",
+      "group": "半導體業",
+      "type": "上市",
+      "price": 34.8,
+      "ma5": 34.49,
+      "ma10": 34.18,
+      "changeRate": 2.96,
+      "isValid": true,
+      "note": "VCP / 年線19.8",
+      "buy_price": 34.8,
+      "latest_price": 34.8,
+      "roi": 0.0,
+      "daily_change": 2.96
+    },
+    {
       "id": "9902",
       "name": "台火",
       "group": "其他業",
@@ -355,6 +547,22 @@
       "daily_change": 3.9
     },
     {
+      "id": "3490",
+      "name": "單井",
+      "group": "光電",
+      "type": "上櫃",
+      "price": 25.75,
+      "ma5": 25.5,
+      "ma10": 24.98,
+      "changeRate": -2.28,
+      "isValid": true,
+      "note": "VCP / 年線24.67",
+      "buy_price": 25.75,
+      "latest_price": 25.75,
+      "roi": 0.0,
+      "daily_change": -2.28
+    },
+    {
       "id": "4123",
       "name": "晟德",
       "group": "生技醫療",
@@ -369,6 +577,38 @@
       "latest_price": 37.55,
       "roi": 0.0,
       "daily_change": -0.13
+    },
+    {
+      "id": "5381",
+      "name": "合正",
+      "group": "電子零組件",
+      "type": "上櫃",
+      "price": 25.6,
+      "ma5": 24.46,
+      "ma10": 24.06,
+      "changeRate": -3.21,
+      "isValid": true,
+      "note": "VCP / 年線22.21",
+      "buy_price": 25.6,
+      "latest_price": 25.6,
+      "roi": 0.0,
+      "daily_change": -3.21
+    },
+    {
+      "id": "6126",
+      "name": "信音",
+      "group": "電子零組件",
+      "type": "上櫃",
+      "price": 31.3,
+      "ma5": 30.68,
+      "ma10": 30.17,
+      "changeRate": 1.95,
+      "isValid": true,
+      "note": "VCP / 年線26.44",
+      "buy_price": 31.3,
+      "latest_price": 31.3,
+      "roi": 0.0,
+      "daily_change": 1.95
     },
     {
       "id": "8936",
