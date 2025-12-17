@@ -28,7 +28,6 @@
         .tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
         .tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; }
         
-        /* 排序欄位樣式 */
         th.sortable { 
             cursor: pointer; 
             transition: background-color 0.2s; 
@@ -39,7 +38,6 @@
             font-size: 10px; 
         }
         th.sortable:hover { background-color: #334155; }
-        
         td { white-space: nowrap; }
         .name-cell { white-space: normal; max-width: 80px; line-height: 1.2; }
         
@@ -83,7 +81,6 @@
             <div class="flex flex-col">
                 <div class="flex items-center gap-2">
                     <h1 class="text-sm font-bold tracking-wider leading-none">台股戰情室</h1>
-                    <!-- 整體勝率徽章 -->
                     <span id="win-rate-badge" class="hidden text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono">
                         勝率 -%
                     </span>
@@ -93,12 +90,10 @@
         </div>
         
         <div class="flex items-center gap-1">
-            <!-- 雲端更新按鈕 -->
             <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
                 <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
                 <span class="text-[10px] font-medium">更新</span>
             </button>
-            <!-- 重新整理按鈕 -->
             <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
                 <i class="fa-solid fa-rotate-right text-sm"></i>
             </button>
@@ -111,7 +106,9 @@
         <!-- Tab 1: Heatmap (熱力圖) -->
         <div id="page-heatmap" class="flex flex-col h-full gap-2">
             <div class="flex-grow overflow-y-auto pb-4">
-                <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
+                <div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    <div class="col-span-full text-center text-gray-500 py-10">資料載入中...</div>
+                </div>
             </div>
         </div>
 
@@ -121,7 +118,6 @@
                 <!-- 控制列 -->
                 <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
                     <div class="flex items-center gap-2 overflow-x-auto no-scrollbar flex-grow mr-2">
-                        <!-- 過濾標籤 -->
                         <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center whitespace-nowrap">
                             <span id="filter-name">族群</span>
                             <button onclick="app.clearFilter()" class="ml-2 hover:text-white"><i class="fa-solid fa-times"></i></button>
@@ -147,7 +143,6 @@
             
             <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
                 <div class="flex-grow overflow-auto bg-slate-900 relative">
-                    <!-- 報價表格 (含 Sticky Columns) -->
                     <table class="min-w-[480px] w-full text-sm text-left text-gray-400">
                         <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
@@ -184,22 +179,18 @@
 
         <!-- Tab 3: Performance (績效回測) -->
         <div id="page-perf" class="hidden flex flex-col h-full gap-2">
-            <!-- 統計條 -->
             <div class="shrink-0 flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="perf-stats-bar">
                 <div class="text-xs text-gray-500 p-2">計算中...</div>
             </div>
 
             <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
                 <div class="flex-grow overflow-auto bg-slate-900 relative">
-                    <!-- 績效表格 (含 Sticky Columns) -->
                     <table class="min-w-[850px] w-full text-sm text-left text-gray-400">
                         <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
                             <tr>
-                                <!-- Sticky 1: 日期 -->
                                 <th scope="col" class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('date')">
                                     日期<span class="sort-symbol" id="perf-symbol-date">⇅</span>
                                 </th>
-                                <!-- Sticky 2: 股名 -->
                                 <th scope="col" class="px-1 py-2 sortable sticky left-[40px] bg-slate-950 z-30 border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]" onclick="app.sortPerfList('id')">
                                     股名<span class="sort-symbol" id="perf-symbol-id">⇅</span>
                                 </th>
@@ -209,15 +200,12 @@
                                 <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">
                                     現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span>
                                 </th>
-                                <!-- 累積 ROI 移到現價旁邊 -->
                                 <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('roi')">
                                     累%<span class="sort-symbol" id="perf-symbol-roi">⇅</span>
                                 </th>
                                 <th scope="col" class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('daily_change')">
                                     日%<span class="sort-symbol" id="perf-symbol-daily_change">⇅</span>
                                 </th>
-                                
-                                <!-- 天數欄位 -->
                                 <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_1')">1日%<span class="sort-symbol" id="perf-symbol-roi_1">⇅</span></th>
                                 <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_5')">5日%<span class="sort-symbol" id="perf-symbol-roi_5">⇅</span></th>
                                 <th scope="col" class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_10')">10日%<span class="sort-symbol" id="perf-symbol-roi_10">⇅</span></th>
@@ -252,7 +240,6 @@
         </div>
     </main>
 
-    <!-- Bottom Navigation -->
     <nav class="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
         <div class="max-w-6xl mx-auto flex justify-around h-full">
             <button onclick="app.switchTab('heatmap')" id="tab-heatmap" class="tab-btn active flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-fire text-lg mb-1"></i><span class="text-xs mt-1">熱力圖</span></button>
@@ -337,7 +324,7 @@
             async init() {
                 try { 
                     await this.loadData(); 
-                    this.loadHistory(); 
+                    await this.loadHistory(); 
                 } 
                 catch (e) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 text-xs">${e.message}</td></tr>`; }
             }
@@ -375,7 +362,6 @@
                         let totalStocks = 0;
                         let winStocks = 0;
 
-                        // 後端 V27 已計算好所有 ROI，前端只負責顯示和統計
                         Object.keys(historyData).forEach(date => {
                             const entryDate = new Date(date);
                             const today = new Date();
@@ -397,17 +383,15 @@
                             });
                         });
 
-                        // 更新勝率徽章
                         if (totalStocks > 0) {
                             const winRate = Math.round((winStocks / totalStocks) * 100);
-                            this.ui.winRateBadge.innerText = `總勝率 ${winRate}%`;
+                            this.ui.winRateBadge.innerText = `勝率 ${winRate}%`;
                             this.ui.winRateBadge.classList.remove('hidden');
                             if(winRate >= 60) this.ui.winRateBadge.className = "ml-2 text-[9px] bg-red-900/50 text-red-300 border border-red-700 px-1.5 py-0.5 rounded font-mono";
                             else if(winRate < 40) this.ui.winRateBadge.className = "ml-2 text-[9px] bg-green-900/50 text-green-300 border border-green-700 px-1.5 py-0.5 rounded font-mono";
                             else this.ui.winRateBadge.className = "ml-2 text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono";
                         }
                         
-                        // 計算統計數據
                         const stats = {
                             1: { total: 0, win: 0, sumRoi: 0 },
                             5: { total: 0, win: 0, sumRoi: 0 },
@@ -526,7 +510,7 @@
                 this.ui.perfBody.innerHTML = html;
             }
             
-            // ... (其他原有邏輯) ...
+            // ... (其他原有邏輯省略，但請保留) ...
             applyStateAndRender() {
                 let list = [...this.stockList];
                 
@@ -645,7 +629,7 @@
                 if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-500">無符合篩選條件的資料</td></tr>`; return; }
                 const html = list.map(stock => {
                     const rate = parseFloat(stock.changeRate||0);
-                    const price = parseFloat(stock.price||0).toFixed(2);
+                    const price = stock.price.toFixed(2);
                     let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-white font-bold');
                     let rateDisplay = rate > 0 ? `+${rate.toFixed(2)}%` : `${rate.toFixed(2)}%`;
                     const typeBadge = stock.type === '上市' ? '<span class="bg-blue-900 text-blue-300 text-[9px] px-1 rounded border border-blue-800">市</span>' : '<span class="bg-purple-900 text-purple-300 text-[9px] px-1 rounded border border-purple-800">櫃</span>';
@@ -676,7 +660,7 @@
                 }).join('');
                 this.ui.body.innerHTML = html;
             }
-            updateCount() { this.ui.dataCount.innerText = `總: ${this.displayList.length}`; }
+            updateCount() { this.ui.dataCount.innerText = `總: ${this.displayList.length} 檔`; }
         }
 
         class AdminController {
@@ -695,5 +679,3 @@
     </script>
 </body>
 </html>
-
-
