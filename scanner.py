@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 台股自動掃描策略機器人 (Scanner Bot) - V42 Split Logic
-"""
 
 【修正說明】
 1. 修正策略函式呼叫名稱錯誤 (check_strategy_vcp -> check_strategy_vcp_pro)
@@ -39,7 +38,7 @@ import pytz
 # 1. 資料庫管理
 # ==========================================
 DB_INDUSTRY = 'cmoney_industry_cache.json'
-DB_HISTORY = 'history.json' 
+DB_HISTORY = 'history.json'
 DATA_JSON = 'data.json'
 
 def load_json(filename):
@@ -58,7 +57,6 @@ def save_json(filename, data):
 # ==========================================
 # 2. 產業分類解析邏輯
 # ==========================================
-# ... (此處代碼保持不變，為節省篇幅省略，請保留原本的 get_stock_group 與 get_all_tickers) ...
 def get_stock_group(code, db_data):
     group = "其他"
     if code in db_data:
@@ -70,7 +68,9 @@ def get_stock_group(code, db_data):
         elif isinstance(raw_data, str):
             group = raw_data
     elif code in twstock.codes:
-        group = twstock.codes[code].group.replace("工業", "").replace("業", "")
+        if code in twstock.codes and twstock.codes[code].group:
+            group = twstock.codes[code].group.replace("工業", "").replace("業", "")
+    
     if not isinstance(group, str): group = str(group)
     return group
 
@@ -85,9 +85,8 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 4. 策略邏輯 (保持不變)
+# 4. 策略邏輯
 # ==========================================
-# ... (請保留原本的 check_strategy_original 與 check_strategy_vcp_pro) ...
 
 def check_strategy_original(df):
     if len(df) < 250: return False, None
@@ -238,7 +237,7 @@ def check_strategy_vcp_pro(df):
     }
 
 # ==========================================
-# 5. 更新歷史績效 (保持不變)
+# 5. 更新歷史績效
 # ==========================================
 def update_history_roi(history_db):
     print("正在更新歷史名單績效...")
@@ -311,7 +310,7 @@ def update_history_roi(history_db):
     return history_db
 
 # ==========================================
-# 6. 主程式 (核心修改處)
+# 6. 主程式
 # ==========================================
 def run_scanner():
     tw_tz = pytz.timezone('Asia/Taipei')
