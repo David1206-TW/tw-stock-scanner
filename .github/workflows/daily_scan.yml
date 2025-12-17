@@ -1,5 +1,7 @@
 name: Daily Stock Scanner
 
+# 設定觸發條件：每天 UTC 16:00 (台灣時間 00:00) 自動執行
+# 也可以手動觸發 (workflow_dispatch)
 on:
   schedule:
     - cron: '0 16 * * *'
@@ -21,9 +23,10 @@ jobs:
       with:
         python-version: '3.9'
 
+    # 【關鍵修改】加入 pytz 套件
     - name: Install dependencies
       run: |
-        pip install yfinance twstock pandas lxml
+        pip install yfinance twstock pandas lxml pytz
 
     - name: Run scanner script
       run: python scanner.py
@@ -36,7 +39,7 @@ jobs:
         # 1. 加入當日掃描結果
         git add data.json
         
-        # 2. 【修改】加入您的 CMoney 產業快取檔
+        # 2. 加入 CMoney 產業快取檔
         git add cmoney_industry_cache.json
         
         # 3. 加入歷史績效檔
