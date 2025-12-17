@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V40 (布林帶寬放寬版)
-
-【V40 修正說明】
-策略 B (VCP) 的布林帶寬限制由 9% 放寬至 15%，增加選股廣度。
+台股自動掃描策略機器人 (Scanner Bot) - V41
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -456,5 +453,3 @@ if __name__ == "__main__":
         "list": results
     }
     save_json('data.json', output_payload)
-
-
