@@ -25,6 +25,11 @@ jobs:
   # 第一階段：掃描與更新資料
   scan_and_update:
     runs-on: ubuntu-latest
+    
+    # 【關鍵新增】將 GitHub Secret 注入環境變數
+    env:
+      FINMIND_API_TOKEN: ${{ secrets.FINMIND_API_TOKEN }}
+
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
@@ -35,8 +40,9 @@ jobs:
         python-version: '3.9'
 
     - name: Install dependencies
+      # 【關鍵新增】加入 finmind 套件
       run: |
-        pip install yfinance twstock pandas lxml pytz
+        pip install finmind twstock pandas lxml pytz requests
 
     - name: Run scanner script
       run: python scanner.py
@@ -60,9 +66,7 @@ jobs:
           echo "No changes to commit."
         fi
 
-    # 2. 【關鍵修正】準備發布檔案 (解決 Connect Timeout 的核心步驟)
-    # 我們在虛擬機中臨時建立一個乾淨的目錄，只放網頁需要的檔案
-    # 這樣上傳的 Artifact 會非常小，秒速完成，不會超時
+    # 2. 準備發布檔案
     - name: Prepare deployment artifact
       run: |
         mkdir public_html
@@ -74,7 +78,7 @@ jobs:
     - name: Upload artifact for deployment
       uses: actions/upload-pages-artifact@v3
       with:
-        path: 'public_html' # 只上傳這個乾淨的資料夾
+        path: 'public_html'
 
   # 第二階段：部署到 GitHub Pages
   deploy:
@@ -82,7 +86,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: scan_and_update # 必須等掃描完成
+    needs: scan_and_update
     steps:
     - name: Deploy to GitHub Pages
       id: deployment
