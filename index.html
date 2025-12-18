@@ -392,7 +392,7 @@
                             historyData[date].forEach(stock => {
                                 const roi = parseFloat(stock.roi || 0);
                                 
-                                // 修復重點：預先計算各天期的 ROI 數值並存入物件
+                                // 修復重點：預先計算各天期的 ROI 數值並存入物件，解決排序問題
                                 const stockObj = {
                                     ...stock,
                                     date: date, 
@@ -403,7 +403,6 @@
                                 };
                                 
                                 // 預先生成 roi_1, roi_5 等欄位供排序使用
-                                // 若持有天數不足，則設為 null
                                 [1, 5, 10, 20, 30, 60, 120].forEach(d => {
                                     stockObj[`roi_${d}`] = (diffDays >= d) ? roi : null;
                                 });
@@ -481,7 +480,6 @@
                 this.historyList.sort((a, b) => {
                     let valA = a[key], valB = b[key];
                     if (['latest_price', 'daily_change', 'roi', 'buy_price'].includes(key) || key.startsWith('roi_')) {
-                        // 修復重點：處理 null 值，確保排序時空值被排到最後
                         const vA = (valA === null || valA === undefined) ? -99999999 : parseFloat(valA);
                         const vB = (valB === null || valB === undefined) ? -99999999 : parseFloat(valB);
                         return (vA - vB) * dir;
@@ -542,6 +540,67 @@
                 this.ui.perfBody.innerHTML = html;
             }
             updateCount() { this.ui.dataCount.innerText = `總: ${this.displayList.length}`; }
+            
+            // --- 核心修復：正確呼叫 daily_scan.yml ---
+            async triggerCloudUpdate() {
+                const owner = localStorage.getItem('gh_owner');
+                const repo = localStorage.getItem('gh_repo');
+                const token = localStorage.getItem('gh_token');
+                
+                if (!owner || !repo || !token) { 
+                    alert("⚠️ 錯誤：請先至 [設定] 頁面填寫 GitHub Token、Owner 與 Repo 名稱。"); 
+                    this.switchTab('admin'); 
+                    return; 
+                }
+                
+                if (!confirm("確定要手動觸發雲端掃描嗎？\n(這會啟動 GitHub Actions)")) return;
+                
+                this.ui.btnCloudUpdate.disabled = true;
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
+                
+                try {
+                    // API 路徑必須與您的 .yml 檔名完全一致 (daily_scan.yml)
+                    const workflowId = 'daily_scan.yml'; 
+                    const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`;
+                    
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Authorization': `token ${token}`
+                        },
+                        body: JSON.stringify({ ref: 'main' }) // 預設分支為 main
+                    });
+                    
+                    if (res.status === 204) {
+                        alert("✅ 指令已發送！\nGithub 正在啟動掃描，請稍等 3~5 分鐘後自動更新。");
+                        this.startPolling();
+                    } else {
+                        const errText = await res.text();
+                        throw new Error(`Status ${res.status}: ${errText}`);
+                    }
+                } catch (e) {
+                    alert(`❌ 發送失敗：${e.message}\n\n請檢查：\n1. Token 是否有 'workflow' 權限\n2. Repo 名稱是否正確\n3. .yml 檔名是否為 daily_scan.yml`);
+                    this.resetUpdateButton();
+                }
+            }
+            
+            startPolling() {
+                if (this.isPolling) return;
+                this.isPolling = true;
+                this.ui.lastUpdated.classList.add("animate-pulse", "text-blue-400");
+                this.pollInterval = setInterval(() => { this.loadData(); }, 15000);
+            }
+            stopPolling() {
+                this.isPolling = false;
+                clearInterval(this.pollInterval);
+                this.resetUpdateButton();
+                this.ui.lastUpdated.classList.remove("animate-pulse", "text-blue-400");
+            }
+            resetUpdateButton() {
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`;
+                this.ui.btnCloudUpdate.disabled = false;
+            }
         }
 
         class AdminController {
