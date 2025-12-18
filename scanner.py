@@ -6,6 +6,7 @@
 1. 修正策略函式呼叫名稱錯誤 (check_strategy_vcp -> check_strategy_vcp_pro)
 2. 在 try-except 中加入錯誤列印，以便 Debug
 3. VCP 策略新增過濾：剔除收盤 < MA240 且 成交量 < 500張 的標的
+4. 雙策略共同過濾：確保收盤價都必須站上 MA60 (季線)
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -18,7 +19,7 @@
    8. 流動性：5日均量 > 500張。
 
 【策略 B：VCP 技術面 (VCP-Lite)】
-  1. 硬指標過濾：股價必須 > MA240 (年線) 且 成交量 > 500張
+  1. 硬指標過濾：股價必須 > MA240 (年線) 且 > MA60 (季線) 且 成交量 > 500張
   2. 價格位階：靠近 52 週新高 (High Tight Flag 特徵)
   3. 波動收縮：布林帶寬度 < 15% (代表籌碼沉澱)
   4. 量能遞減：5日均量 < 20日均量 (短期量縮)
@@ -119,7 +120,7 @@ def check_strategy_original(df):
     if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
     if curr_vol_ma5 < 500000: return False, None 
 
-    # 1. 長線保護
+    # 1. 長線保護 (已包含 MA60 檢查)
     if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     # 2. 多頭排列
     if not ((curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)): return False, None
@@ -163,6 +164,7 @@ def check_strategy_vcp_pro(df):
         ma50 = close.rolling(50).mean()
         ma150 = close.rolling(150).mean()
         ma200 = close.rolling(200).mean()
+        ma60 = close.rolling(60).mean() # 確保有計算 MA60
         ma240 = close.rolling(240).mean() # 新增 MA240 計算
         
         # 布林帶 (20日, 2倍標準差)
@@ -180,6 +182,7 @@ def check_strategy_vcp_pro(df):
         curr_ma50 = ma50.iloc[-1]
         curr_ma150 = ma150.iloc[-1]
         curr_ma200 = ma200.iloc[-1]
+        curr_ma60 = ma60.iloc[-1]
         curr_ma240 = ma240.iloc[-1] # MA240 數值
         curr_bb_width = bb_width.iloc[-1]
 
@@ -187,7 +190,10 @@ def check_strategy_vcp_pro(df):
         # 1. 股價必須站上 MA240 (年線) -> 過濾長線空頭
         if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
         
-        # 2. 當天成交量必須 > 500 張 (500,000股) -> 過濾流動性差
+        # [新增] 2. 股價必須站上 MA60 (季線) -> 確保中期趨勢
+        if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
+        
+        # 3. 當天成交量必須 > 500 張 (500,000股) -> 過濾流動性差
         if curr_v < 500000: return False, None
 
         # ===== 條件 1：趨勢確認 =====
@@ -223,19 +229,6 @@ def check_strategy_vcp_pro(df):
         
         # 5日均量也稍微過濾一下 (至少 300 張)
         if vol_ma5.iloc[-1] < 300000: return False, None
-
-        # ===== 條件 5 (新增項目)：回檔幅度遞減 (r1 > r2 > r3) =====
-        # r1 (60天), r2 (20天), r3 (10天) 的最大回檔深度
-        def calc_retrace(series):
-            peak = series.max()
-            trough = series.min()
-            return (peak - trough) / peak if peak > 0 else 1.0
-
-        r1 = calc_retrace(close.iloc[-60:])
-        r2 = calc_retrace(close.iloc[-20:])
-        r3 = calc_retrace(close.iloc[-10:])
-        
-        if not (r1 > r2 > r3): return False, None
 
     except Exception:
         return False, None
@@ -478,3 +471,5 @@ def run_scanner():
 
 if __name__ == "__main__":
     run_scanner()
+
+
