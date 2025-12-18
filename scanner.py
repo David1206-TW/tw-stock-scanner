@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V42 Modified with MA60
+台股自動掃描策略機器人 (Scanner Bot) - V42 Modified with MA60 & Strict VCP
 
 【修正說明】
 1. 修正策略函式呼叫名稱錯誤 (check_strategy_vcp -> check_strategy_vcp_pro)
 2. 在 try-except 中加入錯誤列印，以便 Debug
 3. VCP 策略新增過濾：剔除收盤 < MA240 且 成交量 < 500張 的標的
 4. 雙策略共同過濾：確保收盤價都必須站上 MA60 (季線)
+5. VCP 策略新增條件 5：回檔幅度遞減 (r1 > r2 > r3)
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -23,6 +24,7 @@
   2. 價格位階：靠近 52 週新高 (High Tight Flag 特徵)
   3. 波動收縮：布林帶寬度 < 15% (代表籌碼沉澱)
   4. 量能遞減：5日均量 < 20日均量 (短期量縮)
+  5. 回檔收縮：r1(60日) > r2(20日) > r3(10日)
  
 """
 
@@ -145,6 +147,7 @@ def check_strategy_original(df):
         "price": round(curr_c, 2),
         "ma5": round(curr_ma5, 2),
         "ma10": round(curr_ma10, 2),
+        "ma20": round(curr_ma20, 2),
         "ma240": round(curr_ma240, 2),
         "vol_ratio": round(curr_v / curr_vol_ma5, 2)
     }
@@ -229,6 +232,17 @@ def check_strategy_vcp_pro(df):
         
         # 5日均量也稍微過濾一下 (至少 300 張)
         if vol_ma5.iloc[-1] < 300000: return False, None
+
+        # ===== 條件 5 [新增]：回檔幅度遞減 (r1 > r2 > r3) =====
+        # 定義：60日 / 20日 / 10日 的最大回檔深度
+        def calc_depth(series):
+            return (series.max() - series.min()) / series.max() if series.max() > 0 else 1.0
+
+        r1 = calc_depth(close.iloc[-60:])
+        r2 = calc_depth(close.iloc[-20:])
+        r3 = calc_depth(close.iloc[-10:])
+        
+        if not (r1 > r2 > r3): return False, None
 
     except Exception:
         return False, None
@@ -471,5 +485,3 @@ def run_scanner():
 
 if __name__ == "__main__":
     run_scanner()
-
-
