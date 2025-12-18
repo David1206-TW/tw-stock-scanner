@@ -1,4 +1,4 @@
-ame: Daily Stock Scanner
+name: Daily Stock Scanner
 
 on:
   schedule:
