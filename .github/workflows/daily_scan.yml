@@ -1,9 +1,8 @@
-name: Daily Stock Scanner
+ame: Daily Stock Scanner
 
 on:
   schedule:
     # GitHub Actions 使用 UTC 時間 (台灣時間 -8)
-    
     # 盤中: UTC 01:00 ~ 05:59 (台灣 09:00 ~ 13:59)
     # 每 10 分鐘執行一次
     - cron: '*/10 1-5 * * 1-5'
@@ -11,7 +10,7 @@ on:
     # 盤後歸檔: UTC 16:00 (台灣 00:00 半夜)
     - cron: '0 16 * * *'
 
-  # 允許手動觸發 (這是激活排程的關鍵)
+  # 允許手動觸發
   workflow_dispatch:
 
 permissions:
