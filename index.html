@@ -47,7 +47,8 @@
 
     <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
         <div id="page-heatmap" class="flex flex-col h-full gap-2">
-            <div class="flex-grow overflow-y-auto pb-4"><div id="heatmap-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div></div>
+            <!-- 調整 Grid: 手機版 3欄 (grid-cols-3), 平板 4欄, 電腦 6欄 -->
+            <div class="flex-grow overflow-y-auto pb-4"><div id="heatmap-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2"></div></div>
         </div>
         <div id="page-list" class="hidden flex flex-col h-full gap-2">
             <div class="shrink-0 flex flex-col gap-2">
@@ -89,7 +90,6 @@
                             <tr>
                                 <th class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('date')">日期<span class="sort-symbol" id="perf-symbol-date">⇅</span></th>
                                 <th class="px-1 py-2 sortable sticky left-[40px] bg-slate-950 z-30 border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]" onclick="app.sortPerfList('id')">股名<span class="sort-symbol" id="perf-symbol-id">⇅</span></th>
-                                <!-- 新增策略欄位 -->
                                 <th class="px-1 py-2 text-center sortable border-r border-slate-800" onclick="app.sortPerfList('strategy')">策略<span class="sort-symbol" id="perf-symbol-strategy">⇅</span></th>
                                 <th class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('buy_price')">進場<span class="sort-symbol" id="perf-symbol-buy_price">⇅</span></th>
                                 <th class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span></th>
@@ -391,6 +391,51 @@
                 this.ui.perfBody.innerHTML = html;
             }
 
+            // --- Apply State and Render Logic (Restored) ---
+            applyStateAndRender() {
+                let list = [...this.stockList];
+                let pbCount = 0;
+                let vcpCount = 0;
+                list.forEach(s => {
+                    if (s.note && s.note.includes('拉回佈局')) pbCount++;
+                    if (s.note && s.note.includes('Strict-VCP')) vcpCount++;
+                });
+                this.ui.countPullback.innerText = pbCount;
+                this.ui.countVcp.innerText = vcpCount;
+                this.ui.dataCount.innerText = `總: ${list.length}`; 
+
+                if (this.state.filterGroup) {
+                    list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
+                    this.ui.filterTag.classList.remove('hidden');
+                    this.ui.filterName.innerText = this.state.filterGroup;
+                } else { this.ui.filterTag.classList.add('hidden'); }
+
+                if (this.state.filterMa) {
+                    list = list.filter(s => parseFloat(s.price) > parseFloat(s.ma5) && parseFloat(s.price) > parseFloat(s.ma10));
+                    this.ui.btnMaFilter.classList.remove('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    this.ui.btnMaFilter.classList.add('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white');
+                }
+
+                if (this.state.sortBy) {
+                    const dir = this.state.sortDir === 'asc' ? 1 : -1;
+                    list.sort((a, b) => {
+                        let valA = a[this.state.sortBy];
+                        let valB = b[this.state.sortBy];
+                        if (['price', 'changeRate', 'ma5', 'ma10'].includes(this.state.sortBy)) 
+                            return (parseFloat(valA) - parseFloat(valB)) * dir;
+                        return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
+                    });
+                    document.querySelectorAll('#page-list .sort-symbol').forEach(el => { el.innerText = '⇅'; el.classList.remove('active'); });
+                    const activeSymbol = document.getElementById(`sort-symbol-${this.state.sortBy}`);
+                    if(activeSymbol) { activeSymbol.innerText = this.state.sortDir === 'asc' ? '▲' : '▼'; activeSymbol.classList.add('active'); }
+                }
+                this.displayList = list;
+                this.renderTable(this.displayList);
+            }
+
             // --- 新增: 渲染表格 (Fix for missing quote table) ---
             renderTable(data) {
                 if (!data || data.length === 0) {
@@ -429,7 +474,7 @@
                 }).join('');
             }
 
-            // --- 修改: 渲染熱力圖 (改為族群模式) ---
+            // --- 修改: 渲染熱力圖 (改為族群模式 - 緊湊版) ---
             renderHeatmap() {
                 if(!this.stockList || this.stockList.length === 0) {
                     this.ui.heatmapContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">無資料</div>';
@@ -468,15 +513,16 @@
                     else if(rate < 0) bgClass = 'bg-green-900/50 border-green-500/40';
                     else bgClass = 'bg-slate-800 border-gray-700';
                     
+                    // 手機版優化: 高度 h-16, 字體縮小
                     return `
                         <div onclick="app.filterByGroup('${g.name}')" 
-                           class="${bgClass} border rounded p-2 flex flex-col items-center justify-center hover:scale-95 transition-transform cursor-pointer h-24 shadow-md group relative">
-                            <div class="text-sm font-bold text-gray-200 text-center leading-tight mb-1 z-10">${g.name}</div>
-                            <div class="text-xl font-mono font-bold ${rate > 0 ? 'text-red-400' : (rate < 0 ? 'text-green-400' : 'text-gray-300')} z-10">
+                           class="${bgClass} border rounded p-1 flex flex-col items-center justify-center hover:scale-95 transition-transform cursor-pointer h-16 shadow-md group relative">
+                            <div class="text-[10px] font-bold text-gray-200 text-center leading-tight z-10 truncate w-full px-1">${g.name}</div>
+                            <div class="text-sm font-mono font-bold ${rate > 0 ? 'text-red-400' : (rate < 0 ? 'text-green-400' : 'text-gray-300')} z-10 my-0.5">
                                 ${rate > 0 ? '+' : ''}${rate}%
                             </div>
-                            <div class="mt-1 px-2 py-0.5 bg-black/20 rounded-full text-[10px] text-gray-400 z-10 border border-white/5">
-                                ${g.count} 檔
+                            <div class="px-1.5 py-0 bg-black/20 rounded-full text-[9px] text-gray-400 z-10 border border-white/5 leading-none">
+                                ${g.count}
                             </div>
                         </div>
                     `;
