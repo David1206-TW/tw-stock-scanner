@@ -437,37 +437,56 @@
                 }).join('');
             }
 
-            // --- 新增: 渲染熱力圖 (Fix for missing heatmap) ---
+            // --- 修改: 渲染熱力圖 (改為族群模式) ---
             renderHeatmap() {
                 if(!this.stockList || this.stockList.length === 0) {
                     this.ui.heatmapContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">無資料</div>';
                     return;
                 }
+
+                // 1. 聚合族群資料
+                const groups = {};
+                this.stockList.forEach(stock => {
+                    const g = stock.group || '其他';
+                    if (!groups[g]) {
+                        groups[g] = { name: g, totalChange: 0, count: 0 };
+                    }
+                    groups[g].totalChange += parseFloat(stock.changeRate || 0);
+                    groups[g].count += 1;
+                });
+
+                // 2. 轉換為陣列並計算平均漲跌幅
+                const groupArray = Object.values(groups).map(g => ({
+                    name: g.name,
+                    count: g.count,
+                    avgChange: (g.totalChange / g.count).toFixed(2)
+                }));
+
+                // 3. 排序：依據平均漲跌幅由高到低
+                groupArray.sort((a, b) => parseFloat(b.avgChange) - parseFloat(a.avgChange));
                 
-                // Sort by changeRate desc for heatmap
-                const sorted = [...this.stockList].sort((a,b) => parseFloat(b.changeRate) - parseFloat(a.changeRate));
-                
-                this.ui.heatmapContainer.innerHTML = sorted.map(stock => {
-                    const rate = parseFloat(stock.changeRate);
-                    // Intensity of color based on rate
+                // 4. 渲染
+                this.ui.heatmapContainer.innerHTML = groupArray.map(g => {
+                    const rate = parseFloat(g.avgChange);
+                    // 設定顏色強度
                     let bgClass = 'bg-slate-800';
-                    if(rate > 3) bgClass = 'bg-red-900/80 border-red-500/50';
-                    else if(rate > 0) bgClass = 'bg-red-900/40 border-red-500/30';
-                    else if(rate < -3) bgClass = 'bg-green-900/80 border-green-500/50';
-                    else if(rate < 0) bgClass = 'bg-green-900/40 border-green-500/30';
+                    if(rate > 2) bgClass = 'bg-red-900/90 border-red-500/60';
+                    else if(rate > 0) bgClass = 'bg-red-900/50 border-red-500/40';
+                    else if(rate < -2) bgClass = 'bg-green-900/90 border-green-500/60';
+                    else if(rate < 0) bgClass = 'bg-green-900/50 border-green-500/40';
                     else bgClass = 'bg-slate-800 border-gray-700';
                     
-                    const symbol = stock.type === '上市' ? '.TW' : '.TWO';
-                    
                     return `
-                        <a href="https://tw.stock.yahoo.com/quote/${stock.id}${symbol}/technical-analysis" target="_blank" 
-                           class="${bgClass} border rounded p-2 flex flex-col items-center justify-center hover:scale-95 transition-transform cursor-pointer h-20">
-                            <div class="text-xs font-bold text-gray-200">${stock.name}</div>
-                            <div class="text-[10px] text-gray-400 mb-1">${stock.id}</div>
-                            <div class="text-sm font-mono font-bold ${rate > 0 ? 'text-red-400' : (rate < 0 ? 'text-green-400' : 'text-gray-300')}">
+                        <div onclick="app.filterByGroup('${g.name}')" 
+                           class="${bgClass} border rounded p-2 flex flex-col items-center justify-center hover:scale-95 transition-transform cursor-pointer h-24 shadow-md group relative">
+                            <div class="text-sm font-bold text-gray-200 text-center leading-tight mb-1 z-10">${g.name}</div>
+                            <div class="text-xl font-mono font-bold ${rate > 0 ? 'text-red-400' : (rate < 0 ? 'text-green-400' : 'text-gray-300')} z-10">
                                 ${rate > 0 ? '+' : ''}${rate}%
                             </div>
-                        </a>
+                            <div class="mt-1 px-2 py-0.5 bg-black/20 rounded-full text-[10px] text-gray-400 z-10 border border-white/5">
+                                ${g.count} 檔
+                            </div>
+                        </div>
                     `;
                 }).join('');
             }
