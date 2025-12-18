@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V47 Realtime ROI Fix
+台股自動掃描策略機器人 (Scanner Bot) - V48 Final Strict
 
 【修正說明】
-1. 即時績效修正：盤中更新歷史持股現價後，立即存檔 history.json，確保前端 ROI 是即時的。
+1. 即時績效修正：盤中更新歷史持股現價後，立即存檔 history.json。
 2. 雙策略過濾：收盤價必須 > MA60 (季線) 且 > MA240 (年線)。
-3. VCP 條件 5：回檔幅度遞減 (r1 > r2 > r3)。
+3. VCP 策略條件 5 (新增)：回檔幅度遞減 (r1 > r2 > r3)。
 4. 成交量過濾：> 500 張。
 
 【策略 A：拉回佈局】
@@ -15,14 +15,14 @@
    4. 均線糾結：差異 < 8%。
    5. 量縮整理：成交量 < 5日均量。
    6. 支撐確認：收盤 > MA10。
-   7. 底部打樁：|今日最低 - 昨日最低| < 100%。
+   7. 底部打樁：|今日最低 - 昨日最低| < 1%。
    8. 流動性：5日均量 > 500張。
 
-【策略 B：VCP 技術面 (VCP-Lite)】
-  1. 硬指標過濾：股價必須 > MA240 (年線) 且 > MA60 (季線) 且 成交量 > 500張
-  2. 價格位階：靠近 52 週新高 (High Tight Flag 特徵)
-  3. 波動收縮：布林帶寬度 < 15% (代表籌碼沉澱)
-  4. 量能遞減：5日均量 < 20日均量 (短期量縮)
+【策略 B：VCP 技術面 (Strict VCP)】
+  1. 硬指標過濾：股價 > MA240 & > MA60 & 成交量 > 500張。
+  2. 價格位階：靠近 52 週新高。
+  3. 波動收縮：布林帶寬度 < 15%。
+  4. 量能遞減：5日均量 < 20日均量。
   5. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
 """
 
@@ -123,6 +123,7 @@ def check_strategy_original(df):
     if curr_vol_ma5 < 500000: return False, None 
 
     # 1. 長線保護 (包含 MA60 與 MA120 檢查)
+    # [新增] 這裡明確檢查 curr_c <= curr_ma60
     if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     
     # 2. 多頭排列
@@ -187,7 +188,7 @@ def check_strategy_vcp_pro(df):
         curr_ma50 = ma50.iloc[-1]
         curr_ma150 = ma150.iloc[-1]
         curr_ma200 = ma200.iloc[-1]
-        curr_ma60 = ma60.iloc[-1]
+        curr_ma60 = ma60.iloc[-1]   # [新增]
         curr_ma240 = ma240.iloc[-1]
         curr_bb_width = bb_width.iloc[-1]
 
@@ -195,7 +196,7 @@ def check_strategy_vcp_pro(df):
         # 1. 股價必須站上 MA240 (年線)
         if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
         
-        # 2. 股價必須站上 MA60 (季線)
+        # 2. [新增] 股價必須站上 MA60 (季線)
         if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
         
         # 3. 成交量 > 500 張
