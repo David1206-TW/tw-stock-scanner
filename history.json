@@ -33,22 +33,6 @@
       "daily_change": -0.48
     },
     {
-      "id": "2301",
-      "name": "光寶科",
-      "group": "電腦及週邊設備業",
-      "type": "上市",
-      "price": 154.5,
-      "ma5": 152.9,
-      "ma10": 156.55,
-      "changeRate": 1.98,
-      "isValid": true,
-      "note": "VCP / 年線124.55",
-      "buy_price": 154.5,
-      "latest_price": 154.5,
-      "roi": 0.0,
-      "daily_change": 1.98
-    },
-    {
       "id": "2330",
       "name": "台積電",
       "group": "半導體業",
@@ -143,22 +127,6 @@
       "latest_price": 19.5,
       "roi": 0.0,
       "daily_change": 0.26
-    },
-    {
-      "id": "2855",
-      "name": "統一證",
-      "group": "金融保險業",
-      "type": "上市",
-      "price": 24.05,
-      "ma5": 24.21,
-      "ma10": 24.48,
-      "changeRate": -0.41,
-      "isValid": true,
-      "note": "VCP / 年線22.31",
-      "buy_price": 24.05,
-      "latest_price": 24.05,
-      "roi": 0.0,
-      "daily_change": -0.41
     },
     {
       "id": "2881",
@@ -367,22 +335,6 @@
       "latest_price": 44.75,
       "roi": 0.0,
       "daily_change": 2.17
-    },
-    {
-      "id": "8210",
-      "name": "勤誠",
-      "group": "電腦及週邊設備業",
-      "type": "上市",
-      "price": 894.0,
-      "ma5": 890.0,
-      "ma10": 897.9,
-      "changeRate": 3.71,
-      "isValid": true,
-      "note": "VCP / 年線490.64",
-      "buy_price": 894.0,
-      "latest_price": 894.0,
-      "roi": 0.0,
-      "daily_change": 3.71
     },
     {
       "id": "9902",
