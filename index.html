@@ -392,7 +392,6 @@
                             historyData[date].forEach(stock => {
                                 const roi = parseFloat(stock.roi || 0);
                                 
-                                // 修復重點：預先計算各天期的 ROI 數值並存入物件，解決排序問題
                                 const stockObj = {
                                     ...stock,
                                     date: date, 
@@ -402,7 +401,6 @@
                                     latest_price: parseFloat(stock.latest_price || 0)
                                 };
                                 
-                                // 預先生成 roi_1, roi_5 等欄位供排序使用
                                 [1, 5, 10, 20, 30, 60, 120].forEach(d => {
                                     stockObj[`roi_${d}`] = (diffDays >= d) ? roi : null;
                                 });
@@ -539,9 +537,61 @@
                 }).join('');
                 this.ui.perfBody.innerHTML = html;
             }
-            updateCount() { this.ui.dataCount.innerText = `總: ${this.displayList.length}`; }
             
-            // --- 核心修復：正確呼叫 daily_scan.yml ---
+            applyStateAndRender() {
+                let list = [...this.stockList];
+                let pbCount = 0;
+                let vcpCount = 0;
+                list.forEach(s => {
+                    if (s.note && s.note.includes('拉回佈局')) pbCount++;
+                    if (s.note && s.note.includes('VCP')) vcpCount++;
+                });
+                this.ui.countPullback.innerText = pbCount;
+                this.ui.countVcp.innerText = vcpCount;
+                this.ui.dataCount.innerText = `總: ${list.length}`; 
+
+                if (this.state.filterGroup) {
+                    list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
+                    this.ui.filterTag.classList.remove('hidden');
+                    this.ui.filterName.innerText = this.state.filterGroup;
+                } else { this.ui.filterTag.classList.add('hidden'); }
+
+                if (this.state.filterMa) {
+                    list = list.filter(s => parseFloat(s.price) > parseFloat(s.ma5) && parseFloat(s.price) > parseFloat(s.ma10));
+                    this.ui.btnMaFilter.classList.remove('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    this.ui.btnMaFilter.classList.add('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white');
+                }
+
+                if (this.state.sortBy) {
+                    const dir = this.state.sortDir === 'asc' ? 1 : -1;
+                    list.sort((a, b) => {
+                        let valA = a[this.state.sortBy];
+                        let valB = b[this.state.sortBy];
+                        if (['price', 'changeRate', 'ma5', 'ma10'].includes(this.state.sortBy)) 
+                            return (parseFloat(valA) - parseFloat(valB)) * dir;
+                        return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
+                    });
+                    document.querySelectorAll('#page-list .sort-symbol').forEach(el => { el.innerText = '⇅'; el.classList.remove('active'); });
+                    const activeSymbol = document.getElementById(`sort-symbol-${this.state.sortBy}`);
+                    if(activeSymbol) { activeSymbol.innerText = this.state.sortDir === 'asc' ? '▲' : '▼'; activeSymbol.classList.add('active'); }
+                }
+                this.displayList = list;
+                this.renderTable(this.displayList);
+                this.updateCount();
+            }
+
+            filterByGroup(groupName) { this.state.filterGroup = groupName; this.state.filterMa = false; this.switchTab('list'); this.applyStateAndRender(); }
+            clearFilter() { this.state.filterGroup = null; this.applyStateAndRender(); }
+            toggleMaFilter() { this.state.filterMa = !this.state.filterMa; this.applyStateAndRender(); }
+            sortList(key) {
+                if (this.state.sortBy === key) { this.state.sortDir = this.state.sortDir === 'asc' ? 'desc' : 'asc'; } 
+                else { this.state.sortBy = key; this.state.sortDir = 'asc'; }
+                this.applyStateAndRender();
+            }
+            
             async triggerCloudUpdate() {
                 const owner = localStorage.getItem('gh_owner');
                 const repo = localStorage.getItem('gh_repo');
@@ -559,19 +609,16 @@
                 this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
                 
                 try {
-                    // API 路徑必須與您的 .yml 檔名完全一致 (daily_scan.yml)
                     const workflowId = 'daily_scan.yml'; 
                     const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`;
-                    
                     const res = await fetch(url, {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/vnd.github.v3+json',
                             'Authorization': `token ${token}`
                         },
-                        body: JSON.stringify({ ref: 'main' }) // 預設分支為 main
+                        body: JSON.stringify({ ref: 'main' }) 
                     });
-                    
                     if (res.status === 204) {
                         alert("✅ 指令已發送！\nGithub 正在啟動掃描，請稍等 3~5 分鐘後自動更新。");
                         this.startPolling();
@@ -601,6 +648,69 @@
                 this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`;
                 this.ui.btnCloudUpdate.disabled = false;
             }
+
+            renderHeatmap() {
+                if (this.stockList.length === 0) { this.ui.heatmapContainer.innerHTML = `<div class="col-span-2 text-center text-gray-500 pt-10">無資料，請更新報價。</div>`; return; }
+                const groups = {};
+                this.stockList.forEach(stock => {
+                    const gName = stock.group || '其他';
+                    if (!groups[gName]) groups[gName] = { totalChange: 0, count: 0 };
+                    groups[gName].totalChange += parseFloat(stock.changeRate || 0);
+                    groups[gName].count++;
+                });
+                const groupArray = Object.keys(groups).map(key => ({
+                    name: key,
+                    avgChange: (groups[key].totalChange / groups[key].count).toFixed(2),
+                    count: groups[key].count
+                })).sort((a, b) => b.avgChange - a.avgChange);
+
+                this.ui.heatmapContainer.innerHTML = groupArray.map(g => {
+                    const rate = parseFloat(g.avgChange);
+                    let colorClass = 'bg-slate-700';
+                    if (rate > 2) colorClass = 'bg-red-600';
+                    else if (rate > 0) colorClass = 'bg-red-900/80';
+                    else if (rate < -2) colorClass = 'bg-green-600';
+                    else if (rate < 0) colorClass = 'bg-green-900/80';
+                    return `<div onclick="app.filterByGroup('${g.name}')" class="${colorClass} p-3 rounded-lg shadow cursor-pointer active:scale-95 transition-transform flex flex-col justify-between h-24 border border-white/10 hover:border-white/30"><span class="text-sm font-bold text-white truncate">${g.name}</span><div class="flex justify-between items-end"><span class="text-xs text-gray-300">${g.count}檔</span><span class="text-lg font-bold text-white">${rate>0?'+':''}${rate}%</span></div></div>`;
+                }).join('');
+            }
+
+            renderTable(list) {
+                if (list.length === 0) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-gray-500">無符合篩選條件的資料</td></tr>`; return; }
+                const html = list.map(stock => {
+                    const rate = parseFloat(stock.changeRate||0);
+                    const price = parseFloat(stock.price||0).toFixed(2);
+                    let priceClass = rate > 0 ? 'tw-up font-bold' : (rate < 0 ? 'tw-down font-bold' : 'text-white font-bold');
+                    let rateDisplay = rate > 0 ? `+${rate.toFixed(2)}%` : `${rate.toFixed(2)}%`;
+                    const typeBadge = stock.type === '上市' ? '<span class="bg-blue-900 text-blue-300 text-[9px] px-1 rounded border border-blue-800">市</span>' : '<span class="bg-purple-900 text-purple-300 text-[9px] px-1 rounded border border-purple-800">櫃</span>';
+                    let shortGroup = stock.group || '-';
+                    if (shortGroup !== '-' && shortGroup !== '其他' && shortGroup.length > 2) shortGroup = shortGroup.substring(0, 2);
+                    const groupBadge = stock.group && stock.group !== '其他' ? `<span class="bg-slate-800 text-gray-400 text-[10px] px-1 py-0.5 rounded border border-slate-700">${shortGroup}</span>` : `<span class="text-gray-600 text-[10px]">-</span>`;
+                    
+                    const suffix = stock.type === '上市' ? '.TW' : '.TWO';
+                    const linkUrl = `https://tw.stock.yahoo.com/quote/${stock.id}${suffix}/technical-analysis`;
+
+                    return `
+                        <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
+                            <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10">
+                                <a href="${linkUrl}" target="_blank" class="flex items-center gap-1.5 block hover:opacity-80 group">
+                                    <div class="flex flex-col w-[70px]">
+                                        <div class="text-blue-400 text-xs font-bold leading-tight name-cell underline decoration-blue-400/30 group-hover:text-blue-300">${stock.name}</div>
+                                        <div class="text-gray-500 text-[10px] flex items-center gap-1 mt-0.5 no-underline">${stock.id} ${typeBadge}</div>
+                                    </div>
+                                </a>
+                            </td>
+                            <td class="px-1 py-2 text-center align-middle">${groupBadge}</td>
+                            <td class="px-1 py-2 text-right ${priceClass} text-sm">${price}</td>
+                            <td class="px-1 py-2 text-right ${priceClass} text-xs">${rateDisplay}</td>
+                            <td class="px-1 py-2 text-right text-sm text-gray-500 font-mono">${stock.ma5}</td>
+                            <td class="px-1 py-2 text-right text-sm text-gray-500 font-mono">${stock.ma10}</td>
+                            <td class="px-1 py-2 text-[10px] text-gray-600 whitespace-nowrap">${stock.note || '-'}</td>
+                        </tr>`;
+                }).join('');
+                this.ui.body.innerHTML = html;
+            }
+            updateCount() { this.ui.dataCount.innerText = `總: ${this.displayList.length}`; }
         }
 
         class AdminController {
@@ -619,5 +729,3 @@
     </script>
 </body>
 </html>
-
-
