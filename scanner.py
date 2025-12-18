@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V42 Modified with MA60 & Strict VCP
+台股自動掃描策略機器人 (Scanner Bot) - V47 Realtime ROI Fix
 
 【修正說明】
-1. 修正策略函式呼叫名稱錯誤 (check_strategy_vcp -> check_strategy_vcp_pro)
-2. 在 try-except 中加入錯誤列印，以便 Debug
-3. VCP 策略新增過濾：剔除收盤 < MA240 且 成交量 < 500張 的標的
-4. 雙策略共同過濾：確保收盤價都必須站上 MA60 (季線)
-5. VCP 策略新增條件 5：回檔幅度遞減 (r1 > r2 > r3)
+1. 即時績效修正：盤中更新歷史持股現價後，立即存檔 history.json，確保前端 ROI 是即時的。
+2. 雙策略過濾：收盤價必須 > MA60 (季線) 且 > MA240 (年線)。
+3. VCP 條件 5：回檔幅度遞減 (r1 > r2 > r3)。
+4. 成交量過濾：> 500 張。
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -24,8 +23,7 @@
   2. 價格位階：靠近 52 週新高 (High Tight Flag 特徵)
   3. 波動收縮：布林帶寬度 < 15% (代表籌碼沉澱)
   4. 量能遞減：5日均量 < 20日均量 (短期量縮)
-  5. 回檔收縮：r1(60日) > r2(20日) > r3(10日)
- 
+  5. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
 """
 
 import yfinance as yf
@@ -119,24 +117,31 @@ def check_strategy_original(df):
     
     prev_l = low.iloc[-2]
 
-    if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
+    # 過濾：必須高於年線
+    if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
+    # 過濾：成交量門檻
     if curr_vol_ma5 < 500000: return False, None 
 
-    # 1. 長線保護 (已包含 MA60 檢查: curr_c <= curr_ma60 則踢除)
-    if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
+    # 1. 長線保護 (包含 MA60 與 MA120 檢查)
+    if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
+    
     # 2. 多頭排列
     if not ((curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)): return False, None
+    
     # 3. 位階控制
     bias_ma60 = (curr_c - curr_ma60) / curr_ma60
     if bias_ma60 >= 0.25: return False, None
+    
     # 4. 均線糾結
     mas = [curr_ma5, curr_ma10, curr_ma20]
     ma_divergence = (max(mas) - min(mas)) / min(mas)
     if ma_divergence >= 0.08: return False, None
+    
     # 5. 量縮整理
     if curr_v >= curr_vol_ma5: return False, None
     # 6. 支撐確認
     if curr_c <= curr_ma10: return False, None
+    
     # 7. 底部打樁
     if prev_l > 0:
         low_diff_pct = abs(curr_l - prev_l) / prev_l
@@ -145,11 +150,10 @@ def check_strategy_original(df):
     return True, {
         "tag": "拉回佈局",
         "price": round(curr_c, 2),
-        "ma5": round(curr_ma5, 2),
+        "ma5": round(close.rolling(5).mean().iloc[-1], 2),
         "ma10": round(curr_ma10, 2),
         "ma20": round(curr_ma20, 2),
-        "ma240": round(curr_ma240, 2),
-        "vol_ratio": round(curr_v / curr_vol_ma5, 2)
+        "ma240": round(curr_ma240, 2)
     }
 
 def check_strategy_vcp_pro(df):
@@ -157,9 +161,7 @@ def check_strategy_vcp_pro(df):
         close = df['Close']
         volume = df['Volume']
 
-        # 資料長度不足直接跳過 (需計算 MA240)
-        if len(close) < 260:
-            return False, None
+        if len(close) < 260: return False, None
 
         # ===== 1. 計算指標 =====
         ma10 = close.rolling(10).mean()
@@ -167,8 +169,8 @@ def check_strategy_vcp_pro(df):
         ma50 = close.rolling(50).mean()
         ma150 = close.rolling(150).mean()
         ma200 = close.rolling(200).mean()
-        ma60 = close.rolling(60).mean()   # [修改] 確保計算 MA60
-        ma240 = close.rolling(240).mean() # [修改] 確保計算 MA240
+        ma60 = close.rolling(60).mean()   # 確保計算 MA60
+        ma240 = close.rolling(240).mean() # 確保計算 MA240
         
         # 布林帶 (20日, 2倍標準差)
         std20 = close.rolling(20).std()
@@ -185,62 +187,50 @@ def check_strategy_vcp_pro(df):
         curr_ma50 = ma50.iloc[-1]
         curr_ma150 = ma150.iloc[-1]
         curr_ma200 = ma200.iloc[-1]
-        curr_ma60 = ma60.iloc[-1]   # [新增]
-        curr_ma240 = ma240.iloc[-1] # [新增]
+        curr_ma60 = ma60.iloc[-1]
+        curr_ma240 = ma240.iloc[-1]
         curr_bb_width = bb_width.iloc[-1]
 
-        # ===== 新增條件：基本面濾網 =====
-        # 1. 股價必須站上 MA240 (年線) -> 過濾長線空頭
+        # ===== 硬指標過濾 =====
+        # 1. 股價必須站上 MA240 (年線)
         if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
         
-        # 2. [新增] 股價必須站上 MA60 (季線) -> 確保中期趨勢
+        # 2. 股價必須站上 MA60 (季線)
         if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
         
-        # 3. 當天成交量必須 > 500 張 (500,000股) -> 過濾流動性差
+        # 3. 成交量 > 500 張
         if curr_v < 500000: return False, None
 
         # ===== 條件 1：趨勢確認 =====
-        # 股價必須在 200MA 之上 (雙重確認長線趨勢)
         if curr_c < curr_ma200: return False, None
-        # 年線必須大致向上 (當前年線 > 1個月前年線)
         if curr_ma200 <= ma200.iloc[-20]: return False, None
-        # 股價在季線(50MA)或半年線(150MA)之上 (代表中長期強勢)
         if curr_c < curr_ma150: return False, None
 
         # ===== 條件 2：價格位階 (靠近 52 週新高) =====
         high_52w = close.iloc[-250:].max()
         low_52w = close.iloc[-250:].min()
-        
-        # 股價至少要比 52 週低點高 30%
         if curr_c < low_52w * 1.3: return False, None
-        # 股價距離 52 週新高不能太遠 (25% 以內)
         if curr_c < high_52w * 0.75: return False, None
 
-        # ===== 條件 3：波動收縮 (核心 VCP 精神) =====
-        # 布林帶寬度 < 15%
+        # ===== 條件 3：波動收縮 (核心 VCP) =====
         if curr_bb_width > 0.15: return False, None
-        
-        # 額外檢查：股價必須站在月線 (20MA) 之上或附近
         if curr_c < curr_ma20 * 0.98: return False, None
 
         # ===== 條件 4：量能遞減 =====
         vol_ma5 = volume.rolling(5).mean()
         vol_ma20 = volume.rolling(20).mean()
-        
-        # 5日均量 < 20日均量 (短期量縮)
         if vol_ma5.iloc[-1] > vol_ma20.iloc[-1]: return False, None
-        
-        # 5日均量也稍微過濾一下 (至少 300 張)
         if vol_ma5.iloc[-1] < 300000: return False, None
 
-        # ===== 條件 5 [新增]：回檔幅度遞減 (r1 > r2 > r3) =====
-        # 定義：60日 / 20日 / 10日 的最大回檔深度
-        def calc_depth(series):
-            return (series.max() - series.min()) / series.max() if series.max() > 0 else 1.0
+        # ===== 條件 5 (新增)：回檔幅度遞減 (r1 > r2 > r3) =====
+        def calc_retrace(series):
+            peak = series.max()
+            trough = series.min()
+            return (peak - trough) / peak if peak > 0 else 1.0
 
-        r1 = calc_depth(close.iloc[-60:])
-        r2 = calc_depth(close.iloc[-20:])
-        r3 = calc_depth(close.iloc[-10:])
+        r1 = calc_retrace(close.iloc[-60:])
+        r2 = calc_retrace(close.iloc[-20:])
+        r3 = calc_retrace(close.iloc[-10:])
         
         if not (r1 > r2 > r3): return False, None
 
@@ -248,7 +238,7 @@ def check_strategy_vcp_pro(df):
         return False, None
 
     return True, {
-        "tag": "VCP-Lite",
+        "tag": "Strict-VCP",
         "price": round(curr_c, 2),
         "ma5": round(close.rolling(5).mean().iloc[-1], 2),
         "ma10": round(ma10.iloc[-1], 2),
@@ -260,7 +250,7 @@ def check_strategy_vcp_pro(df):
     }
 
 # ==========================================
-# 5. 更新歷史績效
+# 5. 更新歷史績效 (保持不變)
 # ==========================================
 def update_history_roi(history_db):
     print("正在更新歷史名單績效...")
@@ -339,14 +329,18 @@ def run_scanner():
     tw_tz = pytz.timezone('Asia/Taipei')
     now = datetime.now(tw_tz)
     
-    # 讀取現有資料
     industry_db = load_json(DB_INDUSTRY)
     history_db = load_json(DB_HISTORY)
     
-    # 步驟 1: 先更新舊的歷史績效 (無論幾點都做，確保 ROI 是新的)
+    # 步驟 1: 先更新舊的歷史績效 (無論幾點都做)
     history_db = update_history_roi(history_db)
+    
+    # 【關鍵修正】: 更新完歷史價格後，立刻存檔！
+    # 這樣盤中前端網頁才能看到最新的 history 價格，不需要等到收盤
+    save_json(DB_HISTORY, history_db)
+    print("盤中歷史績效已更新至 DB。")
 
-    # 開始掃描
+    # 開始掃描今日新標的
     full_list = get_all_tickers()
     print(f"開始掃描... 時間: {now.strftime('%H:%M:%S')}")
     
@@ -391,7 +385,7 @@ def run_scanner():
                     if is_match_2:
                         final_match = True
                         if not final_info: final_info = info_2
-                        strategy_tags.append("VCP")
+                        strategy_tags.append("Strict-VCP")
                     
                     if final_match:
                         name = raw_code
@@ -436,11 +430,7 @@ def run_scanner():
 
     save_json(DB_INDUSTRY, industry_db)
     
-    # ==========================================
-    # 處理 output 分流邏輯
-    # ==========================================
-    
-    # 1. 總是更新 data.json (即時看板用)
+    # 處理 output
     print(f"掃描結束，共發現 {len(daily_results)} 檔。更新 data.json...")
     data_payload = {
         "date": now.strftime("%Y/%m/%d %H:%M:%S"),
@@ -449,37 +439,30 @@ def run_scanner():
     }
     save_json(DATA_JSON, data_payload)
 
-    # 2. 條件更新 history.json
+    # 歸檔判定
     current_time = now.time()
     market_open = dt_time(9, 0, 0)
     market_close = dt_time(13, 30, 0)
-    
-    # 判斷是否為「不寫入時段」 (09:00 ~ 13:30)
     is_market_session = market_open <= current_time <= market_close
 
     if is_market_session:
-        print(f"⚠️ 現在是盤中時間 ({current_time.strftime('%H:%M')})，跳過 History 歸檔。")
+        print(f"⚠️ 現在是盤中時間 ({current_time.strftime('%H:%M')})，跳過 History 新增歸檔 (但已更新舊股價)。")
     else:
-        # 計算歸檔日期 Key
-        # 如果是下午 13:30 以後 -> 今天
-        # 如果是凌晨 00:00~08:59 -> 昨天
         if current_time > market_close:
             record_date_str = now.strftime("%Y/%m/%d")
         else:
             yesterday = now - timedelta(days=1)
             record_date_str = yesterday.strftime("%Y/%m/%d")
 
-        print(f"✅ 盤後時段，準備將資料寫入 History，歸檔日期: {record_date_str}")
+        print(f"✅ 盤後時段，準備將新資料歸檔至 History: {record_date_str}")
         
-        # 將今日掃描結果存入對應日期 Key (使用 Dictionary 結構可避免重複 append)
         if daily_results:
             history_db[record_date_str] = daily_results
-            # 排序日期 (可選)
             sorted_history = dict(sorted(history_db.items(), reverse=True))
             save_json(DB_HISTORY, sorted_history)
-            print("History.json 已更新。")
+            print("History.json 新增完畢。")
         else:
-            print("今日無符合策略標的，不更新 History。")
+            print("今日無符合策略標的，不新增 History。")
 
     return daily_results
 
