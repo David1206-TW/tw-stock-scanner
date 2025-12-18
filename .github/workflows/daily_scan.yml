@@ -26,7 +26,7 @@ jobs:
   scan_and_update:
     runs-on: ubuntu-latest
     
-    # 【關鍵新增】將 GitHub Secret 注入環境變數
+    # 【關鍵】將 GitHub Secret 注入環境變數
     env:
       FINMIND_API_TOKEN: ${{ secrets.FINMIND_API_TOKEN }}
 
@@ -40,9 +40,9 @@ jobs:
         python-version: '3.9'
 
     - name: Install dependencies
-      # 【關鍵新增】加入 finmind 套件
+      # 【關鍵修正】補上 'tqdm'
       run: |
-        pip install finmind twstock pandas lxml pytz requests
+        pip install finmind twstock pandas lxml pytz requests tqdm
 
     - name: Run scanner script
       run: python scanner.py
@@ -91,3 +91,5 @@ jobs:
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
+
+
