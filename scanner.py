@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V42 Split Logic
+台股自動掃描策略機器人 (Scanner Bot) - V42 Modified with MA60
 
 【修正說明】
 1. 修正策略函式呼叫名稱錯誤 (check_strategy_vcp -> check_strategy_vcp_pro)
@@ -120,7 +120,7 @@ def check_strategy_original(df):
     if math.isnan(curr_ma240) or curr_ma240 <= 0 or math.isnan(curr_ma120): return False, None
     if curr_vol_ma5 < 500000: return False, None 
 
-    # 1. 長線保護 (已包含 MA60 檢查)
+    # 1. 長線保護 (已包含 MA60 檢查: curr_c <= curr_ma60 則踢除)
     if curr_c <= curr_ma240 or curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     # 2. 多頭排列
     if not ((curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)): return False, None
@@ -164,8 +164,8 @@ def check_strategy_vcp_pro(df):
         ma50 = close.rolling(50).mean()
         ma150 = close.rolling(150).mean()
         ma200 = close.rolling(200).mean()
-        ma60 = close.rolling(60).mean() # 確保有計算 MA60
-        ma240 = close.rolling(240).mean() # 新增 MA240 計算
+        ma60 = close.rolling(60).mean()   # [修改] 確保計算 MA60
+        ma240 = close.rolling(240).mean() # [修改] 確保計算 MA240
         
         # 布林帶 (20日, 2倍標準差)
         std20 = close.rolling(20).std()
@@ -182,15 +182,15 @@ def check_strategy_vcp_pro(df):
         curr_ma50 = ma50.iloc[-1]
         curr_ma150 = ma150.iloc[-1]
         curr_ma200 = ma200.iloc[-1]
-        curr_ma60 = ma60.iloc[-1]
-        curr_ma240 = ma240.iloc[-1] # MA240 數值
+        curr_ma60 = ma60.iloc[-1]   # [新增]
+        curr_ma240 = ma240.iloc[-1] # [新增]
         curr_bb_width = bb_width.iloc[-1]
 
         # ===== 新增條件：基本面濾網 =====
         # 1. 股價必須站上 MA240 (年線) -> 過濾長線空頭
         if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
         
-        # [新增] 2. 股價必須站上 MA60 (季線) -> 確保中期趨勢
+        # 2. [新增] 股價必須站上 MA60 (季線) -> 確保中期趨勢
         if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
         
         # 3. 當天成交量必須 > 500 張 (500,000股) -> 過濾流動性差
