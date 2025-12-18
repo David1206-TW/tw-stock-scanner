@@ -3,14 +3,14 @@ name: Daily Stock Scanner
 on:
   schedule:
     # GitHub Actions 使用 UTC 時間 (台灣時間 -8)
-    # 盤中: UTC 01:00 ~ 05:59 (台灣 09:00 ~ 13:59)
-    # 每 10 分鐘執行一次
+    # 設定目標：台灣週一至週五 09:00 ~ 13:50，每 10 分鐘一次
+    # UTC 01:00 ~ 05:50
     - cron: '*/10 1-5 * * 1-5'
     
     # 盤後歸檔: UTC 16:00 (台灣 00:00 半夜)
     - cron: '0 16 * * *'
 
-  # 允許手動觸發
+  # 允許手動從 Actions 頁面或透過 API (HTML按鈕) 觸發
   workflow_dispatch:
 
 permissions:
@@ -30,10 +30,12 @@ jobs:
         python-version: '3.9'
 
     - name: Install dependencies
+      # 確保安裝 scanner.py 需要的所有套件
       run: |
         pip install yfinance twstock pandas lxml pytz
 
     - name: Run scanner script
+      # 執行掃描與更新歷史績效
       run: python scanner.py
 
     - name: Commit and push changes
@@ -41,13 +43,17 @@ jobs:
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
         
+        # 加入所有可能被更新的 JSON 檔案
         git add data.json || true
         git add cmoney_industry_cache.json || true
         git add history.json || true
         
+        # 檢查是否有變更
         if [[ -n $(git status -s) ]]; then
           echo "Changes detected, committing..."
           git commit -m "Auto-update: Stock Data [skip ci]"
+          
+          # 拉取遠端最新變更並重定基底 (避免衝突)
           git pull --rebase origin main
           git push
         else
