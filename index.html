@@ -421,7 +421,8 @@
                 this.ui.btnCloudUpdate.disabled = true;
                 this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
                 try {
-                    const workflowId = 'Daily%20Stock%20Scanner.yml'; 
+                    // 修正點：必須呼叫 daily_scan.yml
+                    const workflowId = 'daily_scan.yml'; 
                     const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`;
                     const res = await fetch(url, {
                         method: 'POST',
@@ -439,7 +440,7 @@
                         throw new Error(`Status ${res.status}: ${errText}`);
                     }
                 } catch (e) {
-                    alert(`❌ 發送失敗：${e.message}\n\n請檢查：\n1. Token 是否有 'workflow' 權限\n2. Repo 名稱是否正確\n3. .yml 檔名是否為 Daily Stock Scanner.yml`);
+                    alert(`❌ 發送失敗：${e.message}\n\n請檢查：\n1. Token 是否有 'workflow' 權限\n2. Repo 名稱是否正確\n3. .yml 檔名是否為 daily_scan.yml`);
                     this.resetUpdateButton();
                 }
             }
