@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V48 Final Strict
+台股自動掃描策略機器人 (Scanner Bot) - V49 Adjusted Close
 
 【修正說明】
 1. 即時績效修正：盤中更新歷史持股現價後，立即存檔 history.json。
 2. 雙策略過濾：收盤價必須 > MA60 (季線) 且 > MA240 (年線)。
 3. VCP 策略條件 5 (新增)：回檔幅度遞減 (r1 > r2 > r3)。
 4. 成交量過濾：> 500 張。
+5. 【關鍵變更】資料源改為還原權息 (auto_adjust=True)，與 Yahoo 網頁版技術線圖一致。
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -34,6 +35,7 @@ import os
 import math
 from datetime import datetime, time as dt_time, timedelta
 import pytz
+import time
 
 # ==========================================
 # 1. 資料庫管理
@@ -123,7 +125,6 @@ def check_strategy_original(df):
     if curr_vol_ma5 < 500000: return False, None 
 
     # 1. 長線保護 (包含 MA60 與 MA120 檢查)
-    # [新增] 這裡明確檢查 curr_c <= curr_ma60
     if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     
     # 2. 多頭排列
@@ -270,7 +271,8 @@ def update_history_roi(history_db):
     print(f"追蹤股票數量: {len(tickers_to_check)}")
     current_data = {}
     try:
-        data = yf.download(list(tickers_to_check), period="5d", auto_adjust=False, threads=True)
+        # 歷史績效更新也同步改為 auto_adjust=True，確保 ROI 計算基礎一致
+        data = yf.download(list(tickers_to_check), period="5d", auto_adjust=True, threads=True)
         close_df = data['Close']
         
         if len(tickers_to_check) == 1:
@@ -352,7 +354,8 @@ def run_scanner():
         batch = full_list[i:i+batch_size]
         print(f"Processing batch {i//batch_size + 1}/{len(full_list)//batch_size + 1}...")
         try:
-            data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=False)
+            # 【關鍵修改】: auto_adjust=True (還原權息)，以符合 Yahoo 網頁版視覺
+            data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=True)
             
             for ticker in batch:
                 try:
@@ -428,6 +431,9 @@ def run_scanner():
         except Exception as e:
             print(f"Batch error: {e}")
             continue
+        
+        # 建議加入短暫延遲，避免連續大量請求被阻擋
+        time.sleep(1.5)
 
     save_json(DB_INDUSTRY, industry_db)
     
