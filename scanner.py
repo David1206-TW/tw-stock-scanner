@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V49 Adjusted Close
+台股自動掃描策略機器人 (Scanner Bot) - V51 Clean Production
 
 【修正說明】
-1. 即時績效修正：盤中更新歷史持股現價後，立即存檔 history.json。
-2. 雙策略過濾：收盤價必須 > MA60 (季線) 且 > MA240 (年線)。
-3. VCP 策略條件 5 (新增)：回檔幅度遞減 (r1 > r2 > r3)。
-4. 成交量過濾：> 500 張。
-5. 【關鍵變更】資料源改為還原權息 (auto_adjust=True)，與 Yahoo 網頁版技術線圖一致。
+1. auto_adjust=True: 全面改用還原權息股價，與 Yahoo 股市網頁版一致。
+2. 嚴格 MA240 檢查: 增加 NaN 排除機制，確保長線保護邏輯穩健。
+3. 生產環境優化: 移除所有 Debug 輸出，保持日誌乾淨。
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -105,22 +103,24 @@ def check_strategy_original(df):
     ma240 = close.rolling(240).mean()
     vol_ma5 = volume.rolling(5).mean()
     
-    curr_c = close.iloc[-1]
-    curr_v = volume.iloc[-1]
-    curr_l = low.iloc[-1]
+    curr_c = float(close.iloc[-1])
+    curr_v = float(volume.iloc[-1])
+    curr_l = float(low.iloc[-1])
     
-    curr_ma5 = ma5.iloc[-1]
-    curr_ma10 = ma10.iloc[-1]
-    curr_ma20 = ma20.iloc[-1]
-    curr_ma60 = ma60.iloc[-1]
-    curr_ma120 = ma120.iloc[-1] 
-    curr_ma240 = ma240.iloc[-1]
-    curr_vol_ma5 = vol_ma5.iloc[-1]
+    curr_ma5 = float(ma5.iloc[-1])
+    curr_ma10 = float(ma10.iloc[-1])
+    curr_ma20 = float(ma20.iloc[-1])
+    curr_ma60 = float(ma60.iloc[-1])
+    curr_ma120 = float(ma120.iloc[-1]) 
+    curr_ma240 = float(ma240.iloc[-1])
+    curr_vol_ma5 = float(vol_ma5.iloc[-1])
     
-    prev_l = low.iloc[-2]
+    prev_l = float(low.iloc[-2])
 
-    # 過濾：必須高於年線
-    if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
+    # === 強制檢查 MA240 (嚴格過濾) ===
+    if math.isnan(curr_ma240): return False, None # 資料不足，剔除
+    if curr_c < curr_ma240: return False, None    # 跌破年線，剔除
+
     # 過濾：成交量門檻
     if curr_vol_ma5 < 500000: return False, None 
 
@@ -182,16 +182,16 @@ def check_strategy_vcp_pro(df):
         bb_width = (bb_upper - bb_lower) / ma20
 
         # 當前數值
-        curr_c = close.iloc[-1]
-        curr_v = volume.iloc[-1] # 當天成交量
+        curr_c = float(close.iloc[-1])
+        curr_v = float(volume.iloc[-1]) # 當天成交量
 
-        curr_ma20 = ma20.iloc[-1]
-        curr_ma50 = ma50.iloc[-1]
-        curr_ma150 = ma150.iloc[-1]
-        curr_ma200 = ma200.iloc[-1]
-        curr_ma60 = ma60.iloc[-1]   # [新增]
-        curr_ma240 = ma240.iloc[-1]
-        curr_bb_width = bb_width.iloc[-1]
+        curr_ma20 = float(ma20.iloc[-1])
+        curr_ma50 = float(ma50.iloc[-1])
+        curr_ma150 = float(ma150.iloc[-1])
+        curr_ma200 = float(ma200.iloc[-1])
+        curr_ma60 = float(ma60.iloc[-1])
+        curr_ma240 = float(ma240.iloc[-1])
+        curr_bb_width = float(bb_width.iloc[-1])
 
         # ===== 硬指標過濾 =====
         # 1. 股價必須站上 MA240 (年線)
@@ -205,7 +205,7 @@ def check_strategy_vcp_pro(df):
 
         # ===== 條件 1：趨勢確認 =====
         if curr_c < curr_ma200: return False, None
-        if curr_ma200 <= ma200.iloc[-20]: return False, None
+        if curr_ma200 <= float(ma200.iloc[-20]): return False, None
         if curr_c < curr_ma150: return False, None
 
         # ===== 條件 2：價格位階 (靠近 52 週新高) =====
@@ -221,8 +221,8 @@ def check_strategy_vcp_pro(df):
         # ===== 條件 4：量能遞減 =====
         vol_ma5 = volume.rolling(5).mean()
         vol_ma20 = volume.rolling(20).mean()
-        if vol_ma5.iloc[-1] > vol_ma20.iloc[-1]: return False, None
-        if vol_ma5.iloc[-1] < 300000: return False, None
+        if float(vol_ma5.iloc[-1]) > float(vol_ma20.iloc[-1]): return False, None
+        if float(vol_ma5.iloc[-1]) < 300000: return False, None
 
         # ===== 條件 5 (新增)：回檔幅度遞減 (r1 > r2 > r3) =====
         def calc_retrace(series):
@@ -271,7 +271,7 @@ def update_history_roi(history_db):
     print(f"追蹤股票數量: {len(tickers_to_check)}")
     current_data = {}
     try:
-        # 歷史績效更新也同步改為 auto_adjust=True，確保 ROI 計算基礎一致
+        # 歷史績效更新也同步改為 auto_adjust=True
         data = yf.download(list(tickers_to_check), period="5d", auto_adjust=True, threads=True)
         close_df = data['Close']
         
@@ -338,8 +338,6 @@ def run_scanner():
     # 步驟 1: 先更新舊的歷史績效 (無論幾點都做)
     history_db = update_history_roi(history_db)
     
-    # 【關鍵修正】: 更新完歷史價格後，立刻存檔！
-    # 這樣盤中前端網頁才能看到最新的 history 價格，不需要等到收盤
     save_json(DB_HISTORY, history_db)
     print("盤中歷史績效已更新至 DB。")
 
@@ -354,7 +352,7 @@ def run_scanner():
         batch = full_list[i:i+batch_size]
         print(f"Processing batch {i//batch_size + 1}/{len(full_list)//batch_size + 1}...")
         try:
-            # 【關鍵修改】: auto_adjust=True (還原權息)，以符合 Yahoo 網頁版視覺
+            # 【關鍵】: auto_adjust=True (還原權息)
             data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=True)
             
             for ticker in batch:
@@ -432,7 +430,6 @@ def run_scanner():
             print(f"Batch error: {e}")
             continue
         
-        # 建議加入短暫延遲，避免連續大量請求被阻擋
         time.sleep(1.5)
 
     save_json(DB_INDUSTRY, industry_db)
