@@ -1,5 +1,5 @@
 {
-  "date": "2025/12/18 18:48:22",
+  "date": "2025/12/18 20:31:20",
   "source": "GitHub Actions",
   "list": [
     {
@@ -49,22 +49,6 @@
       "latest_price": 25.7,
       "roi": 0.0,
       "daily_change": 0.19
-    },
-    {
-      "id": "2472",
-      "name": "立隆電",
-      "group": "電子零組件業",
-      "type": "上市",
-      "price": 103.5,
-      "ma5": 103.3,
-      "ma10": 105.5,
-      "changeRate": 0.98,
-      "isValid": true,
-      "note": "VCP / 年線85.98",
-      "buy_price": 103.5,
-      "latest_price": 103.5,
-      "roi": 0.0,
-      "daily_change": 0.98
     },
     {
       "id": "2617",
