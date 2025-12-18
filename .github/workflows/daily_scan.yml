@@ -60,12 +60,21 @@ jobs:
           echo "No changes to commit."
         fi
 
-    # 2. 【關鍵新增】上傳網頁檔案 (打包 index.html 和 json)
-    # 這是 "GitHub Actions" 部署模式必須的步驟
+    # 2. 【關鍵修正】準備發布檔案 (解決 Connect Timeout 的核心步驟)
+    # 我們在虛擬機中臨時建立一個乾淨的目錄，只放網頁需要的檔案
+    # 這樣上傳的 Artifact 會非常小，秒速完成，不會超時
+    - name: Prepare deployment artifact
+      run: |
+        mkdir public_html
+        cp index.html public_html/
+        cp data.json public_html/ || true
+        cp history.json public_html/ || true
+
+    # 3. 上傳網頁檔案
     - name: Upload artifact for deployment
       uses: actions/upload-pages-artifact@v3
       with:
-        path: '.' # 上傳當前目錄所有檔案
+        path: 'public_html' # 只上傳這個乾淨的資料夾
 
   # 第二階段：部署到 GitHub Pages
   deploy:
