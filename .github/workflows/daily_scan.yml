@@ -1,1 +1,89 @@
+name: Daily Stock Scanner
 
+on:
+  schedule:
+    # 盤中: 台灣 09:00 ~ 13:50 (每 10 分鐘)
+    - cron: '*/10 1-5 * * 1-5'
+    # 盤後歸檔: 台灣 00:00 (半夜)
+    - cron: '0 16 * * *'
+
+  # 允許手動觸發
+  workflow_dispatch:
+
+# 設定權限 (重要：包含 Pages 發布權限)
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# 設定併發 (避免多次快速更新導致衝突)
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # 第一階段：掃描與更新資料
+  scan_and_update:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install yfinance twstock pandas lxml pytz
+
+    - name: Run scanner script
+      run: python scanner.py
+
+    # 1. 將資料 Commit 回儲存庫 (確保 GitHub 上的 code 是新的)
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+        
+        git add data.json || true
+        git add cmoney_industry_cache.json || true
+        git add history.json || true
+        
+        if [[ -n $(git status -s) ]]; then
+          echo "Changes detected, committing..."
+          git commit -m "Auto-update: Stock Data [skip ci]"
+          git pull --rebase origin main
+          git push
+        else
+          echo "No changes to commit."
+        fi
+
+    # 2. 【關鍵修正】準備發布檔案 (解決 Connect Timeout 的核心步驟)
+    # 我們在虛擬機中臨時建立一個乾淨的目錄，只放網頁需要的檔案
+    # 這樣上傳的 Artifact 會非常小，秒速完成，不會超時
+    - name: Prepare deployment artifact
+      run: |
+        mkdir public_html
+        cp index.html public_html/
+        cp data.json public_html/ || true
+        cp history.json public_html/ || true
+
+    # 3. 上傳網頁檔案
+    - name: Upload artifact for deployment
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: 'public_html' # 只上傳這個乾淨的資料夾
+
+  # 第二階段：部署到 GitHub Pages
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: scan_and_update # 必須等掃描完成
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
