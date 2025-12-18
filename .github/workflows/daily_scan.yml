@@ -2,27 +2,27 @@ name: Daily Stock Scanner
 
 on:
   schedule:
-    # 台灣時間 09:00 ~ 13:50，每 10 分鐘一次
+    # 盤中: 台灣 09:00 ~ 13:50 (每 10 分鐘)
     - cron: '*/10 1-5 * * 1-5'
-    # 盤後歸檔 (半夜)
+    # 盤後歸檔: 台灣 00:00 (半夜)
     - cron: '0 16 * * *'
 
   # 允許手動觸發
   workflow_dispatch:
 
-# 設定權限 (讀取、寫入、發布網頁)
+# 設定權限 (重要：包含 Pages 發布權限)
 permissions:
   contents: write
   pages: write
   id-token: write
 
-# 設定併發群組 (避免多個發布同時進行導致衝突)
+# 設定併發 (避免多次快速更新導致衝突)
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # 第一階段：掃描並更新資料庫
+  # 第一階段：掃描與更新資料
   scan_and_update:
     runs-on: ubuntu-latest
     steps:
@@ -41,7 +41,7 @@ jobs:
     - name: Run scanner script
       run: python scanner.py
 
-    # 1. 將新資料存回 GitHub 儲存庫 (保留歷史紀錄)
+    # 1. 將資料 Commit 回儲存庫 (確保 GitHub 上的 code 是新的)
     - name: Commit and push changes
       run: |
         git config --global user.name 'GitHub Actions'
@@ -60,19 +60,20 @@ jobs:
           echo "No changes to commit."
         fi
 
-    # 2. 【關鍵新增】將網頁檔案打包，準備發布
+    # 2. 【關鍵新增】上傳網頁檔案 (打包 index.html 和 json)
+    # 這是 "GitHub Actions" 部署模式必須的步驟
     - name: Upload artifact for deployment
       uses: actions/upload-pages-artifact@v3
       with:
-        path: '.' # 上傳當前目錄下的所有檔案 (含 index.html 和 data.json)
+        path: '.' # 上傳當前目錄所有檔案
 
-  # 第二階段：將打包好的檔案發布到 GitHub Pages
+  # 第二階段：部署到 GitHub Pages
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: scan_and_update # 必須等掃描完成才執行
+    needs: scan_and_update # 必須等掃描完成
     steps:
     - name: Deploy to GitHub Pages
       id: deployment
