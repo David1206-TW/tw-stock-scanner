@@ -89,6 +89,8 @@
                             <tr>
                                 <th class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('date')">日期<span class="sort-symbol" id="perf-symbol-date">⇅</span></th>
                                 <th class="px-1 py-2 sortable sticky left-[40px] bg-slate-950 z-30 border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]" onclick="app.sortPerfList('id')">股名<span class="sort-symbol" id="perf-symbol-id">⇅</span></th>
+                                <!-- 新增策略欄位 -->
+                                <th class="px-1 py-2 text-center sortable border-r border-slate-800" onclick="app.sortPerfList('strategy')">策略<span class="sort-symbol" id="perf-symbol-strategy">⇅</span></th>
                                 <th class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('buy_price')">進場<span class="sort-symbol" id="perf-symbol-buy_price">⇅</span></th>
                                 <th class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span></th>
                                 <th class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('roi')">累%<span class="sort-symbol" id="perf-symbol-roi">⇅</span></th>
@@ -102,7 +104,7 @@
                                 <th class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_120')">120日<span class="sort-symbol" id="perf-symbol-roi_120">⇅</span></th>
                             </tr>
                         </thead>
-                        <tbody id="perf-body" class="divide-y divide-slate-800"><tr><td colspan="13" class="px-6 py-20 text-center text-gray-600">尚無歷史資料</td></tr></tbody>
+                        <tbody id="perf-body" class="divide-y divide-slate-800"><tr><td colspan="14" class="px-6 py-20 text-center text-gray-600">尚無歷史資料</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -242,13 +244,22 @@
 
                             historyData[date].forEach(stock => {
                                 const roi = parseFloat(stock.roi || 0);
+                                
+                                // 解析 Note 取得策略 (簡單檢查是否包含字串)
+                                let strategy = '其他';
+                                const note = stock.note || '';
+                                if (note.includes('Strict-VCP') && note.includes('拉回佈局')) strategy = '雙策略';
+                                else if (note.includes('Strict-VCP')) strategy = 'VCP';
+                                else if (note.includes('拉回佈局')) strategy = '拉回';
+
                                 const stockObj = {
                                     ...stock,
                                     date: date, 
                                     daysHeld: diffDays,
                                     daily_change: parseFloat(stock.daily_change || 0),
                                     roi: roi,
-                                    latest_price: parseFloat(stock.latest_price || 0)
+                                    latest_price: parseFloat(stock.latest_price || 0),
+                                    strategy: strategy // 加入策略欄位
                                 };
                                 [1, 5, 10, 20, 30, 60, 120].forEach(d => {
                                     stockObj[`roi_${d}`] = (diffDays >= d) ? roi : null;
@@ -333,7 +344,7 @@
 
             renderPerformanceTable() {
                 if (this.historyList.length === 0) {
-                    this.ui.perfBody.innerHTML = `<tr><td colspan="13" class="px-6 py-20 text-center text-gray-600">尚無歷史資料</td></tr>`;
+                    this.ui.perfBody.innerHTML = `<tr><td colspan="14" class="px-6 py-20 text-center text-gray-600">尚無歷史資料</td></tr>`;
                     return;
                 }
                 const html = this.historyList.map(s => {
@@ -341,6 +352,14 @@
                     const dayChg = parseFloat(s.daily_change);
                     const roiClass = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-400');
                     const dayClass = dayChg > 0 ? 'text-red-400' : (dayChg < 0 ? 'text-green-400' : 'text-gray-400');
+                    
+                    // 根據策略決定標籤顏色
+                    let strategyBadge = '';
+                    if (s.strategy === 'VCP') strategyBadge = '<span class="text-[9px] text-purple-300 bg-purple-900/40 px-1 py-0.5 rounded border border-purple-700/50">VCP</span>';
+                    else if (s.strategy === '拉回') strategyBadge = '<span class="text-[9px] text-blue-300 bg-blue-900/40 px-1 py-0.5 rounded border border-blue-700/50">拉回</span>';
+                    else if (s.strategy === '雙策略') strategyBadge = '<span class="text-[9px] text-yellow-300 bg-yellow-900/40 px-1 py-0.5 rounded border border-yellow-700/50">雙</span>';
+                    else strategyBadge = '<span class="text-[9px] text-gray-400">-</span>';
+
                     const cols = [1, 5, 10, 20, 30, 60, 120].map(d => {
                         if (s.daysHeld >= d) {
                             const c = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-500');
@@ -349,54 +368,27 @@
                             return `<td class="px-1 py-2 text-right text-[10px] text-gray-600">-</td>`;
                         }
                     }).join('');
-                    return `<tr class="hover:bg-slate-800 transition-colors border-b border-slate-800"><td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10 text-[10px] text-gray-400 min-w-[30px]">${s.date.substring(5)}</td><td class="px-1 py-2 sticky left-[30px] bg-slate-900 z-10 text-xs font-bold min-w-[50px] border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]"><a href="https://tw.stock.yahoo.com/quote/${s.id}${s.type === '上市' ? '.TW' : '.TWO'}/technical-analysis" target="_blank" class="block hover:opacity-80 group"><div class="text-blue-400 group-hover:text-blue-300 underline decoration-blue-400/30">${s.name}</div><div class="text-[9px] text-gray-500 font-normal no-underline">${s.id}</div></a></td><td class="px-1 py-2 text-right text-xs text-gray-500">${s.buy_price}</td><td class="px-1 py-2 text-right text-xs text-gray-300">${s.latest_price}</td><td class="px-1 py-2 text-right text-xs ${roiClass} font-bold">${roi > 0 ? '+' : ''}${roi}%</td><td class="px-1 py-2 text-right text-xs ${dayClass}">${dayChg > 0 ? '+' : ''}${dayChg}%</td>${cols}</tr>`;
+
+                    return `
+                        <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
+                            <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10 text-[10px] text-gray-400 min-w-[30px]">${s.date.substring(5)}</td>
+                            <td class="px-1 py-2 sticky left-[30px] bg-slate-900 z-10 text-xs font-bold min-w-[50px] border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">
+                                <a href="https://tw.stock.yahoo.com/quote/${s.id}${s.type === '上市' ? '.TW' : '.TWO'}/technical-analysis" target="_blank" class="block hover:opacity-80 group">
+                                    <div class="text-blue-400 group-hover:text-blue-300 underline decoration-blue-400/30">${s.name}</div>
+                                    <div class="text-[9px] text-gray-500 font-normal no-underline">${s.id}</div>
+                                </a>
+                            </td>
+                            <!-- 顯示策略標籤 -->
+                            <td class="px-1 py-2 text-center border-r border-slate-800/50">${strategyBadge}</td>
+                            <td class="px-1 py-2 text-right text-xs text-gray-500">${s.buy_price}</td>
+                            <td class="px-1 py-2 text-right text-xs text-gray-300">${s.latest_price}</td>
+                            <td class="px-1 py-2 text-right text-xs ${roiClass} font-bold">${roi > 0 ? '+' : ''}${roi}%</td>
+                            <td class="px-1 py-2 text-right text-xs ${dayClass}">${dayChg > 0 ? '+' : ''}${dayChg}%</td>
+                            ${cols}
+                        </tr>
+                    `;
                 }).join('');
                 this.ui.perfBody.innerHTML = html;
-            }
-            
-            applyStateAndRender() {
-                let list = [...this.stockList];
-                let pbCount = 0;
-                let vcpCount = 0;
-                list.forEach(s => {
-                    if (s.note && s.note.includes('拉回佈局')) pbCount++;
-                    if (s.note && s.note.includes('Strict-VCP')) vcpCount++;
-                });
-                this.ui.countPullback.innerText = pbCount;
-                this.ui.countVcp.innerText = vcpCount;
-                this.ui.dataCount.innerText = `總: ${list.length}`; 
-
-                if (this.state.filterGroup) {
-                    list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
-                    this.ui.filterTag.classList.remove('hidden');
-                    this.ui.filterName.innerText = this.state.filterGroup;
-                } else { this.ui.filterTag.classList.add('hidden'); }
-
-                if (this.state.filterMa) {
-                    list = list.filter(s => parseFloat(s.price) > parseFloat(s.ma5) && parseFloat(s.price) > parseFloat(s.ma10));
-                    this.ui.btnMaFilter.classList.remove('bg-slate-700', 'text-gray-300');
-                    this.ui.btnMaFilter.classList.add('bg-indigo-600', 'text-white');
-                } else {
-                    this.ui.btnMaFilter.classList.add('bg-slate-700', 'text-gray-300');
-                    this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white');
-                }
-
-                if (this.state.sortBy) {
-                    const dir = this.state.sortDir === 'asc' ? 1 : -1;
-                    list.sort((a, b) => {
-                        let valA = a[this.state.sortBy];
-                        let valB = b[this.state.sortBy];
-                        if (['price', 'changeRate', 'ma5', 'ma10'].includes(this.state.sortBy)) 
-                            return (parseFloat(valA) - parseFloat(valB)) * dir;
-                        return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
-                    });
-                    document.querySelectorAll('#page-list .sort-symbol').forEach(el => { el.innerText = '⇅'; el.classList.remove('active'); });
-                    const activeSymbol = document.getElementById(`sort-symbol-${this.state.sortBy}`);
-                    if(activeSymbol) { activeSymbol.innerText = this.state.sortDir === 'asc' ? '▲' : '▼'; activeSymbol.classList.add('active'); }
-                }
-                this.displayList = list;
-                this.renderTable(this.displayList);
-                // Removed undefined this.updateCount() call
             }
 
             // --- 新增: 渲染表格 (Fix for missing quote table) ---
