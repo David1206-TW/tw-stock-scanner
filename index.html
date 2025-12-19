@@ -47,7 +47,6 @@
 
     <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
         <div id="page-heatmap" class="flex flex-col h-full gap-2">
-            <!-- 調整 Grid: 手機版 3欄 (grid-cols-3), 平板 4欄, 電腦 6欄 -->
             <div class="flex-grow overflow-y-auto pb-4"><div id="heatmap-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2"></div></div>
         </div>
         <div id="page-list" class="hidden flex flex-col h-full gap-2">
@@ -378,7 +377,6 @@
                                     <div class="text-[9px] text-gray-500 font-normal no-underline">${s.id}</div>
                                 </a>
                             </td>
-                            <!-- 顯示策略標籤 -->
                             <td class="px-1 py-2 text-center border-r border-slate-800/50">${strategyBadge}</td>
                             <td class="px-1 py-2 text-right text-xs text-gray-500">${s.buy_price}</td>
                             <td class="px-1 py-2 text-right text-xs text-gray-300">${s.latest_price}</td>
@@ -561,7 +559,9 @@
                         },
                         body: JSON.stringify({ ref: 'main' }) 
                     });
-                    if (res.status === 204) {
+                    
+                    // [已修正] 使用 res.ok 支援 200 和 204
+                    if (res.ok) {
                         alert("✅ 指令已發送！\nGithub 正在啟動掃描，請稍等 3~5 分鐘後自動更新。");
                         this.startPolling();
                     } else {
