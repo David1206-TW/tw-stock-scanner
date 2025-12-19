@@ -12,9 +12,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線13.6",
       "buy_price": 15.3,
-      "latest_price": 15.6,
-      "roi": 1.96,
-      "daily_change": 1.96
+      "latest_price": 15.45,
+      "roi": 0.98,
+      "daily_change": 0.98
     },
     {
       "id": "2303",
@@ -44,9 +44,9 @@
       "isValid": true,
       "note": "拉回佈局 / 年線25.07",
       "buy_price": 25.7,
-      "latest_price": 25.8,
-      "roi": 0.39,
-      "daily_change": 0.39
+      "latest_price": 25.7,
+      "roi": 0.0,
+      "daily_change": 0.0
     },
     {
       "id": "2617",
@@ -60,9 +60,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線28.2",
       "buy_price": 30.3,
-      "latest_price": 30.6,
-      "roi": 0.99,
-      "daily_change": 0.99
+      "latest_price": 30.55,
+      "roi": 0.83,
+      "daily_change": 0.83
     },
     {
       "id": "2637",
@@ -76,9 +76,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線61.72",
       "buy_price": 67.2,
-      "latest_price": 67.1,
-      "roi": -0.15,
-      "daily_change": -0.15
+      "latest_price": 66.7,
+      "roi": -0.74,
+      "daily_change": -0.74
     },
     {
       "id": "2801",
@@ -92,9 +92,9 @@
       "isValid": true,
       "note": "拉回佈局 & Strict-VCP / 年線18.19",
       "buy_price": 20.75,
-      "latest_price": 21.05,
-      "roi": 1.45,
-      "daily_change": 1.45
+      "latest_price": 21.0,
+      "roi": 1.2,
+      "daily_change": 1.2
     },
     {
       "id": "2834",
@@ -108,9 +108,9 @@
       "isValid": true,
       "note": "拉回佈局 / 年線14.62",
       "buy_price": 16.0,
-      "latest_price": 16.2,
-      "roi": 1.25,
-      "daily_change": 1.25
+      "latest_price": 16.15,
+      "roi": 0.94,
+      "daily_change": 0.94
     },
     {
       "id": "2836",
@@ -140,9 +140,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線16.5",
       "buy_price": 19.35,
-      "latest_price": 19.7,
-      "roi": 1.81,
-      "daily_change": 1.81
+      "latest_price": 19.6,
+      "roi": 1.29,
+      "daily_change": 1.29
     },
     {
       "id": "2845",
@@ -172,9 +172,9 @@
       "isValid": true,
       "note": "拉回佈局 & Strict-VCP / 年線83.83",
       "buy_price": 96.8,
-      "latest_price": 97.1,
-      "roi": 0.31,
-      "daily_change": 0.31
+      "latest_price": 97.2,
+      "roi": 0.41,
+      "daily_change": 0.41
     },
     {
       "id": "2883",
@@ -204,9 +204,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線14.13",
       "buy_price": 16.4,
-      "latest_price": 16.55,
-      "roi": 0.91,
-      "daily_change": 0.91
+      "latest_price": 16.6,
+      "roi": 1.22,
+      "daily_change": 1.22
     },
     {
       "id": "3048",
@@ -220,9 +220,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線31.17",
       "buy_price": 38.8,
-      "latest_price": 39.0,
-      "roi": 0.52,
-      "daily_change": 0.52
+      "latest_price": 38.9,
+      "roi": 0.26,
+      "daily_change": 0.26
     },
     {
       "id": "3052",
@@ -252,9 +252,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線54.57",
       "buy_price": 64.9,
-      "latest_price": 64.7,
-      "roi": -0.31,
-      "daily_change": -0.31
+      "latest_price": 64.9,
+      "roi": 0.0,
+      "daily_change": 0.0
     },
     {
       "id": "5880",
@@ -268,9 +268,9 @@
       "isValid": true,
       "note": "拉回佈局 / 年線23.56",
       "buy_price": 24.7,
-      "latest_price": 24.8,
-      "roi": 0.4,
-      "daily_change": 0.4
+      "latest_price": 24.85,
+      "roi": 0.61,
+      "daily_change": 0.61
     },
     {
       "id": "6209",
@@ -284,9 +284,9 @@
       "isValid": true,
       "note": "拉回佈局 / 年線33.71",
       "buy_price": 59.6,
-      "latest_price": 62.1,
-      "roi": 4.19,
-      "daily_change": 4.19
+      "latest_price": 62.8,
+      "roi": 5.37,
+      "daily_change": 5.37
     },
     {
       "id": "6541",
@@ -300,9 +300,9 @@
       "isValid": true,
       "note": "拉回佈局 / 年線58.7",
       "buy_price": 61.3,
-      "latest_price": 61.4,
-      "roi": 0.16,
-      "daily_change": 0.16
+      "latest_price": 61.1,
+      "roi": -0.33,
+      "daily_change": -0.33
     },
     {
       "id": "6770",
@@ -316,9 +316,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線19.89",
       "buy_price": 35.5,
-      "latest_price": 36.2,
-      "roi": 1.97,
-      "daily_change": 1.97
+      "latest_price": 35.6,
+      "roi": 0.28,
+      "daily_change": 0.28
     },
     {
       "id": "8033",
@@ -348,9 +348,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線29.99",
       "buy_price": 44.7,
-      "latest_price": 44.9,
-      "roi": 0.45,
-      "daily_change": 0.45
+      "latest_price": 44.8,
+      "roi": 0.22,
+      "daily_change": 0.22
     },
     {
       "id": "9902",
@@ -364,9 +364,9 @@
       "isValid": true,
       "note": "拉回佈局 / 年線16.2",
       "buy_price": 17.55,
-      "latest_price": 17.6,
-      "roi": 0.28,
-      "daily_change": 0.28
+      "latest_price": 17.55,
+      "roi": -0.0,
+      "daily_change": 0.0
     },
     {
       "id": "1784",
@@ -380,9 +380,9 @@
       "isValid": true,
       "note": "拉回佈局 / 年線79.44",
       "buy_price": 103.0,
-      "latest_price": 101.0,
-      "roi": -1.94,
-      "daily_change": -1.94
+      "latest_price": 100.0,
+      "roi": -2.91,
+      "daily_change": -2.91
     },
     {
       "id": "3264",
@@ -396,9 +396,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線74.96",
       "buy_price": 89.0,
-      "latest_price": 89.9,
-      "roi": 1.01,
-      "daily_change": 1.01
+      "latest_price": 90.1,
+      "roi": 1.24,
+      "daily_change": 1.24
     },
     {
       "id": "3537",
@@ -412,9 +412,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線44.39",
       "buy_price": 49.9,
-      "latest_price": 49.95,
-      "roi": 0.1,
-      "daily_change": 0.1
+      "latest_price": 49.8,
+      "roi": -0.2,
+      "daily_change": -0.2
     },
     {
       "id": "4123",
@@ -428,9 +428,9 @@
       "isValid": true,
       "note": "拉回佈局 / 年線36.07",
       "buy_price": 37.8,
-      "latest_price": 38.25,
-      "roi": 1.19,
-      "daily_change": 1.19
+      "latest_price": 38.2,
+      "roi": 1.06,
+      "daily_change": 1.06
     },
     {
       "id": "5315",
@@ -460,9 +460,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線15.06",
       "buy_price": 21.2,
-      "latest_price": 20.9,
-      "roi": -1.42,
-      "daily_change": -1.42
+      "latest_price": 20.85,
+      "roi": -1.65,
+      "daily_change": -1.65
     },
     {
       "id": "5386",
@@ -476,9 +476,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線65.77",
       "buy_price": 74.2,
-      "latest_price": 77.2,
-      "roi": 4.04,
-      "daily_change": 4.04
+      "latest_price": 76.6,
+      "roi": 3.23,
+      "daily_change": 3.23
     },
     {
       "id": "6173",
@@ -492,9 +492,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線43.89",
       "buy_price": 65.5,
-      "latest_price": 65.2,
-      "roi": -0.46,
-      "daily_change": -0.46
+      "latest_price": 64.9,
+      "roi": -0.92,
+      "daily_change": -0.92
     },
     {
       "id": "6274",
@@ -508,9 +508,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線245.43",
       "buy_price": 412.5,
-      "latest_price": 428.0,
-      "roi": 3.76,
-      "daily_change": 3.76
+      "latest_price": 427.5,
+      "roi": 3.64,
+      "daily_change": 3.64
     }
   ]
 }
