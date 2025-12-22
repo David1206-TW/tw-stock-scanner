@@ -41,7 +41,10 @@
             <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
                 <i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>
             </button>
-            <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-rotate-right text-sm"></i></button>
+            <!-- 修改: 加上 type="button" 並傳入 event，防止意外提交或刷新 -->
+            <button type="button" onclick="app.refresh(event)" id="btn-refresh" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
+                <i class="fa-solid fa-rotate-right text-sm"></i>
+            </button>
         </div>
     </nav>
 
@@ -139,6 +142,7 @@
                 this.stockList = []; 
                 this.displayList = []; 
                 this.historyList = []; 
+                this.isRefreshing = false; // 防止連點
                 
                 this.state = {
                     sortBy: 'changeRate', sortDir: 'desc',
@@ -175,9 +179,41 @@
                 this.init();
             }
 
-            refresh() { location.reload(); }
+            // --- 核心修正: 無感刷新 + 分頁記憶邏輯 ---
+            async refresh(event) {
+                if (event) event.preventDefault(); // 阻止預設行為 (如表單提交)
+                if (this.isRefreshing) return; // 防止重複點擊
+                
+                this.isRefreshing = true;
+                const btnIcon = document.querySelector('#btn-refresh i');
+                if (btnIcon) btnIcon.classList.add('fa-spin'); 
+
+                try {
+                    // 1. 重新抓取即時報價與列表資料 (這會更新熱力圖與報價表)
+                    await this.loadData(true); // 傳入 true 代表是手動更新
+                    
+                    // 2. 重新抓取歷史績效資料 (這會更新績效表)
+                    await this.loadHistory();
+                    
+                    // 3. 確保當前顯示的分頁內容也有被重新渲染
+                    // 雖然 loadData 已經呼叫了 render，但如果是績效頁，需要額外處理
+                    if (!this.ui.pagePerf.classList.contains('hidden')) {
+                        this.sortPerfList(this.state.perfSortBy);
+                    }
+
+                } catch (e) {
+                    alert('更新失敗，請檢查網路連線');
+                    console.error(e);
+                } finally {
+                    if (btnIcon) btnIcon.classList.remove('fa-spin'); 
+                    this.isRefreshing = false;
+                }
+            }
 
             switchTab(tabName) {
+                // 【關鍵】每次切換分頁時，紀錄到 localStorage
+                localStorage.setItem('last_active_tab', tabName);
+
                 ['pageHeatmap', 'pageList', 'pagePerf', 'pageAdmin'].forEach(p => this.ui[p].classList.add('hidden'));
                 ['tabHeatmap', 'tabList', 'tabPerf', 'tabAdmin'].forEach(t => this.ui[t].classList.remove('active'));
 
@@ -201,6 +237,14 @@
             }
 
             async init() {
+                // 【關鍵】初始化時，優先讀取 localStorage 恢復分頁
+                const savedTab = localStorage.getItem('last_active_tab');
+                if (savedTab) {
+                    this.switchTab(savedTab);
+                } else {
+                    this.switchTab('heatmap'); // 預設
+                }
+
                 try { 
                     await this.loadData(); 
                     this.loadHistory(); 
@@ -208,7 +252,7 @@
                 catch (e) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 text-xs">${e.message}</td></tr>`; }
             }
 
-            async loadData() {
+            async loadData(isManual = false) {
                 const cacheBuster = new Date().getTime();
                 try { 
                     const response = await fetch(`${this.dataUrl}?t=${cacheBuster}`); 
@@ -223,7 +267,13 @@
                     this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`;
                     this.renderHeatmap();
                     this.applyStateAndRender();
-                } catch (e) { this.ui.body.innerHTML = `<tr><td colspan="7" class="px-6 py-20 text-center text-gray-600">載入中...</td></tr>`; }
+                } catch (e) { 
+                    // 只有在非手動更新(初始載入)且失敗時，才顯示錯誤訊息，避免閃爍
+                    if (!isManual) {
+                        this.ui.body.innerHTML = `<tr><td colspan="7" class="px-6 py-20 text-center text-gray-600">載入中...</td></tr>`; 
+                    }
+                    if (isManual) throw e; 
+                }
             }
 
             async loadHistory() {
@@ -243,8 +293,6 @@
 
                             historyData[date].forEach(stock => {
                                 const roi = parseFloat(stock.roi || 0);
-                                
-                                // 解析 Note 取得策略 (簡單檢查是否包含字串)
                                 let strategy = '其他';
                                 const note = stock.note || '';
                                 if (note.includes('Strict-VCP') && note.includes('拉回佈局')) strategy = '雙策略';
@@ -258,7 +306,7 @@
                                     daily_change: parseFloat(stock.daily_change || 0),
                                     roi: roi,
                                     latest_price: parseFloat(stock.latest_price || 0),
-                                    strategy: strategy // 加入策略欄位
+                                    strategy: strategy 
                                 };
                                 [1, 5, 10, 20, 30, 60, 120].forEach(d => {
                                     stockObj[`roi_${d}`] = (diffDays >= d) ? roi : null;
