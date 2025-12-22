@@ -29,10 +29,12 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v3
 
+    # 【修正重點】將 Python 版本從 3.9 升級為 3.10
+    # yfinance 最新版使用了 Python 3.10 的語法 (Type | Type)，舊版 Python 會報錯
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.10'
 
     - name: Install dependencies
       run: |
@@ -60,9 +62,7 @@ jobs:
           echo "No changes to commit."
         fi
 
-    # 2. 【關鍵修正】準備發布檔案 (解決 Connect Timeout 的核心步驟)
-    # 我們在虛擬機中臨時建立一個乾淨的目錄，只放網頁需要的檔案
-    # 這樣上傳的 Artifact 會非常小，秒速完成，不會超時
+    # 2. 準備發布檔案
     - name: Prepare deployment artifact
       run: |
         mkdir public_html
