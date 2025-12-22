@@ -377,6 +377,7 @@
                                     <div class="text-[9px] text-gray-500 font-normal no-underline">${s.id}</div>
                                 </a>
                             </td>
+                            <!-- 顯示策略標籤 -->
                             <td class="px-1 py-2 text-center border-r border-slate-800/50">${strategyBadge}</td>
                             <td class="px-1 py-2 text-right text-xs text-gray-500">${s.buy_price}</td>
                             <td class="px-1 py-2 text-right text-xs text-gray-300">${s.latest_price}</td>
@@ -389,19 +390,11 @@
                 this.ui.perfBody.innerHTML = html;
             }
 
-            // --- Apply State and Render Logic (Restored) ---
+            // --- 核心邏輯修正：先過濾，再計數 ---
             applyStateAndRender() {
                 let list = [...this.stockList];
-                let pbCount = 0;
-                let vcpCount = 0;
-                list.forEach(s => {
-                    if (s.note && s.note.includes('拉回佈局')) pbCount++;
-                    if (s.note && s.note.includes('Strict-VCP')) vcpCount++;
-                });
-                this.ui.countPullback.innerText = pbCount;
-                this.ui.countVcp.innerText = vcpCount;
-                this.ui.dataCount.innerText = `總: ${list.length}`; 
-
+                
+                // 1. 先執行過濾 (Filtering)
                 if (this.state.filterGroup) {
                     list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
                     this.ui.filterTag.classList.remove('hidden');
@@ -417,6 +410,18 @@
                     this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white');
                 }
 
+                // 2. 再執行計數 (正確位置：過濾後)
+                let pbCount = 0;
+                let vcpCount = 0;
+                list.forEach(s => {
+                    if (s.note && s.note.includes('拉回佈局')) pbCount++;
+                    if (s.note && s.note.includes('Strict-VCP')) vcpCount++;
+                });
+                this.ui.countPullback.innerText = pbCount;
+                this.ui.countVcp.innerText = vcpCount;
+                this.ui.dataCount.innerText = `總: ${list.length}`; 
+
+                // 3. 最後排序與渲染
                 if (this.state.sortBy) {
                     const dir = this.state.sortDir === 'asc' ? 1 : -1;
                     list.sort((a, b) => {
