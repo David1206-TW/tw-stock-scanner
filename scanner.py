@@ -1,30 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V51 Clean Production
+台股自動掃描策略機器人 (Scanner Bot) - V52 Intraday ROI Update
 
-【修正說明】
-1. auto_adjust=True: 全面改用還原權息股價，與 Yahoo 股市網頁版一致。
-2. 嚴格 MA240 檢查: 增加 NaN 排除機制，確保長線保護邏輯穩健。
-3. 生產環境優化: 移除所有 Debug 輸出，保持日誌乾淨。
-4. 【新增功能】去重機制: 新增至 history.json 時，若歷史紀錄中已存在該個股，則跳過新增，避免重複。
-   舊的紀錄會透過 update_history_roi 持續更新最新價與 ROI。
+【版本資訊】
+Base Version: V51 Clean Production (User Uploaded)
+Current Version: V52
+Update: 盤中即時更新 ROI、盤後歷史名單去重、Python 3.10+ 支援
 
-【策略 A：拉回佈局】
-   1. 長線保護：收盤 > MA240, MA120, MA60。
-   2. 多頭排列：MA10 > MA20 > MA60。
-   3. 位階安全：乖離率 < 25%。
-   4. 均線糾結：差異 < 8%。
-   5. 量縮整理：成交量 < 5日均量。
-   6. 支撐確認：收盤 > MA10。
-   7. 底部打樁：|今日最低 - 昨日最低| < 1%。
-   8. 流動性：5日均量 > 500張。
-
-【策略 B：VCP 技術面 (Strict VCP)】
-  1. 硬指標過濾：股價 > MA240 & > MA60 & 成交量 > 500張。
-  2. 價格位階：靠近 52 週新高。
-  3. 波動收縮：布林帶寬度 < 15%。
-  4. 量能遞減：5日均量 < 20日均量。
-  5. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
+【保留策略說明】
+1. 策略 A (拉回佈局): 
+   - 長線保護 (MA240, MA120, MA60)
+   - 多頭排列 (MA10 > MA20 > MA60)
+   - 乖離率 < 25%, 均線糾結 < 8%, 量縮, 支撐, 底部打樁, 5日均量 > 500張
+2. 策略 B (Strict VCP):
+   - 硬指標 (股價 > MA240 & MA60, 量 > 500張)
+   - 價格位階 (靠近 52 週新高)
+   - 波動收縮 (布林頻寬 < 15%)
+   - 量能遞減, 回檔收縮 (r1 > r2 > r3)
 """
 
 import yfinance as yf
@@ -58,7 +50,7 @@ def save_json(filename, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 # ==========================================
-# 2. 產業分類解析邏輯
+# 2. 產業分類解析邏輯 (保留原樣)
 # ==========================================
 def get_stock_group(code, db_data):
     group = "其他"
@@ -88,10 +80,13 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 4. 策略邏輯
+# 3. 策略邏輯 (完全保留 V51 邏輯)
 # ==========================================
 
 def check_strategy_original(df):
+    """
+    策略 A：拉回佈局
+    """
     if len(df) < 250: return False, None
     close = df['Close']
     volume = df['Volume']
@@ -161,6 +156,9 @@ def check_strategy_original(df):
     }
 
 def check_strategy_vcp_pro(df):
+    """
+    策略 B：VCP 技術面 (Strict VCP)
+    """
     try:
         close = df['Close']
         volume = df['Volume']
@@ -254,14 +252,14 @@ def check_strategy_vcp_pro(df):
     }
 
 # ==========================================
-# 5. 更新歷史績效 (保持不變)
+# 4. 關鍵功能: 更新歷史績效 (盤中即時更新)
 # ==========================================
 def update_history_roi(history_db):
-    print("正在更新歷史名單績效...")
-    tw_tz = pytz.timezone('Asia/Taipei')
-    today_str = datetime.now(tw_tz).strftime("%Y/%m/%d")
-    today_date = datetime.strptime(today_str, "%Y/%m/%d")
-
+    """
+    每次執行時，優先抓取所有歷史名單的「最新股價」，
+    即時計算 ROI 與 Daily Change，讓前端網頁看到最新戰況。
+    """
+    print("正在更新歷史名單績效 (ROI Update)...")
     tickers_to_check = set()
     for date_str, stocks in history_db.items():
         for stock in stocks:
@@ -273,18 +271,22 @@ def update_history_roi(history_db):
     print(f"追蹤股票數量: {len(tickers_to_check)}")
     current_data = {}
     try:
-        # 歷史績效更新也同步改為 auto_adjust=True
-        data = yf.download(list(tickers_to_check), period="5d", auto_adjust=True, threads=True)
+        # 下載最近 5 天資料，包含盤中即時價
+        data = yf.download(list(tickers_to_check), period="5d", auto_adjust=True, threads=True, progress=False)
         close_df = data['Close']
         
+        # 處理單支與多支股票的資料結構差異
         if len(tickers_to_check) == 1:
              ticker = list(tickers_to_check)[0]
              if isinstance(close_df, pd.DataFrame):
                  closes = close_df[ticker].dropna().values if ticker in close_df.columns else close_df.iloc[:, 0].dropna().values
              else:
                  closes = close_df.dropna().values
-             if len(closes) >= 2:
-                 current_data[ticker] = { 'price': float(closes[-1]), 'prev': float(closes[-2]) }
+             if len(closes) >= 1:
+                 # 若只有一筆(當日)，prev 用同一筆或 0，避免當掉
+                 current_price = float(closes[-1])
+                 prev_price = float(closes[-2]) if len(closes) >= 2 else current_price
+                 current_data[ticker] = { 'price': current_price, 'prev': prev_price }
         else:
             for ticker in tickers_to_check:
                 try:
@@ -292,43 +294,42 @@ def update_history_roi(history_db):
                         series = close_df[ticker].dropna()
                     else:
                         continue
-                    if len(series) >= 2:
-                        current_data[ticker] = { 'price': float(series.iloc[-1]), 'prev': float(series.iloc[-2]) }
+                    if len(series) >= 1:
+                        current_price = float(series.iloc[-1])
+                        prev_price = float(series.iloc[-2]) if len(series) >= 2 else current_price
+                        current_data[ticker] = { 'price': current_price, 'prev': prev_price }
                 except: pass
     except Exception as e:
         print(f"Error updating history: {e}")
         return history_db
 
+    # 更新 DB 數值
     for date_str, stocks in history_db.items():
         try:
-            entry_date = datetime.strptime(date_str, "%Y/%m/%d")
+             # 如果是盤中執行，這裡計算 ROI 就會是 Based on 即時股價
+             pass
         except: continue
         
-        days_diff = (today_date - entry_date).days
-
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
             if symbol in current_data:
                 latest_price = current_data[symbol]['price']
                 prev_price = current_data[symbol]['prev']
-                buy_price = stock['buy_price']
+                buy_price = float(stock['buy_price'])
                 
-                if days_diff <= 0:
-                    roi = 0.0
-                    daily_change = 0.0
-                else:
-                    roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
-                    daily_change = round(((latest_price - prev_price) / prev_price) * 100, 2)
+                # 計算 ROI
+                roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
+                daily_change = round(((latest_price - prev_price) / prev_price) * 100, 2)
                 
                 stock['latest_price'] = round(latest_price, 2)
                 stock['roi'] = roi
                 stock['daily_change'] = daily_change
 
-    print("歷史績效更新完成。")
+    print("歷史績效更新完成 (In-Memory)。")
     return history_db
 
 # ==========================================
-# 6. 主程式
+# 5. 主程式
 # ==========================================
 def run_scanner():
     tw_tz = pytz.timezone('Asia/Taipei')
@@ -337,25 +338,30 @@ def run_scanner():
     industry_db = load_json(DB_INDUSTRY)
     history_db = load_json(DB_HISTORY)
     
-    # 步驟 1: 先更新舊的歷史績效 (無論幾點都做)
-    # 這會確保已存在的名單，ROI 和 Latest Price 都是基於最新的報價
+    # -----------------------------------------------------
+    # 步驟 1: 【盤中更新】優先更新舊名單的 ROI
+    # 無論是 9:00, 10:00 還是 13:30，每次執行都會先跑這段
+    # -----------------------------------------------------
     history_db = update_history_roi(history_db)
     
+    # 立即存檔 history.json，確保前端網頁能看到盤中即時 ROI 變化
     save_json(DB_HISTORY, history_db)
-    print("盤中歷史績效已更新至 DB。")
+    print("✅ history.json 已更新最新報價與 ROI。")
 
-    # 開始掃描今日新標的
+    # -----------------------------------------------------
+    # 步驟 2: 開始掃描今日新標的 (產生 data.json 給熱力圖用)
+    # -----------------------------------------------------
     full_list = get_all_tickers()
-    print(f"開始掃描... 時間: {now.strftime('%H:%M:%S')}")
+    print(f"開始掃描全市場... 時間: {now.strftime('%H:%M:%S')}")
     
     daily_results = []
     batch_size = 100 
     
     for i in range(0, len(full_list), batch_size):
         batch = full_list[i:i+batch_size]
-        print(f"Processing batch {i//batch_size + 1}/{len(full_list)//batch_size + 1}...")
+        # print(f"Processing batch {i//batch_size + 1}/{len(full_list)//batch_size + 1}...")
         try:
-            # 【關鍵】: auto_adjust=True (還原權息)
+            # 取得即時報價 (auto_adjust=True)
             data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=True)
             
             for ticker in batch:
@@ -376,6 +382,7 @@ def run_scanner():
                     required_cols = ['Close', 'Volume', 'Low']
                     if not all(col in df.columns for col in required_cols): continue
 
+                    # 執行策略
                     is_match_1, info_1 = check_strategy_original(df)
                     is_match_2, info_2 = check_strategy_vcp_pro(df)
                     
@@ -424,20 +431,16 @@ def run_scanner():
                             "roi": 0.0, 
                             "daily_change": change_rate
                         }
-                        
                         daily_results.append(stock_entry)
                         print(f" -> Found: {raw_code} {name} [{tags_str}]")
                         
                 except Exception: continue
-        except Exception as e:
-            print(f"Batch error: {e}")
-            continue
-        
-        time.sleep(1.5)
+        except Exception: continue
+        time.sleep(1.0)
 
     save_json(DB_INDUSTRY, industry_db)
     
-    # 處理 output
+    # 儲存 data.json (熱力圖與列表頁面用) - 盤中會持續更新此檔
     print(f"掃描結束，共發現 {len(daily_results)} 檔。更新 data.json...")
     data_payload = {
         "date": now.strftime("%Y/%m/%d %H:%M:%S"),
@@ -446,15 +449,19 @@ def run_scanner():
     }
     save_json(DATA_JSON, data_payload)
 
-    # 歸檔判定
+    # -----------------------------------------------------
+    # 步驟 3: 歸檔判定 (決定是否寫入 History)
+    # -----------------------------------------------------
     current_time = now.time()
     market_open = dt_time(9, 0, 0)
     market_close = dt_time(13, 30, 0)
+    # 盤中定義：9:00 ~ 13:30 (可視需要微調)
     is_market_session = market_open <= current_time <= market_close
 
     if is_market_session:
-        print(f"⚠️ 現在是盤中時間 ({current_time.strftime('%H:%M')})，跳過 History 新增歸檔 (但已更新舊股價)。")
+        print(f"⚠️ 現在是盤中時間 ({current_time.strftime('%H:%M')})，跳過 History 新增歸檔。")
     else:
+        # 盤後時間，準備歸檔
         if current_time > market_close:
             record_date_str = now.strftime("%Y/%m/%d")
         else:
@@ -465,7 +472,7 @@ def run_scanner():
         
         if daily_results:
             # ==========================================
-            # 【關鍵修改】 去除重複名單邏輯
+            # 【關鍵】去重機制 (Duplicate Check)
             # ==========================================
             
             # 1. 收集所有歷史紀錄中的股票 ID
@@ -484,6 +491,7 @@ def run_scanner():
             
             if unique_results:
                 history_db[record_date_str] = unique_results
+                # 依日期降序排列
                 sorted_history = dict(sorted(history_db.items(), reverse=True))
                 save_json(DB_HISTORY, sorted_history)
                 print(f"History.json 新增 {len(unique_results)} 筆資料 (已過濾重複)。")
