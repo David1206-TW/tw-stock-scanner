@@ -1,535 +1,615 @@
-# -*- coding: utf-8 -*-
-"""
-台股自動掃描策略機器人 (Scanner Bot) - V54 Fix Empty Dashboard
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>台股自動化戰情室</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        .tw-up { color: #ef4444; } .tw-down { color: #22c55e; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #0f172a; color: #e2e8f0; overscroll-behavior-y: contain; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
+        .tab-btn.active { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
+        .tab-btn { color: #94a3b8; border-bottom: 2px solid transparent; transition: all 0.3s; }
+        th.sortable { cursor: pointer; transition: background-color 0.2s; user-select: none; white-space: nowrap; padding: 0.5rem 0; font-size: 10px; }
+        th.sortable:hover { background-color: #334155; }
+        td { white-space: nowrap; }
+        .name-cell { white-space: normal; max-width: 80px; line-height: 1.2; }
+        @keyframes pulse-blue { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .animate-updating { animation: pulse-blue 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #60a5fa; }
+        .sort-symbol { display: inline-block; font-size: 8px; margin-left: 1px; vertical-align: 1px; color: #64748b; opacity: 0.5; transform: scale(0.9); }
+        .sort-symbol.active { color: #60a5fa; opacity: 1; font-weight: bold; }
+        .stat-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 10px; min-width: 80px; text-align: center; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="h-[100dvh] flex flex-col overflow-hidden bg-slate-900">
+    <nav class="bg-slate-950 text-white p-2 shadow-lg shrink-0 z-40 border-b border-slate-800 flex justify-between items-center h-14">
+        <div class="flex items-center gap-2 pl-1">
+            <i class="fa-solid fa-robot text-emerald-400 text-lg"></i>
+            <div class="flex flex-col">
+                <div class="flex items-center gap-2">
+                    <h1 class="text-sm font-bold tracking-wider leading-none">台股戰情室</h1>
+                    <span id="win-rate-badge" class="hidden text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono">勝率 -%</span>
+                </div>
+                <div class="text-[9px] text-gray-500 mt-0.5" id="last-updated">讀取中...</div>
+            </div>
+        </div>
+        <div class="flex items-center gap-1">
+            <button onclick="app.triggerCloudUpdate()" id="btn-cloud-update" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>
+            </button>
+            <button onclick="app.refresh()" class="p-2 text-gray-500 hover:text-white transition-colors active:scale-95"><i class="fa-solid fa-rotate-right text-sm"></i></button>
+        </div>
+    </nav>
 
-【V54 修正重點：修復前端無資料問題】
-1. 移除掃描迴圈中的 `continue` 跳過邏輯：
-   - 之前為了去重，直接跳過歷史名單中的股票，導致它們在「今日看板」中消失。
-   - V54 改回「全部掃描」，確保 data.json 包含所有今日符合策略的標的。
-2. 保持 History 去重：
-   - 只在最後寫入 history.json 時，過濾掉已存在的 ID。
-   - 確保首頁能看見所有訊號，但績效頁面只保留最早進場點。
+    <main class="flex-grow flex flex-col w-full max-w-6xl mx-auto p-2 overflow-hidden relative pb-16">
+        <div id="page-heatmap" class="flex flex-col h-full gap-2">
+            <div class="flex-grow overflow-y-auto pb-4"><div id="heatmap-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2"></div></div>
+        </div>
+        <div id="page-list" class="hidden flex flex-col h-full gap-2">
+            <div class="shrink-0 flex flex-col gap-2">
+                <div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar flex-grow mr-2">
+                        <span id="filter-tag" class="hidden text-[10px] bg-blue-900/50 text-blue-200 px-2 py-0.5 rounded border border-blue-700 flex items-center whitespace-nowrap"><span id="filter-name">族群</span><button onclick="app.clearFilter()" class="ml-2 hover:text-white"><i class="fa-solid fa-times"></i></button></span>
+                        <span id="data-count" class="text-[10px] text-gray-400 font-mono whitespace-nowrap">總: 0</span>
+                        <span class="flex items-center gap-1 text-[10px] text-blue-300 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block"></span>拉回:<span id="count-pullback" class="font-bold">0</span></span>
+                        <span class="flex items-center gap-1 text-[10px] text-purple-300 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block"></span>VCP:<span id="count-vcp" class="font-bold">0</span></span>
+                    </div>
+                    <button onclick="app.toggleMaFilter()" id="btn-ma-filter" class="bg-slate-700 text-gray-300 text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all whitespace-nowrap flex-shrink-0">過濾支撐</button>
+                </div>
+            </div>
+            <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
+                <div class="flex-grow overflow-auto bg-slate-900 relative">
+                    <table class="min-w-[480px] w-full text-sm text-left text-gray-400">
+                        <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
+                            <tr>
+                                <th class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 text-gray-300" onclick="app.sortList('id')">股名<span class="sort-symbol" id="sort-symbol-id">⇅</span></th>
+                                <th class="px-1 py-2 sortable text-center" onclick="app.sortList('group')">族群<span class="sort-symbol" id="sort-symbol-group">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable" onclick="app.sortList('price')">價<span class="sort-symbol" id="sort-symbol-price">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable" onclick="app.sortList('changeRate')">漲跌<span class="sort-symbol" id="sort-symbol-changeRate">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable text-gray-400" onclick="app.sortList('ma5')">MA5<span class="sort-symbol" id="sort-symbol-ma5">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable text-gray-400" onclick="app.sortList('ma10')">MA10<span class="sort-symbol" id="sort-symbol-ma10">⇅</span></th>
+                                <th class="px-1 py-2 text-[10px] sortable" onclick="app.sortList('note')">備註<span class="sort-symbol" id="sort-symbol-note">⇅</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-body" class="divide-y divide-slate-800"><tr><td colspan="7" class="px-6 py-20 text-center text-gray-600">載入中...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="page-perf" class="hidden flex flex-col h-full gap-2">
+            <div class="shrink-0 flex gap-2 overflow-x-auto pb-2 pl-1 no-scrollbar items-center" id="perf-stats-bar"><div class="text-xs text-gray-500 p-2">計算中...</div></div>
+            <div class="glass-panel flex-grow flex flex-col overflow-hidden rounded-xl border border-white/10">
+                <div class="flex-grow overflow-auto bg-slate-900 relative">
+                    <table class="min-w-[850px] w-full text-sm text-left text-gray-400">
+                        <thead class="text-[10px] text-gray-500 uppercase bg-slate-950 sticky top-0 shadow-sm z-20">
+                            <tr>
+                                <th class="px-1 py-2 sortable sticky left-0 bg-slate-950 z-30 border-r border-slate-800" onclick="app.sortPerfList('date')">日期<span class="sort-symbol" id="perf-symbol-date">⇅</span></th>
+                                <th class="px-1 py-2 sortable sticky left-[40px] bg-slate-950 z-30 border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]" onclick="app.sortPerfList('id')">股名<span class="sort-symbol" id="perf-symbol-id">⇅</span></th>
+                                <th class="px-1 py-2 text-center sortable border-r border-slate-800" onclick="app.sortPerfList('strategy')">策略<span class="sort-symbol" id="perf-symbol-strategy">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('buy_price')">進場<span class="sort-symbol" id="perf-symbol-buy_price">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('latest_price')">現價<span class="sort-symbol" id="perf-symbol-latest_price">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('roi')">累%<span class="sort-symbol" id="perf-symbol-roi">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable" onclick="app.sortPerfList('daily_change')">日%<span class="sort-symbol" id="perf-symbol-daily_change">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_1')">1日<span class="sort-symbol" id="perf-symbol-roi_1">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_5')">5日<span class="sort-symbol" id="perf-symbol-roi_5">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_10')">10日<span class="sort-symbol" id="perf-symbol-roi_10">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_20')">20日<span class="sort-symbol" id="perf-symbol-roi_20">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_30')">30日<span class="sort-symbol" id="perf-symbol-roi_30">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_60')">60日<span class="sort-symbol" id="perf-symbol-roi_60">⇅</span></th>
+                                <th class="px-1 py-2 text-right sortable text-gray-300" onclick="app.sortPerfList('roi_120')">120日<span class="sort-symbol" id="perf-symbol-roi_120">⇅</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="perf-body" class="divide-y divide-slate-800"><tr><td colspan="14" class="px-6 py-20 text-center text-gray-600">尚無歷史資料</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="page-admin" class="hidden h-full overflow-y-auto">
+            <div class="glass-panel rounded-xl p-6 max-w-2xl mx-auto mb-4 bg-slate-800">
+                <h2 class="text-lg font-bold mb-4 flex items-center border-b border-slate-700 pb-3 text-white"><i class="fa-solid fa-gear mr-2 text-gray-400"></i>設定</h2>
+                <div class="space-y-3 text-sm">
+                    <p class="text-xs text-yellow-500 bg-yellow-900/20 p-2 rounded border border-yellow-800"><i class="fa-solid fa-circle-info mr-1"></i> 請填寫 Token 以啟用雲端更新。</p>
+                    <input type="text" id="repo-owner" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white placeholder-gray-500" placeholder="GitHub Owner">
+                    <input type="text" id="repo-name" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white placeholder-gray-500" placeholder="Repo Name">
+                    <input type="password" id="github-token" class="w-full p-2 border border-slate-600 rounded bg-slate-700 text-white placeholder-gray-500" placeholder="Access Token">
+                    <button onclick="admin.saveSettings()" class="w-full bg-slate-600 hover:bg-slate-500 text-white font-bold py-2 px-4 rounded mt-2">儲存設定</button>
+                </div>
+            </div>
+        </div>
+    </main>
 
-【策略 A：拉回佈局】
-   1. 長線保護：收盤 > MA240, MA120, MA60。
-   2. 多頭排列：MA10 > MA20 > MA60。
-   3. 位階安全：乖離率 < 25%。
-   4. 均線糾結：差異 < 8%。
-   5. 量縮整理：成交量 < 5日均量。
-   6. 支撐確認：收盤 > MA10。
-   7. 底部打樁：|今日最低 - 昨日最低| < 1%。
-   8. 流動性：5日均量 > 500張。
+    <nav class="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 z-50 h-16 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
+        <div class="max-w-6xl mx-auto flex justify-around h-full">
+            <button onclick="app.switchTab('heatmap')" id="tab-heatmap" class="tab-btn active flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-fire text-lg mb-1"></i><span class="text-xs mt-1">熱力圖</span></button>
+            <button onclick="app.switchTab('list')" id="tab-list" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-list-ul text-lg mb-1"></i><span class="text-xs mt-1">報價</span></button>
+            <button onclick="app.switchTab('perf')" id="tab-perf" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-trophy text-lg mb-1"></i><span class="text-xs mt-1">績效</span></button>
+            <button onclick="app.switchTab('admin')" id="tab-admin" class="tab-btn flex-1 flex flex-col items-center justify-center"><i class="fa-solid fa-gear text-lg mb-1"></i><span class="text-xs mt-1">設定</span></button>
+        </div>
+    </nav>
 
-【策略 B：VCP 技術面 (Strict VCP)】
-  1. 硬指標過濾：股價 > MA240 & > MA60 & 成交量 > 500張。
-  2. 價格位階：靠近 52 週新高。
-  3. 波動收縮：布林帶寬度 < 15%。
-  4. 量能遞減：5日均量 < 20日均量。
-  5. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
-"""
-
-import yfinance as yf
-import pandas as pd
-import twstock
-import json
-import os
-import math
-from datetime import datetime, time as dt_time, timedelta
-import pytz
-import time
-
-# ==========================================
-# 1. 資料庫管理
-# ==========================================
-DB_INDUSTRY = 'cmoney_industry_cache.json'
-DB_HISTORY = 'history.json'
-DATA_JSON = 'data.json'
-
-def load_json(filename):
-    if os.path.exists(filename):
-        try:
-            with open(filename, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except:
-            return {}
-    return {}
-
-def save_json(filename, data):
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-# ==========================================
-# 2. 產業分類解析邏輯
-# ==========================================
-def get_stock_group(code, db_data):
-    group = "其他"
-    if code in db_data:
-        raw_data = db_data[code]
-        if isinstance(raw_data, dict):
-            if 'sub' in raw_data and raw_data['sub']: group = raw_data['sub']
-            elif 'main' in raw_data and raw_data['main']: group = raw_data['main']
-            elif 'industry' in raw_data: group = raw_data['industry']
-        elif isinstance(raw_data, str):
-            group = raw_data
-    elif code in twstock.codes:
-        if code in twstock.codes and twstock.codes[code].group:
-            group = twstock.codes[code].group.replace("工業", "").replace("業", "")
-    
-    if not isinstance(group, str): group = str(group)
-    return group
-
-def get_all_tickers():
-    twse = twstock.twse
-    tpex = twstock.tpex
-    ticker_list = []
-    for code in twse:
-        if len(code) == 4: ticker_list.append(f"{code}.TW")
-    for code in tpex:
-        if len(code) == 4: ticker_list.append(f"{code}.TWO")
-    return ticker_list
-
-# ==========================================
-# 3. 歷史名單清洗邏輯
-# ==========================================
-def remove_duplicates_keep_earliest(history_db):
-    """
-    清洗 History DB: 保留每支股票「第一次」出現的紀錄
-    """
-    if not history_db:
-        return {}, set()
-        
-    print("🧹 正在執行歷史名單去重 (保留最早進場點)...")
-    
-    # 1. 將資料攤平
-    flat_list = []
-    for date_str, stocks in history_db.items():
-        try:
-            dt = datetime.strptime(date_str, "%Y/%m/%d")
-            for stock in stocks:
-                flat_list.append({
-                    'dt': dt,
-                    'date_str': date_str,
-                    'stock': stock
-                })
-        except: continue
-
-    # 2. 按日期排序 (舊 -> 新)
-    flat_list.sort(key=lambda x: x['dt'])
-
-    # 3. 過濾重複 ID
-    seen_ids = set()
-    cleaned_map = {} # key: date_str, value: list of stocks
-
-    duplicates_removed = 0
-    
-    for item in flat_list:
-        stock_id = item['stock']['id']
-        date_str = item['date_str']
-        
-        if stock_id not in seen_ids:
-            seen_ids.add(stock_id)
-            if date_str not in cleaned_map:
-                cleaned_map[date_str] = []
-            cleaned_map[date_str].append(item['stock'])
-        else:
-            duplicates_removed += 1
-    
-    print(f"🧹 清洗完成: 移除了 {duplicates_removed} 筆重複資料。")
-    return cleaned_map, seen_ids
-
-# ==========================================
-# 4. 策略邏輯
-# ==========================================
-
-def check_strategy_original(df):
-    if len(df) < 250: return False, None
-    close = df['Close']
-    volume = df['Volume']
-    low = df['Low']
-    
-    ma5 = close.rolling(5).mean()
-    ma10 = close.rolling(10).mean()
-    ma20 = close.rolling(20).mean()
-    ma60 = close.rolling(60).mean()
-    ma120 = close.rolling(120).mean()
-    ma240 = close.rolling(240).mean()
-    vol_ma5 = volume.rolling(5).mean()
-    
-    curr_c = float(close.iloc[-1])
-    curr_v = float(volume.iloc[-1])
-    curr_l = float(low.iloc[-1])
-    
-    curr_ma5 = float(ma5.iloc[-1])
-    curr_ma10 = float(ma10.iloc[-1])
-    curr_ma20 = float(ma20.iloc[-1])
-    curr_ma60 = float(ma60.iloc[-1])
-    curr_ma120 = float(ma120.iloc[-1]) 
-    curr_ma240 = float(ma240.iloc[-1])
-    curr_vol_ma5 = float(vol_ma5.iloc[-1])
-    
-    prev_l = float(low.iloc[-2])
-
-    if math.isnan(curr_ma240): return False, None
-    if curr_c < curr_ma240: return False, None
-
-    if curr_vol_ma5 < 500000: return False, None 
-
-    if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
-    if not ((curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)): return False, None
-    
-    bias_ma60 = (curr_c - curr_ma60) / curr_ma60
-    if bias_ma60 >= 0.25: return False, None
-    
-    mas = [curr_ma5, curr_ma10, curr_ma20]
-    ma_divergence = (max(mas) - min(mas)) / min(mas)
-    if ma_divergence >= 0.08: return False, None
-    
-    if curr_v >= curr_vol_ma5: return False, None
-    if curr_c <= curr_ma10: return False, None
-    
-    if prev_l > 0:
-        low_diff_pct = abs(curr_l - prev_l) / prev_l
-        if low_diff_pct > 0.01: return False, None
-
-    return True, {
-        "tag": "拉回佈局",
-        "price": round(curr_c, 2),
-        "ma5": round(close.rolling(5).mean().iloc[-1], 2),
-        "ma10": round(curr_ma10, 2),
-        "ma20": round(curr_ma20, 2),
-        "ma240": round(curr_ma240, 2)
-    }
-
-def check_strategy_vcp_pro(df):
-    try:
-        close = df['Close']
-        volume = df['Volume']
-
-        if len(close) < 260: return False, None
-
-        ma10 = close.rolling(10).mean()
-        ma20 = close.rolling(20).mean()
-        ma50 = close.rolling(50).mean()
-        ma150 = close.rolling(150).mean()
-        ma200 = close.rolling(200).mean()
-        ma60 = close.rolling(60).mean()
-        ma240 = close.rolling(240).mean()
-        
-        std20 = close.rolling(20).std()
-        bb_upper = ma20 + (std20 * 2)
-        bb_lower = ma20 - (std20 * 2)
-        bb_width = (bb_upper - bb_lower) / ma20
-
-        curr_c = float(close.iloc[-1])
-        curr_v = float(volume.iloc[-1])
-
-        curr_ma20 = float(ma20.iloc[-1])
-        curr_ma50 = float(ma50.iloc[-1])
-        curr_ma150 = float(ma150.iloc[-1])
-        curr_ma200 = float(ma200.iloc[-1])
-        curr_ma60 = float(ma60.iloc[-1])
-        curr_ma240 = float(ma240.iloc[-1])
-        curr_bb_width = float(bb_width.iloc[-1])
-
-        if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
-        if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
-        if curr_v < 500000: return False, None
-
-        if curr_c < curr_ma200: return False, None
-        if curr_ma200 <= float(ma200.iloc[-20]): return False, None
-        if curr_c < curr_ma150: return False, None
-
-        high_52w = close.iloc[-250:].max()
-        low_52w = close.iloc[-250:].min()
-        if curr_c < low_52w * 1.3: return False, None
-        if curr_c < high_52w * 0.75: return False, None
-
-        if curr_bb_width > 0.15: return False, None
-        if curr_c < curr_ma20 * 0.98: return False, None
-
-        vol_ma5 = volume.rolling(5).mean()
-        vol_ma20 = volume.rolling(20).mean()
-        if float(vol_ma5.iloc[-1]) > float(vol_ma20.iloc[-1]): return False, None
-        if float(vol_ma5.iloc[-1]) < 300000: return False, None
-
-        def calc_retrace(series):
-            peak = series.max()
-            trough = series.min()
-            return (peak - trough) / peak if peak > 0 else 1.0
-
-        r1 = calc_retrace(close.iloc[-60:])
-        r2 = calc_retrace(close.iloc[-20:])
-        r3 = calc_retrace(close.iloc[-10:])
-        
-        if not (r1 > r2 > r3): return False, None
-
-    except Exception:
-        return False, None
-
-    return True, {
-        "tag": "Strict-VCP",
-        "price": round(curr_c, 2),
-        "ma5": round(close.rolling(5).mean().iloc[-1], 2),
-        "ma10": round(ma10.iloc[-1], 2),
-        "ma20": round(curr_ma20, 2),
-        "ma150": round(curr_ma150, 2),
-        "ma200": round(curr_ma200, 2),
-        "ma240": round(curr_ma240, 2),
-        "bb_width": round(curr_bb_width * 100, 1)
-    }
-
-# ==========================================
-# 5. 更新歷史績效 (V54 Robust)
-# ==========================================
-def update_history_roi(history_db):
-    print("===== 開始更新歷史績效 (V54) =====")
-    tw_tz = pytz.timezone('Asia/Taipei')
-    today_str = datetime.now(tw_tz).strftime("%Y/%m/%d")
-    today_date = datetime.strptime(today_str, "%Y/%m/%d")
-
-    # 1. 執行「去重」
-    history_db, tracked_ids = remove_duplicates_keep_earliest(history_db)
-
-    if not tracked_ids: 
-        print("沒有需要追蹤的股票。")
-        return history_db, tracked_ids
-
-    # 重新收集完整的 symbols
-    symbols_map = {} 
-    query_list = set()
-    
-    for date_str, stocks in history_db.items():
-        for stock in stocks:
-            symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
-            symbols_map[stock['id']] = symbol
-            query_list.add(symbol)
-            
-    print(f"追蹤股票數量 (不重複): {len(query_list)}")
-    current_data = {}
-    
-    try:
-        data = yf.download(list(query_list), period="5d", auto_adjust=True, threads=True)
-        if data.empty:
-            print("⚠️ yfinance 下載回傳為空，跳過更新。")
-            return history_db, tracked_ids
-
-        close_df = data['Close'] if 'Close' in data else pd.DataFrame()
-        
-        for symbol in query_list:
-            try:
-                series = None
-                if len(query_list) == 1:
-                    if isinstance(close_df, pd.DataFrame):
-                        if symbol in close_df.columns: series = close_df[symbol]
-                        else: series = close_df.iloc[:, 0]
-                    else: series = close_df
-                else:
-                    if symbol in close_df.columns: series = close_df[symbol]
+    <script>
+        class StockApp {
+            constructor() {
+                this.dataUrl = 'data.json';
+                this.historyUrl = 'history.json';
+                this.stockList = []; 
+                this.displayList = []; 
+                this.historyList = []; 
                 
-                if series is not None and not series.empty:
-                    series = series.ffill().dropna()
-                    if len(series) >= 2:
-                        last_price = float(series.iloc[-1])
-                        prev_price = float(series.iloc[-2])
-                        stock_id = symbol.split('.')[0]
-                        current_data[stock_id] = { 'price': last_price, 'prev': prev_price }
-            except: pass
+                this.state = {
+                    sortBy: 'changeRate', sortDir: 'desc',
+                    perfSortBy: 'date', perfSortDir: 'desc', 
+                    filterGroup: null, filterMa: false
+                };
 
-    except Exception as e:
-        print(f"❌ 歷史資料下載錯誤: {e}")
-        return history_db, tracked_ids
+                this.lastDataTime = "";
+                this.isPolling = false; 
 
-    updated_count = 0
-    for date_str, stocks in history_db.items():
-        try:
-            entry_date = datetime.strptime(date_str, "%Y/%m/%d")
-        except: continue
-        
-        days_diff = (today_date - entry_date).days
+                this.ui = {
+                    body: document.getElementById('result-body'),
+                    perfBody: document.getElementById('perf-body'),
+                    perfStatsBar: document.getElementById('perf-stats-bar'),
+                    lastUpdated: document.getElementById('last-updated'),
+                    dataCount: document.getElementById('data-count'),
+                    filterTag: document.getElementById('filter-tag'),
+                    filterName: document.getElementById('filter-name'),
+                    heatmapContainer: document.getElementById('heatmap-container'),
+                    btnCloudUpdate: document.getElementById('btn-cloud-update'),
+                    btnMaFilter: document.getElementById('btn-ma-filter'),
+                    winRateBadge: document.getElementById('win-rate-badge'),
+                    countPullback: document.getElementById('count-pullback'),
+                    countVcp: document.getElementById('count-vcp'),
+                    pageHeatmap: document.getElementById('page-heatmap'),
+                    pageList: document.getElementById('page-list'),
+                    pagePerf: document.getElementById('page-perf'),
+                    pageAdmin: document.getElementById('page-admin'),
+                    tabHeatmap: document.getElementById('tab-heatmap'),
+                    tabList: document.getElementById('tab-list'),
+                    tabPerf: document.getElementById('tab-perf'),
+                    tabAdmin: document.getElementById('tab-admin')
+                };
+                this.init();
+            }
 
-        for stock in stocks:
-            s_id = stock['id']
-            if s_id in current_data:
-                latest_price = current_data[s_id]['price']
-                prev_price = current_data[s_id]['prev']
-                buy_price = stock['buy_price']
-                
-                if days_diff <= 0:
-                    roi = 0.0
-                    daily_change = 0.0
-                else:
-                    roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
-                    daily_change = round(((latest_price - prev_price) / prev_price) * 100, 2)
-                
-                stock['latest_price'] = round(latest_price, 2)
-                stock['roi'] = roi
-                stock['daily_change'] = daily_change
-                updated_count += 1
+            refresh() { location.reload(); }
 
-    print(f"歷史績效更新完成，共更新 {updated_count} 筆股價。")
-    return history_db, tracked_ids
+            switchTab(tabName) {
+                ['pageHeatmap', 'pageList', 'pagePerf', 'pageAdmin'].forEach(p => this.ui[p].classList.add('hidden'));
+                ['tabHeatmap', 'tabList', 'tabPerf', 'tabAdmin'].forEach(t => this.ui[t].classList.remove('active'));
 
-# ==========================================
-# 6. 主程式
-# ==========================================
-def run_scanner():
-    tw_tz = pytz.timezone('Asia/Taipei')
-    now = datetime.now(tw_tz)
-    
-    industry_db = load_json(DB_INDUSTRY)
-    history_db = load_json(DB_HISTORY)
-    
-    # 步驟 1: 更新歷史績效 + 清洗重複 (回傳 cleaned db 和所有已存在的 ID set)
-    history_db, existing_ids = update_history_roi(history_db)
-    
-    save_json(DB_HISTORY, history_db)
-    print("盤中歷史績效 (已去重) 更新至 DB。")
+                if (tabName === 'heatmap') {
+                    this.ui.pageHeatmap.classList.remove('hidden');
+                    this.ui.tabHeatmap.classList.add('active');
+                    this.renderHeatmap();
+                } else if (tabName === 'list') {
+                    this.ui.pageList.classList.remove('hidden');
+                    this.ui.tabList.classList.add('active');
+                    this.applyStateAndRender();
+                } else if (tabName === 'perf') {
+                    this.ui.pagePerf.classList.remove('hidden');
+                    this.ui.tabPerf.classList.add('active');
+                    this.sortPerfList(this.state.perfSortBy); 
+                } else if (tabName === 'admin') {
+                    this.ui.pageAdmin.classList.remove('hidden');
+                    this.ui.tabAdmin.classList.add('active');
+                    admin.loadSettings();
+                }
+            }
 
-    # 開始掃描今日新標的
-    full_list = get_all_tickers()
-    print(f"開始掃描... 時間: {now.strftime('%H:%M:%S')}")
-    
-    daily_results = []
-    batch_size = 100 
-    
-    for i in range(0, len(full_list), batch_size):
-        batch = full_list[i:i+batch_size]
-        print(f"Processing batch {i//batch_size + 1}/{len(full_list)//batch_size + 1}...")
-        try:
-            data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=True)
-            
-            for ticker in batch:
-                try:
-                    raw_code = ticker.split('.')[0]
-                    
-                    # 【V54 修正】：移除這裡的 continue，確保首頁能顯示今日所有符合策略的股
-                    # if raw_code in existing_ids: continue <--- REMOVED
+            async init() {
+                try { 
+                    await this.loadData(); 
+                    this.loadHistory(); 
+                } 
+                catch (e) { this.ui.body.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-amber-500 text-xs">${e.message}</td></tr>`; }
+            }
 
-                    df = pd.DataFrame()
-                    if len(batch) > 1:
-                        if ticker in data.columns.levels[0]:
-                            df = data[ticker].copy()
-                    else:
-                        df = data.copy()
-                    
-                    df = df.dropna()
-                    if df.empty: continue
-                    if isinstance(df.columns, pd.MultiIndex):
-                        df.columns = df.columns.droplevel(0)
+            async loadData() {
+                const cacheBuster = new Date().getTime();
+                try { 
+                    const response = await fetch(`${this.dataUrl}?t=${cacheBuster}`); 
+                    if (!response.ok) throw new Error("讀取失敗");
+                    const data = await response.json();
+                    this.stockList = data.list || [];
+                    if (this.lastDataTime && this.lastDataTime !== data.date) {
+                        this.stopPolling();
+                        this.loadHistory(); 
+                    }
+                    this.lastDataTime = data.date;
+                    this.ui.lastUpdated.innerText = `更新: ${data.date.split(' ')[1] || data.date}`;
+                    this.renderHeatmap();
+                    this.applyStateAndRender();
+                } catch (e) { this.ui.body.innerHTML = `<tr><td colspan="7" class="px-6 py-20 text-center text-gray-600">載入中...</td></tr>`; }
+            }
 
-                    required_cols = ['Close', 'Volume', 'Low']
-                    if not all(col in df.columns for col in required_cols): continue
+            async loadHistory() {
+                try {
+                    const cacheBuster = new Date().getTime();
+                    const res = await fetch(`${this.historyUrl}?t=${cacheBuster}`);
+                    if(res.ok) {
+                        const historyData = await res.json();
+                        this.historyList = [];
+                        let totalStocks = 0;
+                        let winStocks = 0;
 
-                    is_match_1, info_1 = check_strategy_original(df)
-                    is_match_2, info_2 = check_strategy_vcp_pro(df)
-                    
-                    final_match = False
-                    final_info = {}
-                    strategy_tags = []
+                        Object.keys(historyData).forEach(date => {
+                            const entryDate = new Date(date);
+                            const today = new Date();
+                            const diffDays = Math.ceil(Math.abs(today - entryDate) / (1000 * 60 * 60 * 24));
 
-                    if is_match_1:
-                        final_match = True
-                        final_info = info_1
-                        strategy_tags.append("拉回佈局")
-                    if is_match_2:
-                        final_match = True
-                        if not final_info: final_info = info_2
-                        strategy_tags.append("Strict-VCP")
-                    
-                    if final_match:
-                        name = raw_code
-                        if raw_code in twstock.codes: name = twstock.codes[raw_code].name
-                        group = get_stock_group(raw_code, industry_db)
-                        if raw_code not in industry_db: industry_db[raw_code] = group
-                        
-                        try:
-                            prev_c = df['Close'].iloc[-2]
-                            change_rate = round((final_info['price'] - prev_c) / prev_c * 100, 2)
-                        except:
-                            change_rate = 0.0
-                            
-                        tags_str = " & ".join(strategy_tags)
-                        note_ma240 = round(final_info.get('ma240', 0), 2)
-                        note_str = f"{tags_str} / 年線{note_ma240}"
+                            historyData[date].forEach(stock => {
+                                const roi = parseFloat(stock.roi || 0);
+                                
+                                // 解析 Note 取得策略 (簡單檢查是否包含字串)
+                                let strategy = '其他';
+                                const note = stock.note || '';
+                                if (note.includes('Strict-VCP') && note.includes('拉回佈局')) strategy = '雙策略';
+                                else if (note.includes('Strict-VCP')) strategy = 'VCP';
+                                else if (note.includes('拉回佈局')) strategy = '拉回';
 
-                        stock_entry = {
-                            "id": raw_code,
-                            "name": name,
-                            "group": group,
-                            "type": "上櫃" if ".TWO" in ticker else "上市",
-                            "price": final_info['price'], 
-                            "ma5": final_info['ma5'],
-                            "ma10": final_info['ma10'],
-                            "changeRate": change_rate,
-                            "isValid": True,
-                            "note": note_str,
-                            "buy_price": final_info['price'], 
-                            "latest_price": final_info['price'], 
-                            "roi": 0.0, 
-                            "daily_change": change_rate
+                                const stockObj = {
+                                    ...stock,
+                                    date: date, 
+                                    daysHeld: diffDays,
+                                    daily_change: parseFloat(stock.daily_change || 0),
+                                    roi: roi,
+                                    latest_price: parseFloat(stock.latest_price || 0),
+                                    strategy: strategy // 加入策略欄位
+                                };
+                                [1, 5, 10, 20, 30, 60, 120].forEach(d => {
+                                    stockObj[`roi_${d}`] = (diffDays >= d) ? roi : null;
+                                });
+                                this.historyList.push(stockObj);
+                                totalStocks++;
+                                if (roi > 0) winStocks++;
+                            });
+                        });
+
+                        if (totalStocks > 0) {
+                            const winRate = Math.round((winStocks / totalStocks) * 100);
+                            this.ui.winRateBadge.innerText = `總勝率 ${winRate}%`;
+                            this.ui.winRateBadge.classList.remove('hidden');
+                            if(winRate >= 60) this.ui.winRateBadge.className = "ml-2 text-[9px] bg-red-900/50 text-red-300 border border-red-700 px-1.5 py-0.5 rounded font-mono";
+                            else if(winRate < 40) this.ui.winRateBadge.className = "ml-2 text-[9px] bg-green-900/50 text-green-300 border border-green-700 px-1.5 py-0.5 rounded font-mono";
+                            else this.ui.winRateBadge.className = "ml-2 text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono";
                         }
                         
-                        daily_results.append(stock_entry)
-                        print(f" -> Found: {raw_code} {name} [{tags_str}]")
-                        
-                except Exception: continue
-        except Exception as e:
-            print(f"Batch error: {e}")
-            continue
-        
-        time.sleep(1.5)
+                        const stats = {
+                            1: { total: 0, win: 0, sumRoi: 0 },
+                            5: { total: 0, win: 0, sumRoi: 0 },
+                            10: { total: 0, win: 0, sumRoi: 0 },
+                            20: { total: 0, win: 0, sumRoi: 0 },
+                            30: { total: 0, win: 0, sumRoi: 0 },
+                            60: { total: 0, win: 0, sumRoi: 0 },
+                            120: { total: 0, win: 0, sumRoi: 0 }
+                        };
+                        this.historyList.forEach(s => {
+                            [1, 5, 10, 20, 30, 60, 120].forEach(d => {
+                                if (s.daysHeld >= d) {
+                                    stats[d].total++;
+                                    if (s.roi > 0) stats[d].win++;
+                                    stats[d].sumRoi += s.roi;
+                                }
+                            });
+                        });
+                        this.renderPerfStats(stats);
+                    }
+                } catch(e) { console.log('No history'); }
+            }
 
-    save_json(DB_INDUSTRY, industry_db)
-    
-    # 處理 output
-    print(f"掃描結束，共發現 {len(daily_results)} 檔。更新 data.json...")
-    data_payload = {
-        "date": now.strftime("%Y/%m/%d %H:%M:%S"),
-        "source": "GitHub Actions",
-        "list": daily_results
-    }
-    save_json(DATA_JSON, data_payload)
+            renderPerfStats(stats) {
+                let html = '';
+                [1, 5, 10, 20, 30, 60, 120].forEach(d => {
+                    const s = stats[d];
+                    if (s.total > 0) {
+                        const winRate = Math.round((s.win / s.total) * 100);
+                        const avgRoi = (s.sumRoi / s.total).toFixed(1);
+                        const color = avgRoi > 0 ? 'text-red-400' : (avgRoi < 0 ? 'text-green-400' : 'text-gray-400');
+                        const border = avgRoi > 0 ? 'border-red-500/50 bg-red-900/20' : (avgRoi < 0 ? 'border-green-500/50 bg-green-900/20' : 'border-gray-500/30');
+                        html += `<div class="stat-card ${border}"><div class="text-[9px] text-gray-400 font-medium mb-0.5">持有 > ${d}天</div><div class="text-xs font-bold text-white mb-0.5">勝率 ${winRate}%</div><div class="text-[10px] ${color} font-mono">均 ${avgRoi > 0 ? '+' : ''}${avgRoi}%</div></div>`;
+                    }
+                });
+                if(html === '') html = '<span class="text-xs text-gray-500 p-2">累積資料中...</span>';
+                this.ui.perfStatsBar.innerHTML = html;
+            }
 
-    # 歸檔判定
-    current_time = now.time()
-    market_open = dt_time(9, 0, 0)
-    market_close = dt_time(13, 30, 0)
-    is_market_session = market_open <= current_time <= market_close
+            sortPerfList(key) {
+                if (this.state.perfSortBy === key) {
+                    this.state.perfSortDir = this.state.perfSortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.state.perfSortBy = key;
+                    this.state.perfSortDir = 'desc'; 
+                }
+                const dir = this.state.perfSortDir === 'asc' ? 1 : -1;
+                this.historyList.sort((a, b) => {
+                    let valA = a[key], valB = b[key];
+                    if (['latest_price', 'daily_change', 'roi', 'buy_price'].includes(key) || key.startsWith('roi_')) {
+                        const vA = (valA === null || valA === undefined) ? -99999999 : parseFloat(valA);
+                        const vB = (valB === null || valB === undefined) ? -99999999 : parseFloat(valB);
+                        return (vA - vB) * dir;
+                    }
+                    if (key === 'date') return (new Date(valA) - new Date(valB)) * dir;
+                    return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
+                });
+                document.querySelectorAll('#page-perf .sort-symbol').forEach(el => { el.innerText = '⇅'; el.classList.remove('active'); });
+                const activeSymbol = document.getElementById(`perf-symbol-${key}`);
+                if(activeSymbol) { activeSymbol.innerText = this.state.perfSortDir === 'asc' ? '▲' : '▼'; activeSymbol.classList.add('active'); }
+                this.renderPerformanceTable();
+            }
 
-    if is_market_session:
-        print(f"⚠️ 現在是盤中時間 ({current_time.strftime('%H:%M')})，跳過 History 新增歸檔 (但已更新舊股價)。")
-    else:
-        if current_time > market_close:
-            record_date_str = now.strftime("%Y/%m/%d")
-        else:
-            yesterday = now - timedelta(days=1)
-            record_date_str = yesterday.strftime("%Y/%m/%d")
+            renderPerformanceTable() {
+                if (this.historyList.length === 0) {
+                    this.ui.perfBody.innerHTML = `<tr><td colspan="14" class="px-6 py-20 text-center text-gray-600">尚無歷史資料</td></tr>`;
+                    return;
+                }
+                const html = this.historyList.map(s => {
+                    const roi = parseFloat(s.roi);
+                    const dayChg = parseFloat(s.daily_change);
+                    const roiClass = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-400');
+                    const dayClass = dayChg > 0 ? 'text-red-400' : (dayChg < 0 ? 'text-green-400' : 'text-gray-400');
+                    
+                    // 根據策略決定標籤顏色
+                    let strategyBadge = '';
+                    if (s.strategy === 'VCP') strategyBadge = '<span class="text-[9px] text-purple-300 bg-purple-900/40 px-1 py-0.5 rounded border border-purple-700/50">VCP</span>';
+                    else if (s.strategy === '拉回') strategyBadge = '<span class="text-[9px] text-blue-300 bg-blue-900/40 px-1 py-0.5 rounded border border-blue-700/50">拉回</span>';
+                    else if (s.strategy === '雙策略') strategyBadge = '<span class="text-[9px] text-yellow-300 bg-yellow-900/40 px-1 py-0.5 rounded border border-yellow-700/50">雙</span>';
+                    else strategyBadge = '<span class="text-[9px] text-gray-400">-</span>';
 
-        print(f"✅ 盤後時段，準備將新資料歸檔至 History: {record_date_str}")
-        
-        # 【V54 修正】：在歸檔時才執行去重邏輯
-        # 1. 過濾出「不在歷史名單中」的新標的
-        new_candidates = []
-        for res in daily_results:
-            if res['id'] not in existing_ids:
-                new_candidates.append(res)
-                # 這裡暫時加入 existing_ids 防止同日重複 (雖然理論上 daily_results 不會有重複)
-                existing_ids.add(res['id'])
-        
-        if new_candidates:
-            if record_date_str not in history_db:
-                history_db[record_date_str] = []
+                    const cols = [1, 5, 10, 20, 30, 60, 120].map(d => {
+                        if (s.daysHeld >= d) {
+                            const c = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-500');
+                            return `<td class="px-1 py-2 text-right text-[10px] ${c}">${roi > 0 ? '+' : ''}${roi}%</td>`;
+                        } else {
+                            return `<td class="px-1 py-2 text-right text-[10px] text-gray-600">-</td>`;
+                        }
+                    }).join('');
+
+                    return `
+                        <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
+                            <td class="px-1 py-2 sticky left-0 bg-slate-900 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] border-r border-slate-800 z-10 text-[10px] text-gray-400 min-w-[30px]">${s.date.substring(5)}</td>
+                            <td class="px-1 py-2 sticky left-[30px] bg-slate-900 z-10 text-xs font-bold min-w-[50px] border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">
+                                <a href="https://tw.stock.yahoo.com/quote/${s.id}${s.type === '上市' ? '.TW' : '.TWO'}/technical-analysis" target="_blank" class="block hover:opacity-80 group">
+                                    <div class="text-blue-400 group-hover:text-blue-300 underline decoration-blue-400/30">${s.name}</div>
+                                    <div class="text-[9px] text-gray-500 font-normal no-underline">${s.id}</div>
+                                </a>
+                            </td>
+                            <!-- 顯示策略標籤 -->
+                            <td class="px-1 py-2 text-center border-r border-slate-800/50">${strategyBadge}</td>
+                            <td class="px-1 py-2 text-right text-xs text-gray-500">${s.buy_price}</td>
+                            <td class="px-1 py-2 text-right text-xs text-gray-300">${s.latest_price}</td>
+                            <td class="px-1 py-2 text-right text-xs ${roiClass} font-bold">${roi > 0 ? '+' : ''}${roi}%</td>
+                            <td class="px-1 py-2 text-right text-xs ${dayClass}">${dayChg > 0 ? '+' : ''}${dayChg}%</td>
+                            ${cols}
+                        </tr>
+                    `;
+                }).join('');
+                this.ui.perfBody.innerHTML = html;
+            }
+
+            // --- 核心邏輯修正：先過濾，再計數 ---
+            applyStateAndRender() {
+                let list = [...this.stockList];
+                
+                // 1. 先執行過濾 (Filtering)
+                if (this.state.filterGroup) {
+                    list = list.filter(s => (s.group || '其他') === this.state.filterGroup);
+                    this.ui.filterTag.classList.remove('hidden');
+                    this.ui.filterName.innerText = this.state.filterGroup;
+                } else { this.ui.filterTag.classList.add('hidden'); }
+
+                if (this.state.filterMa) {
+                    list = list.filter(s => parseFloat(s.price) > parseFloat(s.ma5) && parseFloat(s.price) > parseFloat(s.ma10));
+                    this.ui.btnMaFilter.classList.remove('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    this.ui.btnMaFilter.classList.add('bg-slate-700', 'text-gray-300');
+                    this.ui.btnMaFilter.classList.remove('bg-indigo-600', 'text-white');
+                }
+
+                // 2. 再執行計數 (正確位置：過濾後)
+                let pbCount = 0;
+                let vcpCount = 0;
+                list.forEach(s => {
+                    if (s.note && s.note.includes('拉回佈局')) pbCount++;
+                    if (s.note && s.note.includes('Strict-VCP')) vcpCount++;
+                });
+                this.ui.countPullback.innerText = pbCount;
+                this.ui.countVcp.innerText = vcpCount;
+                this.ui.dataCount.innerText = `總: ${list.length}`; 
+
+                // 3. 最後排序與渲染
+                if (this.state.sortBy) {
+                    const dir = this.state.sortDir === 'asc' ? 1 : -1;
+                    list.sort((a, b) => {
+                        let valA = a[this.state.sortBy];
+                        let valB = b[this.state.sortBy];
+                        if (['price', 'changeRate', 'ma5', 'ma10'].includes(this.state.sortBy)) 
+                            return (parseFloat(valA) - parseFloat(valB)) * dir;
+                        return (valA || '').localeCompare(valB || '', 'zh-Hant') * dir;
+                    });
+                    document.querySelectorAll('#page-list .sort-symbol').forEach(el => { el.innerText = '⇅'; el.classList.remove('active'); });
+                    const activeSymbol = document.getElementById(`sort-symbol-${this.state.sortBy}`);
+                    if(activeSymbol) { activeSymbol.innerText = this.state.sortDir === 'asc' ? '▲' : '▼'; activeSymbol.classList.add('active'); }
+                }
+                this.displayList = list;
+                this.renderTable(this.displayList);
+            }
+
+            // --- 新增: 渲染表格 (Fix for missing quote table) ---
+            renderTable(data) {
+                if (!data || data.length === 0) {
+                    this.ui.body.innerHTML = `<tr><td colspan="7" class="px-6 py-20 text-center text-gray-600">無符合條件的資料</td></tr>`;
+                    return;
+                }
+                
+                this.ui.body.innerHTML = data.map(stock => {
+                    const changeRate = parseFloat(stock.changeRate);
+                    const colorClass = changeRate > 0 ? 'tw-up' : (changeRate < 0 ? 'tw-down' : 'text-gray-400');
+                    const priceColor = changeRate > 0 ? 'text-red-400' : (changeRate < 0 ? 'text-green-400' : 'text-gray-300');
+                    const symbol = stock.type === '上市' ? '.TW' : '.TWO';
+                    const yahooLink = `https://tw.stock.yahoo.com/quote/${stock.id}${symbol}/technical-analysis`;
+                    
+                    // Handle Note tags styling
+                    let noteHtml = stock.note || '';
+                    noteHtml = noteHtml.replace('Strict-VCP', '<span class="text-purple-300 bg-purple-900/30 px-1 rounded border border-purple-700/50">VCP</span>')
+                                       .replace('拉回佈局', '<span class="text-blue-300 bg-blue-900/30 px-1 rounded border border-blue-700/50">拉回</span>');
+
+                    return `
+                        <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
+                            <td class="px-1 py-2 sticky left-0 bg-slate-900 z-10 border-r border-slate-800 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">
+                                <a href="${yahooLink}" target="_blank" class="block">
+                                    <div class="font-bold text-blue-400 hover:text-blue-300 hover:underline">${stock.name}</div>
+                                    <div class="text-[9px] text-gray-500">${stock.id}</div>
+                                </a>
+                            </td>
+                            <td class="px-1 py-2 text-center text-xs text-gray-400 cursor-pointer hover:text-white" onclick="app.filterByGroup('${stock.group}')">${stock.group}</td>
+                            <td class="px-1 py-2 text-right font-mono text-sm ${priceColor}">${stock.price}</td>
+                            <td class="px-1 py-2 text-right font-mono text-xs ${colorClass}">${changeRate > 0 ? '+' : ''}${changeRate}%</td>
+                            <td class="px-1 py-2 text-right font-mono text-xs text-gray-500">${stock.ma5}</td>
+                            <td class="px-1 py-2 text-right font-mono text-xs text-gray-500">${stock.ma10}</td>
+                            <td class="px-1 py-2 text-[10px] text-gray-400 truncate max-w-[120px]" title="${stock.note}">${noteHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // --- 修改: 渲染熱力圖 (改為族群模式 - 緊湊版) ---
+            renderHeatmap() {
+                if(!this.stockList || this.stockList.length === 0) {
+                    this.ui.heatmapContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">無資料</div>';
+                    return;
+                }
+
+                // 1. 聚合族群資料
+                const groups = {};
+                this.stockList.forEach(stock => {
+                    const g = stock.group || '其他';
+                    if (!groups[g]) {
+                        groups[g] = { name: g, totalChange: 0, count: 0 };
+                    }
+                    groups[g].totalChange += parseFloat(stock.changeRate || 0);
+                    groups[g].count += 1;
+                });
+
+                // 2. 轉換為陣列並計算平均漲跌幅
+                const groupArray = Object.values(groups).map(g => ({
+                    name: g.name,
+                    count: g.count,
+                    avgChange: (g.totalChange / g.count).toFixed(2)
+                }));
+
+                // 3. 排序：依據平均漲跌幅由高到低
+                groupArray.sort((a, b) => parseFloat(b.avgChange) - parseFloat(a.avgChange));
+                
+                // 4. 渲染
+                this.ui.heatmapContainer.innerHTML = groupArray.map(g => {
+                    const rate = parseFloat(g.avgChange);
+                    // 設定顏色強度
+                    let bgClass = 'bg-slate-800';
+                    if(rate > 2) bgClass = 'bg-red-900/90 border-red-500/60';
+                    else if(rate > 0) bgClass = 'bg-red-900/50 border-red-500/40';
+                    else if(rate < -2) bgClass = 'bg-green-900/90 border-green-500/60';
+                    else if(rate < 0) bgClass = 'bg-green-900/50 border-green-500/40';
+                    else bgClass = 'bg-slate-800 border-gray-700';
+                    
+                    // 手機版優化: 高度 h-16, 字體縮小
+                    return `
+                        <div onclick="app.filterByGroup('${g.name}')" 
+                           class="${bgClass} border rounded p-1 flex flex-col items-center justify-center hover:scale-95 transition-transform cursor-pointer h-16 shadow-md group relative">
+                            <div class="text-[10px] font-bold text-gray-200 text-center leading-tight z-10 truncate w-full px-1">${g.name}</div>
+                            <div class="text-sm font-mono font-bold ${rate > 0 ? 'text-red-400' : (rate < 0 ? 'text-green-400' : 'text-gray-300')} z-10 my-0.5">
+                                ${rate > 0 ? '+' : ''}${rate}%
+                            </div>
+                            <div class="px-1.5 py-0 bg-black/20 rounded-full text-[9px] text-gray-400 z-10 border border-white/5 leading-none">
+                                ${g.count}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            filterByGroup(groupName) { this.state.filterGroup = groupName; this.state.filterMa = false; this.switchTab('list'); this.applyStateAndRender(); }
+            clearFilter() { this.state.filterGroup = null; this.applyStateAndRender(); }
+            toggleMaFilter() { this.state.filterMa = !this.state.filterMa; this.applyStateAndRender(); }
+            sortList(key) {
+                if (this.state.sortBy === key) { this.state.sortDir = this.state.sortDir === 'asc' ? 'desc' : 'asc'; } 
+                else { this.state.sortBy = key; this.state.sortDir = 'asc'; }
+                this.applyStateAndRender();
+            }
             
-            # 將新標的加入
-            history_db[record_date_str].extend(new_candidates)
+            async triggerCloudUpdate() {
+                const owner = localStorage.getItem('gh_owner');
+                const repo = localStorage.getItem('gh_repo');
+                const token = localStorage.getItem('gh_token');
+                if (!owner || !repo || !token) { 
+                    alert("⚠️ 錯誤：請先至 [設定] 頁面填寫 GitHub Token、Owner 與 Repo 名稱。"); 
+                    this.switchTab('admin'); 
+                    return; 
+                }
+                if (!confirm("確定要手動觸發雲端掃描嗎？\n(這會啟動 GitHub Actions)")) return;
+                this.ui.btnCloudUpdate.disabled = true;
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin animate-updating"></i>`;
+                try {
+                    const workflowId = 'daily_scan.yml'; 
+                    const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`;
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Authorization': `token ${token}`
+                        },
+                        body: JSON.stringify({ ref: 'main' }) 
+                    });
+                    
+                    // [已修正] 使用 res.ok 支援 200 和 204
+                    if (res.ok) {
+                        alert("✅ 指令已發送！\nGithub 正在啟動掃描，請稍等 3~5 分鐘後自動更新。");
+                        this.startPolling();
+                    } else {
+                        const errText = await res.text();
+                        throw new Error(`Status ${res.status}: ${errText}`);
+                    }
+                } catch (e) {
+                    alert(`❌ 發送失敗：${e.message}\n\n請檢查：\n1. Token 是否有 'workflow' 權限\n2. Repo 名稱是否正確\n3. .yml 檔名是否為 daily_scan.yml`);
+                    this.resetUpdateButton();
+                }
+            }
             
-            sorted_history = dict(sorted(history_db.items(), reverse=True))
-            save_json(DB_HISTORY, sorted_history)
-            print(f"History.json 新增 {len(new_candidates)} 筆資料。")
-        else:
-            print("今日無「全新」符合策略標的，不新增 History。")
+            startPolling() {
+                if (this.isPolling) return;
+                this.isPolling = true;
+                this.ui.lastUpdated.classList.add("animate-pulse", "text-blue-400");
+                this.pollInterval = setInterval(() => { this.loadData(); }, 15000);
+            }
+            stopPolling() {
+                this.isPolling = false;
+                clearInterval(this.pollInterval);
+                this.resetUpdateButton();
+                this.ui.lastUpdated.classList.remove("animate-pulse", "text-blue-400");
+            }
+            resetUpdateButton() {
+                this.ui.btnCloudUpdate.innerHTML = `<i class="fa-solid fa-cloud-arrow-down text-sm"></i><span class="text-[10px] font-medium">更新</span>`;
+                this.ui.btnCloudUpdate.disabled = false;
+            }
+        }
 
-    return daily_results
-
-if __name__ == "__main__":
-    run_scanner()
+        class AdminController {
+            constructor() {
+                this.ui = { owner: document.getElementById('repo-owner'), repo: document.getElementById('repo-name'), token: document.getElementById('github-token') };
+            }
+            loadSettings() { this.ui.owner.value = localStorage.getItem('gh_owner')||''; this.ui.repo.value = localStorage.getItem('gh_repo')||''; this.ui.token.value = localStorage.getItem('gh_token')||''; }
+            saveSettings() { 
+                localStorage.setItem('gh_owner', this.ui.owner.value.trim()); 
+                localStorage.setItem('gh_repo', this.ui.repo.value.trim()); 
+                localStorage.setItem('gh_token', this.ui.token.value.trim()); 
+                alert('設定已儲存！');
+            }
+        }
+        const app = new StockApp(); const admin = new AdminController();
+    </script>
+</body>
+</html>
