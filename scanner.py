@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V53 Custom MA300 (Fixed)
+台股自動掃描策略機器人 (Scanner Bot) - V54 Strategy B Update
 
 【版本資訊】
-Base Version: V52 (User Provided)
-Fixed: 修正 MA300 與 MA12 變數未定義導致的 NameError，並調整資料長度檢查。
+Base Version: V53 (Fixed)
+Update: 策略 B (Strict VCP) 新增多頭排列過濾條件。
 
 【保留策略說明】
 1. 策略 A (拉回佈局): 
@@ -17,11 +17,12 @@ Fixed: 修正 MA300 與 MA12 變數未定義導致的 NameError，並調整資�
    7. 底部打樁：|今日最低 - 昨日最低| < 1%。
    8. 流動性：5日均量 > 1000張。
 2. 策略 B (Strict VCP):
-  1. 硬指標過濾：股價 > MA300 & > MA60 & 成交量 > 500張。
-  2. 價格位階：靠近 52 週新高。
-  3. 波動收縮：布林帶寬度 < 15%。
-  4. 量能遞減：5日均量 < 20日均量。
-  5. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
+  1. 硬指標過濾：股價 > MA300 & > MA60 & 成交量 > 1000張。
+  2. 多頭排列：MA60 > MA120 > MA240。(新增)
+  3. 價格位階：靠近 52 週新高。
+  4. 波動收縮：布林帶寬度 < 15%。
+  5. 量能遞減：5日均量 < 20日均量。
+  6. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
 """
 
 import yfinance as yf
@@ -134,7 +135,7 @@ def check_strategy_original(df):
     if math.isnan(curr_ma300): return False, None # 資料不足，剔除
     if curr_c < curr_ma300: return False, None    # 跌破年線(MA300)，剔除
 
-    # 過濾：成交量門檻需 > 1000張 (依您的需求保留)
+    # 過濾：成交量門檻需 > 1000張
     if curr_vol_ma5 < 1000000: return False, None 
 
     # 1. 長線保護
@@ -175,7 +176,7 @@ def check_strategy_original(df):
 
 def check_strategy_vcp_pro(df):
     """
-    策略 B：VCP 技術面 (Strict VCP - MA300版)
+    策略 B：VCP 技術面 (Strict VCP - MA300版 + 多頭排列)
     """
     try:
         close = df['Close']
@@ -194,6 +195,10 @@ def check_strategy_vcp_pro(df):
         # 【修正8】計算 MA300
         ma300 = close.rolling(300).mean()
         
+        # 【新增】計算 MA120 與 MA240 (用於多頭排列檢查)
+        ma120 = close.rolling(120).mean()
+        ma240 = close.rolling(240).mean()
+        
         # 布林帶
         std20 = close.rolling(20).std()
         bb_upper = ma20 + (std20 * 2)
@@ -210,6 +215,11 @@ def check_strategy_vcp_pro(df):
         curr_ma60 = float(ma60.iloc[-1])
         # 【修正9】取得 curr_ma300
         curr_ma300 = float(ma300.iloc[-1])
+        
+        # 【新增】取得 curr_ma120 與 curr_ma240
+        curr_ma120 = float(ma120.iloc[-1])
+        curr_ma240 = float(ma240.iloc[-1])
+        
         curr_bb_width = float(bb_width.iloc[-1])
 
         # ===== 硬指標過濾 =====
@@ -219,7 +229,11 @@ def check_strategy_vcp_pro(df):
         # 2. 股價必須站上 MA60 (季線)
         if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
         
-        # 3. 成交量 > 1000 張 (注意：您的註解寫500張但代碼是100萬股=1000張，此處依您提供的代碼為準)
+        # 3. [新增] 多頭排列檢查: MA60 > MA120 > MA240
+        if math.isnan(curr_ma120) or math.isnan(curr_ma240): return False, None
+        if not (curr_ma60 > curr_ma120 > curr_ma240): return False, None
+
+        # 4. 成交量 > 1000 張
         if curr_v < 1000000: return False, None
 
         # ===== 條件 1：趨勢確認 =====
