@@ -1,38 +1,5 @@
 {
-  "date": "2025/12/23 13:53:37",
+  "date": "2025/12/23 13:58:00",
   "source": "GitHub Actions",
-  "list": [
-    {
-      "id": "5519",
-      "name": "隆大",
-      "group": "營建",
-      "type": "上市",
-      "price": 33.25,
-      "ma5": 33.0,
-      "ma10": 32.53,
-      "changeRate": 0.91,
-      "isValid": true,
-      "note": "拉回佈局 / 年線30.42",
-      "buy_price": 33.25,
-      "latest_price": 33.25,
-      "roi": 0.0,
-      "daily_change": 0.91
-    },
-    {
-      "id": "6016",
-      "name": "康和證",
-      "group": "證券",
-      "type": "上櫃",
-      "price": 13.0,
-      "ma5": 12.96,
-      "ma10": 12.98,
-      "changeRate": 0.0,
-      "isValid": true,
-      "note": "拉回佈局 / 年線12.0",
-      "buy_price": 13.0,
-      "latest_price": 13.0,
-      "roi": 0.0,
-      "daily_change": 0.0
-    }
-  ]
+  "list": []
 }
