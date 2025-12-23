@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V56 Strategy A Custom Alignment
+台股自動掃描策略機器人 (Scanner Bot) - V57 Strategy A K-Line Consolidation
 
 【版本資訊】
-Base Version: V55
-Update: 策略 A (拉回佈局) 多頭排列條件修改為關鍵均線排列。
+Base Version: V56
+Update: 策略 A (拉回佈局) 將「底部打樁」修改為「K線收斂」以捕捉噴出前的整理型態。
 
 【保留策略說明】
 1. 策略 A (拉回佈局): 
    1. 長線保護：收盤 > MA300, MA120, MA60。
-   2. 多頭排列：MA10 > MA60 > MA120 > MA240。(修改：關鍵均線排列)
+   2. 多頭排列：MA10 > MA60 > MA120 > MA240。(V56 關鍵均線排列)
    3. 位階安全：乖離率 < 25%。
    4. 均線糾結：差異 < 8%。
    5. 量縮整理：成交量 < 5日均量。
    6. 支撐確認：收盤 > MA12。
-   7. 底部打樁：|今日最低 - 昨日最低| < 1%。
+   7. K線收斂：(新增) 當日振幅 < 4.5% 且 實體幅度 < 2.5% (捕捉噴出前寧靜)。
    8. 流動性：5日均量 > 1000張。
 2. 策略 B (Strict VCP):
   1. 硬指標過濾：股價 > MA300 & > MA60 & 成交量 > 1000張。
@@ -86,17 +86,19 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 3. 策略邏輯 (V56 更新)
+# 3. 策略邏輯 (V57 更新)
 # ==========================================
 
 def check_strategy_original(df):
     """
-    策略 A：拉回佈局 (V56: 關鍵均線多頭排列)
+    策略 A：拉回佈局 (V57: K線收斂型態)
     """
     # 資料長度檢查
     if len(df) < 310: return False, None
     
     close = df['Close']
+    open_p = df['Open'] # 新增 Open
+    high = df['High']   # 新增 High
     volume = df['Volume']
     low = df['Low']
     
@@ -104,18 +106,20 @@ def check_strategy_original(df):
     ma10 = close.rolling(10).mean()
     ma12 = close.rolling(12).mean()
     ma20 = close.rolling(20).mean()
-    # ma30 = close.rolling(30).mean() # V56 暫時不需要 MA30，但保留計算無妨
     ma60 = close.rolling(60).mean()
     ma120 = close.rolling(120).mean()
     ma240 = close.rolling(240).mean()
-    # MA300 (配合長線保護)
     ma300 = close.rolling(300).mean()
     
     vol_ma5 = volume.rolling(5).mean()
     
     curr_c = float(close.iloc[-1])
+    curr_o = float(open_p.iloc[-1]) # 當日開盤
+    curr_h = float(high.iloc[-1])   # 當日最高
     curr_v = float(volume.iloc[-1])
     curr_l = float(low.iloc[-1])
+    
+    prev_c = float(close.iloc[-2])  # 昨日收盤 (計算振幅用)
     
     curr_ma5 = float(ma5.iloc[-1])
     curr_ma10 = float(ma10.iloc[-1])
@@ -127,7 +131,6 @@ def check_strategy_original(df):
     curr_ma300 = float(ma300.iloc[-1])
     
     curr_vol_ma5 = float(vol_ma5.iloc[-1])
-    prev_l = float(low.iloc[-2])
 
     # === 強制檢查 MA300 (長線過濾) ===
     if math.isnan(curr_ma300): return False, None 
@@ -139,7 +142,7 @@ def check_strategy_original(df):
     # 1. 長線保護
     if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     
-    # 2. 【修改】關鍵均線多頭排列
+    # 2. 關鍵均線多頭排列 (V56)
     # MA10 > MA60 > MA120 > MA240
     if math.isnan(curr_ma240): return False, None
     if not (curr_ma10 > curr_ma60 > curr_ma120 > curr_ma240): return False, None
@@ -159,10 +162,14 @@ def check_strategy_original(df):
     # 6. 支撐確認 (MA12)
     if curr_c <= curr_ma12: return False, None
     
-    # 7. 底部打樁
-    if prev_l > 0:
-        low_diff_pct = abs(curr_l - prev_l) / prev_l
-        if low_diff_pct > 0.01: return False, None
+    # 7. 【修改】K線收斂 (Consolidation) - 捕捉噴出前的寧靜
+    # 條件A: 當日振幅 (High-Low) / PrevClose < 4.5% (波動極小)
+    daily_range_pct = (curr_h - curr_l) / prev_c
+    if daily_range_pct >= 0.045: return False, None
+    
+    # 條件B: 實體幅度 abs(Close-Open) / PrevClose < 2.5% (十字線或小紅小黑)
+    entity_pct = abs(curr_c - curr_o) / prev_c
+    if entity_pct >= 0.025: return False, None
 
     return True, {
         "tag": "拉回佈局",
@@ -387,7 +394,7 @@ def run_scanner():
                     if isinstance(df.columns, pd.MultiIndex):
                         df.columns = df.columns.droplevel(0)
 
-                    required_cols = ['Close', 'Volume', 'Low']
+                    required_cols = ['Close', 'Volume', 'Low', 'High', 'Open']
                     if not all(col in df.columns for col in required_cols): continue
 
                     is_match_1, info_1 = check_strategy_original(df)
