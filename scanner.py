@@ -9,7 +9,7 @@ Update: 盤中即時更新 ROI、盤後歷史名單去重、Python 3.10+ 支援
 
 【保留策略說明】
 1. 策略 A (拉回佈局): 
-   1. 長線保護：收盤 > MA240, MA120, MA60。
+   1. 長線保護：收盤 > MA300, MA120, MA60。
    2. 多頭排列：MA10 > MA20 > MA60。
    3. 位階安全：乖離率 < 25%。
    4. 均線糾結：差異 < 8%。
@@ -18,7 +18,7 @@ Update: 盤中即時更新 ROI、盤後歷史名單去重、Python 3.10+ 支援
    7. 底部打樁：|今日最低 - 昨日最低| < 1%。
    8. 流動性：5日均量 > 1000張。
 2. 策略 B (Strict VCP):
-  1. 硬指標過濾：股價 > MA240 & > MA60 & 成交量 > 500張。
+  1. 硬指標過濾：股價 > MA300 & > MA60 & 成交量 > 500張。
   2. 價格位階：靠近 52 週新高。
   3. 波動收縮：布林帶寬度 < 15%。
   4. 量能遞減：5日均量 < 20日均量。
@@ -121,8 +121,8 @@ def check_strategy_original(df):
     prev_l = float(low.iloc[-2])
 
     # === 強制檢查 MA240 (嚴格過濾) ===
-    if math.isnan(curr_ma240): return False, None # 資料不足，剔除
-    if curr_c < curr_ma240: return False, None    # 跌破年線，剔除
+    if math.isnan(curr_ma300): return False, None # 資料不足，剔除
+    if curr_c < curr_ma300: return False, None    # 跌破年線，剔除
 
     # 過濾：成交量門檻需>1000張
     if curr_vol_ma5 < 1000000: return False, None 
@@ -200,8 +200,8 @@ def check_strategy_vcp_pro(df):
         curr_bb_width = float(bb_width.iloc[-1])
 
         # ===== 硬指標過濾 =====
-        # 1. 股價必須站上 MA240 (年線)
-        if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
+        # 1. 股價必須站上 MA300 (年線)
+        if math.isnan(curr_ma300) or curr_c < curr_ma300: return False, None
         
         # 2. [新增] 股價必須站上 MA60 (季線)
         if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
