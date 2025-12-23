@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V55 Strategy A Perfect Alignment
+台股自動掃描策略機器人 (Scanner Bot) - V56 Strategy A Custom Alignment
 
 【版本資訊】
-Base Version: V54
-Update: 策略 A (拉回佈局) 多頭排列條件升級為六線完美排列。
+Base Version: V55
+Update: 策略 A (拉回佈局) 多頭排列條件修改為關鍵均線排列。
 
 【保留策略說明】
 1. 策略 A (拉回佈局): 
    1. 長線保護：收盤 > MA300, MA120, MA60。
-   2. 多頭排列：MA10 > MA20 > MA30 > MA60 > MA120 > MA240。(修改：六線完美排列)
+   2. 多頭排列：MA10 > MA60 > MA120 > MA240。(修改：關鍵均線排列)
    3. 位階安全：乖離率 < 25%。
    4. 均線糾結：差異 < 8%。
    5. 量縮整理：成交量 < 5日均量。
@@ -86,12 +86,12 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 3. 策略邏輯 (V55 更新)
+# 3. 策略邏輯 (V56 更新)
 # ==========================================
 
 def check_strategy_original(df):
     """
-    策略 A：拉回佈局 (V55: 六線完美多頭排列)
+    策略 A：拉回佈局 (V56: 關鍵均線多頭排列)
     """
     # 資料長度檢查
     if len(df) < 310: return False, None
@@ -104,11 +104,9 @@ def check_strategy_original(df):
     ma10 = close.rolling(10).mean()
     ma12 = close.rolling(12).mean()
     ma20 = close.rolling(20).mean()
-    # 【新增】計算 MA30
-    ma30 = close.rolling(30).mean()
+    # ma30 = close.rolling(30).mean() # V56 暫時不需要 MA30，但保留計算無妨
     ma60 = close.rolling(60).mean()
     ma120 = close.rolling(120).mean()
-    # 【新增】計算 MA240 (配合多頭排列檢查)
     ma240 = close.rolling(240).mean()
     # MA300 (配合長線保護)
     ma300 = close.rolling(300).mean()
@@ -123,18 +121,15 @@ def check_strategy_original(df):
     curr_ma10 = float(ma10.iloc[-1])
     curr_ma12 = float(ma12.iloc[-1])
     curr_ma20 = float(ma20.iloc[-1])
-    # 【新增】取得 curr_ma30
-    curr_ma30 = float(ma30.iloc[-1])
     curr_ma60 = float(ma60.iloc[-1])
     curr_ma120 = float(ma120.iloc[-1]) 
-    # 【新增】取得 curr_ma240
     curr_ma240 = float(ma240.iloc[-1])
     curr_ma300 = float(ma300.iloc[-1])
     
     curr_vol_ma5 = float(vol_ma5.iloc[-1])
     prev_l = float(low.iloc[-2])
 
-    # === 強制檢查 MA300 (長線過濾, V53新增) ===
+    # === 強制檢查 MA300 (長線過濾) ===
     if math.isnan(curr_ma300): return False, None 
     if curr_c < curr_ma300: return False, None    
 
@@ -144,10 +139,10 @@ def check_strategy_original(df):
     # 1. 長線保護
     if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     
-    # 2. 【修改】六線完美多頭排列
-    # MA10 > MA20 > MA30 > MA60 > MA120 > MA240
-    if math.isnan(curr_ma30) or math.isnan(curr_ma240): return False, None
-    if not (curr_ma10 > curr_ma20 > curr_ma30 > curr_ma60 > curr_ma120 > curr_ma240): return False, None
+    # 2. 【修改】關鍵均線多頭排列
+    # MA10 > MA60 > MA120 > MA240
+    if math.isnan(curr_ma240): return False, None
+    if not (curr_ma10 > curr_ma60 > curr_ma120 > curr_ma240): return False, None
     
     # 3. 位階控制
     bias_ma60 = (curr_c - curr_ma60) / curr_ma60
@@ -505,4 +500,5 @@ def run_scanner():
 
 if __name__ == "__main__":
     run_scanner()
-   
+
+
