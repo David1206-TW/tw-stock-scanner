@@ -1,5 +1,5 @@
 {
-  "date": "2025/12/24 03:24:34",
+  "date": "2025/12/24 03:57:07",
   "source": "GitHub Actions",
   "list": [
     {
@@ -67,6 +67,22 @@
       "daily_change": -0.63
     },
     {
+      "id": "1519",
+      "name": "華城",
+      "group": "電機",
+      "type": "上市",
+      "price": 789.0,
+      "ma5": 771.6,
+      "ma10": 780.5,
+      "changeRate": 0.38,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 541.53",
+      "buy_price": 789.0,
+      "latest_price": 789.0,
+      "roi": 0.0,
+      "daily_change": 0.38
+    },
+    {
       "id": "1605",
       "name": "華新",
       "group": "電線電纜",
@@ -115,6 +131,22 @@
       "daily_change": -1.18
     },
     {
+      "id": "2303",
+      "name": "聯電",
+      "group": "IC-代工",
+      "type": "上市",
+      "price": 50.0,
+      "ma5": 50.46,
+      "ma10": 49.72,
+      "changeRate": -1.77,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 43.17",
+      "buy_price": 50.0,
+      "latest_price": 50.0,
+      "roi": 0.0,
+      "daily_change": -1.77
+    },
+    {
       "id": "2323",
       "name": "中環",
       "group": "其他",
@@ -147,6 +179,22 @@
       "daily_change": -1.37
     },
     {
+      "id": "2330",
+      "name": "台積電",
+      "group": "IC-代工",
+      "type": "上市",
+      "price": 1490.0,
+      "ma5": 1449.0,
+      "ma10": 1458.0,
+      "changeRate": 1.71,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 1121.42",
+      "buy_price": 1490.0,
+      "latest_price": 1490.0,
+      "roi": 0.0,
+      "daily_change": 1.71
+    },
+    {
       "id": "2337",
       "name": "旺宏",
       "group": "IC-製造",
@@ -177,6 +225,22 @@
       "latest_price": 651.0,
       "roi": 0.0,
       "daily_change": 0.15
+    },
+    {
+      "id": "2383",
+      "name": "台光電",
+      "group": "PCB-材料設備",
+      "type": "上市",
+      "price": 1615.0,
+      "ma5": 1552.0,
+      "ma10": 1566.0,
+      "changeRate": 0.94,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 845.16",
+      "buy_price": 1615.0,
+      "latest_price": 1615.0,
+      "roi": 0.0,
+      "daily_change": 0.94
     },
     {
       "id": "2451",
@@ -291,6 +355,54 @@
       "daily_change": -0.62
     },
     {
+      "id": "2867",
+      "name": "三商壽",
+      "group": "保險",
+      "type": "上市",
+      "price": 7.88,
+      "ma5": 7.92,
+      "ma10": 7.83,
+      "changeRate": -0.13,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 6.26",
+      "buy_price": 7.88,
+      "latest_price": 7.88,
+      "roi": 0.0,
+      "daily_change": -0.13
+    },
+    {
+      "id": "2881",
+      "name": "富邦金",
+      "group": "金控",
+      "type": "上市",
+      "price": 98.1,
+      "ma5": 97.54,
+      "ma10": 96.64,
+      "changeRate": -0.1,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 84.12",
+      "buy_price": 98.1,
+      "latest_price": 98.1,
+      "roi": 0.0,
+      "daily_change": -0.1
+    },
+    {
+      "id": "2882",
+      "name": "國泰金",
+      "group": "金控",
+      "type": "上市",
+      "price": 76.7,
+      "ma5": 75.26,
+      "ma10": 72.44,
+      "changeRate": 0.26,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 63.1",
+      "buy_price": 76.7,
+      "latest_price": 76.7,
+      "roi": 0.0,
+      "daily_change": 0.26
+    },
+    {
       "id": "2885",
       "name": "元大金",
       "group": "金控",
@@ -387,6 +499,22 @@
       "daily_change": -1.02
     },
     {
+      "id": "3305",
+      "name": "昇貿",
+      "group": "PCB-材料設備",
+      "type": "上市",
+      "price": 110.0,
+      "ma5": 106.4,
+      "ma10": 104.18,
+      "changeRate": 0.92,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 75.89",
+      "buy_price": 110.0,
+      "latest_price": 110.0,
+      "roi": 0.0,
+      "daily_change": 0.92
+    },
+    {
       "id": "3535",
       "name": "晶彩科",
       "group": "儀器設備工程",
@@ -467,22 +595,6 @@
       "daily_change": 0.49
     },
     {
-      "id": "5515",
-      "name": "建國",
-      "group": "營建",
-      "type": "上市",
-      "price": 35.7,
-      "ma5": 35.4,
-      "ma10": 34.35,
-      "changeRate": 3.18,
-      "isValid": true,
-      "note": "拉回佈局 / MA300 26.01",
-      "buy_price": 35.7,
-      "latest_price": 35.7,
-      "roi": 0.0,
-      "daily_change": 3.18
-    },
-    {
       "id": "6531",
       "name": "愛普*",
       "group": "記憶體IC設計",
@@ -508,7 +620,7 @@
       "ma10": 1535.0,
       "changeRate": 3.56,
       "isValid": true,
-      "note": "拉回佈局 & Strict-VCP / MA300 903.67",
+      "note": "Strict-VCP / MA300 903.67",
       "buy_price": 1600.0,
       "latest_price": 1600.0,
       "roi": 0.0,
@@ -595,6 +707,22 @@
       "daily_change": -1.63
     },
     {
+      "id": "8210",
+      "name": "勤誠",
+      "group": "機殼",
+      "type": "上市",
+      "price": 955.0,
+      "ma5": 924.0,
+      "ma10": 907.5,
+      "changeRate": 1.38,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 456.03",
+      "buy_price": 955.0,
+      "latest_price": 955.0,
+      "roi": 0.0,
+      "daily_change": 1.38
+    },
+    {
       "id": "8422",
       "name": "可寧衛",
       "group": "綠能環保",
@@ -609,6 +737,38 @@
       "latest_price": 24.6,
       "roi": 0.0,
       "daily_change": -0.81
+    },
+    {
+      "id": "0050",
+      "name": "元大台灣50",
+      "group": "其他",
+      "type": "上市",
+      "price": 63.7,
+      "ma5": 62.45,
+      "ma10": 62.95,
+      "changeRate": 1.92,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 50.54",
+      "buy_price": 63.7,
+      "latest_price": 63.7,
+      "roi": 0.0,
+      "daily_change": 1.92
+    },
+    {
+      "id": "0056",
+      "name": "元大高股息",
+      "group": "其他",
+      "type": "上市",
+      "price": 36.54,
+      "ma5": 36.26,
+      "ma10": 36.35,
+      "changeRate": 0.44,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 33.76",
+      "buy_price": 36.54,
+      "latest_price": 36.54,
+      "roi": 0.0,
+      "daily_change": 0.44
     },
     {
       "id": "1815",
@@ -643,6 +803,22 @@
       "daily_change": -2.46
     },
     {
+      "id": "3260",
+      "name": "威剛",
+      "group": "記憶體銷售",
+      "type": "上櫃",
+      "price": 203.5,
+      "ma5": 196.0,
+      "ma10": 189.35,
+      "changeRate": 1.75,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 106.46",
+      "buy_price": 203.5,
+      "latest_price": 203.5,
+      "roi": 0.0,
+      "daily_change": 1.75
+    },
+    {
       "id": "3264",
       "name": "欣銓",
       "group": "IC-封測",
@@ -659,22 +835,6 @@
       "daily_change": -1.94
     },
     {
-      "id": "3581",
-      "name": "博磊",
-      "group": "IC-封測",
-      "type": "上櫃",
-      "price": 72.2,
-      "ma5": 67.4,
-      "ma10": 64.74,
-      "changeRate": 0.14,
-      "isValid": true,
-      "note": "拉回佈局 / MA300 47.39",
-      "buy_price": 72.2,
-      "latest_price": 72.2,
-      "roi": 0.0,
-      "daily_change": 0.14
-    },
-    {
       "id": "5289",
       "name": "宜鼎",
       "group": "記憶體銷售",
@@ -684,11 +844,27 @@
       "ma10": 490.2,
       "changeRate": -1.19,
       "isValid": true,
-      "note": "拉回佈局 & Strict-VCP / MA300 279.34",
+      "note": "Strict-VCP / MA300 279.34",
       "buy_price": 498.0,
       "latest_price": 498.0,
       "roi": 0.0,
       "daily_change": -1.19
+    },
+    {
+      "id": "5309",
+      "name": "系統電",
+      "group": "變壓器與UPS",
+      "type": "上櫃",
+      "price": 71.5,
+      "ma5": 69.22,
+      "ma10": 69.27,
+      "changeRate": -0.97,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 45.69",
+      "buy_price": 71.5,
+      "latest_price": 71.5,
+      "roi": 0.0,
+      "daily_change": -0.97
     },
     {
       "id": "5328",
@@ -700,11 +876,27 @@
       "ma10": 21.09,
       "changeRate": 0.23,
       "isValid": true,
-      "note": "Strict-VCP / MA300 15.18",
+      "note": "拉回佈局 & Strict-VCP / MA300 15.18",
       "buy_price": 21.45,
       "latest_price": 21.45,
       "roi": 0.0,
       "daily_change": 0.23
+    },
+    {
+      "id": "5340",
+      "name": "建榮",
+      "group": "PCB-材料設備",
+      "type": "上櫃",
+      "price": 64.3,
+      "ma5": 61.54,
+      "ma10": 62.99,
+      "changeRate": 0.47,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 44.9",
+      "buy_price": 64.3,
+      "latest_price": 64.3,
+      "roi": 0.0,
+      "daily_change": 0.47
     },
     {
       "id": "5351",
@@ -796,11 +988,27 @@
       "ma10": 179.35,
       "changeRate": -0.83,
       "isValid": true,
-      "note": "Strict-VCP / MA300 101.85",
+      "note": "拉回佈局 & Strict-VCP / MA300 101.85",
       "buy_price": 179.5,
       "latest_price": 179.5,
       "roi": 0.0,
       "daily_change": -0.83
+    },
+    {
+      "id": "8027",
+      "name": "鈦昇",
+      "group": "電機",
+      "type": "上櫃",
+      "price": 109.5,
+      "ma5": 111.2,
+      "ma10": 108.25,
+      "changeRate": 0.0,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 87.99",
+      "buy_price": 109.5,
+      "latest_price": 109.5,
+      "roi": 0.0,
+      "daily_change": 0.0
     },
     {
       "id": "8034",
@@ -865,6 +1073,22 @@
       "latest_price": 179.0,
       "roi": 0.0,
       "daily_change": 7.19
+    },
+    {
+      "id": "8390",
+      "name": "金益鼎",
+      "group": "綠能環保",
+      "type": "上櫃",
+      "price": 87.9,
+      "ma5": 90.12,
+      "ma10": 88.75,
+      "changeRate": 1.97,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 66.18",
+      "buy_price": 87.9,
+      "latest_price": 87.9,
+      "roi": 0.0,
+      "daily_change": 1.97
     }
   ]
 }
