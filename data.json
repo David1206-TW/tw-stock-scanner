@@ -1,23 +1,7 @@
 {
-  "date": "2025/12/24 00:01:23",
+  "date": "2025/12/24 00:10:09",
   "source": "GitHub Actions",
   "list": [
-    {
-      "id": "1312",
-      "name": "國喬",
-      "group": "塑膠",
-      "type": "上市",
-      "price": 11.6,
-      "ma5": 11.55,
-      "ma10": 11.63,
-      "changeRate": -0.0,
-      "isValid": true,
-      "note": "Strict-VCP / MA300 10.78",
-      "buy_price": 11.6,
-      "latest_price": 11.6,
-      "roi": 0.0,
-      "daily_change": -0.0
-    },
     {
       "id": "1314",
       "name": "中石化",
@@ -353,22 +337,6 @@
       "latest_price": 9.19,
       "roi": 0.0,
       "daily_change": 0.0
-    },
-    {
-      "id": "2905",
-      "name": "三商",
-      "group": "百貨",
-      "type": "上市",
-      "price": 16.3,
-      "ma5": 16.51,
-      "ma10": 16.54,
-      "changeRate": -1.51,
-      "isValid": true,
-      "note": "Strict-VCP / MA300 14.14",
-      "buy_price": 16.3,
-      "latest_price": 16.3,
-      "roi": 0.0,
-      "daily_change": -1.51
     },
     {
       "id": "3017",
@@ -739,22 +707,6 @@
       "daily_change": -2.46
     },
     {
-      "id": "3131",
-      "name": "弘塑",
-      "group": "儀器設備工程",
-      "type": "上櫃",
-      "price": 1510.0,
-      "ma5": 1419.0,
-      "ma10": 1452.5,
-      "changeRate": 5.59,
-      "isValid": true,
-      "note": "Strict-VCP / MA300 1406.54",
-      "buy_price": 1510.0,
-      "latest_price": 1510.0,
-      "roi": 0.0,
-      "daily_change": 5.59
-    },
-    {
       "id": "3264",
       "name": "欣銓",
       "group": "IC-封測",
@@ -769,22 +721,6 @@
       "latest_price": 90.8,
       "roi": 0.0,
       "daily_change": -1.94
-    },
-    {
-      "id": "3537",
-      "name": "堡達",
-      "group": "IC-通路",
-      "type": "上櫃",
-      "price": 52.8,
-      "ma5": 50.48,
-      "ma10": 50.8,
-      "changeRate": 5.6,
-      "isValid": true,
-      "note": "Strict-VCP / MA300 46.57",
-      "buy_price": 52.8,
-      "latest_price": 52.8,
-      "roi": 0.0,
-      "daily_change": 5.6
     },
     {
       "id": "5289",
@@ -913,22 +849,6 @@
       "latest_price": 179.5,
       "roi": 0.0,
       "daily_change": -0.83
-    },
-    {
-      "id": "6530",
-      "name": "創威",
-      "group": "通訊設備",
-      "type": "上櫃",
-      "price": 65.3,
-      "ma5": 63.88,
-      "ma10": 64.98,
-      "changeRate": 0.93,
-      "isValid": true,
-      "note": "Strict-VCP / MA300 60.87",
-      "buy_price": 65.3,
-      "latest_price": 65.3,
-      "roi": 0.0,
-      "daily_change": 0.93
     },
     {
       "id": "8034",
