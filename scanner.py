@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V53 De-Duplicate Logic
+台股自動掃描策略機器人 (Scanner Bot) - V51 Clean Production
 
-【V53 修正重點：重複名單清洗】
-1. 新增 remove_duplicates_keep_earliest():
-   - 確保 History 中同一支股票只會出現一次。
-   - 保留「最早」的紀錄 (Entry Date)，讓 ROI 以最初進場價計算。
-2. 掃描結果過濾:
-   - 今日掃描到的新股，若已存在於 History (不管哪一天)，直接忽略，不重複建檔。
-
-【V52 包含功能】
-1. 強化 update_history_roi: 增加詳細 Log，處理 yfinance 單檔/多檔資料結構差異。
-2. 錯誤處理: 當 yfinance 下載失敗時，會明確印出錯誤原因。
-3. 資料回補: 針對 NaN 資料增加 ffill() 回補。
+【修正說明】
+1. auto_adjust=True: 全面改用還原權息股價，與 Yahoo 股市網頁版一致。
+2. 嚴格 MA240 檢查: 增加 NaN 排除機制，確保長線保護邏輯穩健。
+3. 生產環境優化: 移除所有 Debug 輸出，保持日誌乾淨。
+4. 【新增功能】去重機制: 新增至 history.json 時，若歷史紀錄中已存在該個股，則跳過新增，避免重複。
+   舊的紀錄會透過 update_history_roi 持續更新最新價與 ROI。
 
 【策略 A：拉回佈局】
    1. 長線保護：收盤 > MA240, MA120, MA60。
@@ -93,61 +88,7 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 3. [新增] 歷史名單清洗邏輯
-# ==========================================
-def remove_duplicates_keep_earliest(history_db):
-    """
-    清洗 History DB:
-    1. 將所有日期的股票攤平。
-    2. 按日期由舊到新排序。
-    3. 保留每支股票「第一次」出現的紀錄，刪除後續日期的重複項。
-    4. 重組回 history_db 格式。
-    """
-    if not history_db:
-        return {}, set()
-        
-    print("🧹 正在執行歷史名單去重 (保留最早進場點)...")
-    
-    # 1. 將資料攤平為 (DateObject, DateStr, StockData) 的列表
-    flat_list = []
-    for date_str, stocks in history_db.items():
-        try:
-            dt = datetime.strptime(date_str, "%Y/%m/%d")
-            for stock in stocks:
-                flat_list.append({
-                    'dt': dt,
-                    'date_str': date_str,
-                    'stock': stock
-                })
-        except: continue
-
-    # 2. 按日期排序 (舊 -> 新)
-    flat_list.sort(key=lambda x: x['dt'])
-
-    # 3. 過濾重複 ID
-    seen_ids = set()
-    cleaned_map = {} # key: date_str, value: list of stocks
-
-    duplicates_removed = 0
-    
-    for item in flat_list:
-        stock_id = item['stock']['id']
-        date_str = item['date_str']
-        
-        if stock_id not in seen_ids:
-            seen_ids.add(stock_id)
-            # 加入新名單
-            if date_str not in cleaned_map:
-                cleaned_map[date_str] = []
-            cleaned_map[date_str].append(item['stock'])
-        else:
-            duplicates_removed += 1
-    
-    print(f"🧹 清洗完成: 移除了 {duplicates_removed} 筆重複資料。")
-    return cleaned_map, seen_ids
-
-# ==========================================
-# 4. 策略邏輯 (保留原始詳細邏輯)
+# 4. 策略邏輯
 # ==========================================
 
 def check_strategy_original(df):
@@ -313,73 +254,51 @@ def check_strategy_vcp_pro(df):
     }
 
 # ==========================================
-# 5. 更新歷史績效 (V52 Robust + V53 Clean)
+# 5. 更新歷史績效 (保持不變)
 # ==========================================
 def update_history_roi(history_db):
-    print("===== 開始更新歷史績效 (V53 Clean & Robust) =====")
+    print("正在更新歷史名單績效...")
     tw_tz = pytz.timezone('Asia/Taipei')
     today_str = datetime.now(tw_tz).strftime("%Y/%m/%d")
     today_date = datetime.strptime(today_str, "%Y/%m/%d")
 
-    # 1. 在更新股價前，先執行「去重」
-    # 這樣可以避免對重複的股票多次下載股價
-    history_db, tracked_ids = remove_duplicates_keep_earliest(history_db)
-
-    if not tracked_ids: 
-        print("沒有需要追蹤的股票。")
-        return history_db, tracked_ids
-
-    # 重新收集完整的 symbols (包含 .TW/.TWO)
-    symbols_map = {} # id -> full_symbol
-    query_list = set()
-    
+    tickers_to_check = set()
     for date_str, stocks in history_db.items():
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
-            symbols_map[stock['id']] = symbol
-            query_list.add(symbol)
-            
-    print(f"追蹤股票數量 (不重複): {len(query_list)}")
+            tickers_to_check.add(symbol)
+
+    if not tickers_to_check: return history_db
+
+    print(f"追蹤股票數量: {len(tickers_to_check)}")
     current_data = {}
-    
     try:
-        # 下載最近 5 天資料
-        data = yf.download(list(query_list), period="5d", auto_adjust=True, threads=True)
+        # 歷史績效更新也同步改為 auto_adjust=True
+        data = yf.download(list(tickers_to_check), period="5d", auto_adjust=True, threads=True)
+        close_df = data['Close']
         
-        if data.empty:
-            print("⚠️ yfinance 下載回傳為空，跳過更新。")
-            return history_db, tracked_ids
-
-        close_df = data['Close'] if 'Close' in data else pd.DataFrame()
-        
-        # 處理單檔與多檔
-        for symbol in query_list:
-            try:
-                series = None
-                if len(query_list) == 1:
-                    if isinstance(close_df, pd.DataFrame):
-                        if symbol in close_df.columns: series = close_df[symbol]
-                        else: series = close_df.iloc[:, 0]
-                    else: series = close_df
-                else:
-                    if symbol in close_df.columns: series = close_df[symbol]
-                
-                if series is not None and not series.empty:
-                    series = series.ffill().dropna()
+        if len(tickers_to_check) == 1:
+             ticker = list(tickers_to_check)[0]
+             if isinstance(close_df, pd.DataFrame):
+                 closes = close_df[ticker].dropna().values if ticker in close_df.columns else close_df.iloc[:, 0].dropna().values
+             else:
+                 closes = close_df.dropna().values
+             if len(closes) >= 2:
+                 current_data[ticker] = { 'price': float(closes[-1]), 'prev': float(closes[-2]) }
+        else:
+            for ticker in tickers_to_check:
+                try:
+                    if ticker in close_df.columns:
+                        series = close_df[ticker].dropna()
+                    else:
+                        continue
                     if len(series) >= 2:
-                        last_price = float(series.iloc[-1])
-                        prev_price = float(series.iloc[-2])
-                        # 存入 map，key 用 stock_id (去除 .TW/.TWO) 方便後續對應
-                        stock_id = symbol.split('.')[0]
-                        current_data[stock_id] = { 'price': last_price, 'prev': prev_price }
-            except: pass
-
+                        current_data[ticker] = { 'price': float(series.iloc[-1]), 'prev': float(series.iloc[-2]) }
+                except: pass
     except Exception as e:
-        print(f"❌ 歷史資料下載錯誤: {e}")
-        return history_db, tracked_ids
+        print(f"Error updating history: {e}")
+        return history_db
 
-    # 更新 Database
-    updated_count = 0
     for date_str, stocks in history_db.items():
         try:
             entry_date = datetime.strptime(date_str, "%Y/%m/%d")
@@ -388,10 +307,10 @@ def update_history_roi(history_db):
         days_diff = (today_date - entry_date).days
 
         for stock in stocks:
-            s_id = stock['id']
-            if s_id in current_data:
-                latest_price = current_data[s_id]['price']
-                prev_price = current_data[s_id]['prev']
+            symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
+            if symbol in current_data:
+                latest_price = current_data[symbol]['price']
+                prev_price = current_data[symbol]['prev']
                 buy_price = stock['buy_price']
                 
                 if days_diff <= 0:
@@ -404,10 +323,9 @@ def update_history_roi(history_db):
                 stock['latest_price'] = round(latest_price, 2)
                 stock['roi'] = roi
                 stock['daily_change'] = daily_change
-                updated_count += 1
 
-    print(f"歷史績效更新完成，共更新 {updated_count} 筆股價。")
-    return history_db, tracked_ids
+    print("歷史績效更新完成。")
+    return history_db
 
 # ==========================================
 # 6. 主程式
@@ -419,11 +337,12 @@ def run_scanner():
     industry_db = load_json(DB_INDUSTRY)
     history_db = load_json(DB_HISTORY)
     
-    # 步驟 1: 更新歷史績效 + 清洗重複 (回傳 cleaned db 和所有已存在的 ID set)
-    history_db, existing_ids = update_history_roi(history_db)
+    # 步驟 1: 先更新舊的歷史績效 (無論幾點都做)
+    # 這會確保已存在的名單，ROI 和 Latest Price 都是基於最新的報價
+    history_db = update_history_roi(history_db)
     
     save_json(DB_HISTORY, history_db)
-    print("盤中歷史績效 (已去重) 更新至 DB。")
+    print("盤中歷史績效已更新至 DB。")
 
     # 開始掃描今日新標的
     full_list = get_all_tickers()
@@ -436,16 +355,12 @@ def run_scanner():
         batch = full_list[i:i+batch_size]
         print(f"Processing batch {i//batch_size + 1}/{len(full_list)//batch_size + 1}...")
         try:
+            # 【關鍵】: auto_adjust=True (還原權息)
             data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=True)
             
             for ticker in batch:
                 try:
                     raw_code = ticker.split('.')[0]
-                    
-                    # 【V53 關鍵】如果這檔股票已經在歷史名單中，直接跳過計算，節省時間並避免重複
-                    if raw_code in existing_ids:
-                        continue
-
                     df = pd.DataFrame()
                     if len(batch) > 1:
                         if ticker in data.columns.levels[0]:
@@ -549,19 +464,31 @@ def run_scanner():
         print(f"✅ 盤後時段，準備將新資料歸檔至 History: {record_date_str}")
         
         if daily_results:
-            # 再次檢查：如果這些結果已經在 DB 裡了 (以防萬一)，就不重複加
-            if record_date_str not in history_db:
-                history_db[record_date_str] = daily_results
+            # ==========================================
+            # 【關鍵修改】 去除重複名單邏輯
+            # ==========================================
+            
+            # 1. 收集所有歷史紀錄中的股票 ID
+            existing_ids = set()
+            for date_key, stocks in history_db.items():
+                for s in stocks:
+                    existing_ids.add(s['id'])
+            
+            # 2. 過濾今日名單：如果 ID 已經存在於歷史中，則不加入
+            unique_results = []
+            for stock in daily_results:
+                if stock['id'] in existing_ids:
+                    print(f" ⟳ Skip duplicate in history: {stock['id']} {stock['name']}")
+                else:
+                    unique_results.append(stock)
+            
+            if unique_results:
+                history_db[record_date_str] = unique_results
+                sorted_history = dict(sorted(history_db.items(), reverse=True))
+                save_json(DB_HISTORY, sorted_history)
+                print(f"History.json 新增 {len(unique_results)} 筆資料 (已過濾重複)。")
             else:
-                # 合併邏輯: 確保不重複
-                existing_today_ids = {s['id'] for s in history_db[record_date_str]}
-                for res in daily_results:
-                    if res['id'] not in existing_today_ids and res['id'] not in existing_ids:
-                         history_db[record_date_str].append(res)
-
-            sorted_history = dict(sorted(history_db.items(), reverse=True))
-            save_json(DB_HISTORY, sorted_history)
-            print("History.json 新增完畢。")
+                print("今日所有掃描結果均已存在於歷史紀錄中，不新增任何資料。")
         else:
             print("今日無符合策略標的，不新增 History。")
 
