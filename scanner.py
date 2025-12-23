@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V54 Strategy B Update
+台股自動掃描策略機器人 (Scanner Bot) - V55 Strategy A Perfect Alignment
 
 【版本資訊】
-Base Version: V53 (Fixed)
-Update: 策略 B (Strict VCP) 新增多頭排列過濾條件。
+Base Version: V54
+Update: 策略 A (拉回佈局) 多頭排列條件升級為六線完美排列。
 
 【保留策略說明】
 1. 策略 A (拉回佈局): 
    1. 長線保護：收盤 > MA300, MA120, MA60。
-   2. 多頭排列：MA10 > MA20 > MA60。
+   2. 多頭排列：MA10 > MA20 > MA30 > MA60 > MA120 > MA240。(修改：六線完美排列)
    3. 位階安全：乖離率 < 25%。
    4. 均線糾結：差異 < 8%。
    5. 量縮整理：成交量 < 5日均量。
@@ -18,7 +18,7 @@ Update: 策略 B (Strict VCP) 新增多頭排列過濾條件。
    8. 流動性：5日均量 > 1000張。
 2. 策略 B (Strict VCP):
   1. 硬指標過濾：股價 > MA300 & > MA60 & 成交量 > 1000張。
-  2. 多頭排列：MA60 > MA120 > MA240。(新增)
+  2. 多頭排列：MA60 > MA120 > MA240。
   3. 價格位階：靠近 52 週新高。
   4. 波動收縮：布林帶寬度 < 15%。
   5. 量能遞減：5日均量 < 20日均量。
@@ -86,14 +86,14 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 3. 策略邏輯 (已修正變數定義)
+# 3. 策略邏輯 (V55 更新)
 # ==========================================
 
 def check_strategy_original(df):
     """
-    策略 A：拉回佈局 (MA300 + MA12 版)
+    策略 A：拉回佈局 (V55: 六線完美多頭排列)
     """
-    # 【修正1】資料長度需 > 300 才能計算 MA300
+    # 資料長度檢查
     if len(df) < 310: return False, None
     
     close = df['Close']
@@ -102,13 +102,15 @@ def check_strategy_original(df):
     
     ma5 = close.rolling(5).mean()
     ma10 = close.rolling(10).mean()
-    # 【修正2】補上 MA12 計算
     ma12 = close.rolling(12).mean()
-    
     ma20 = close.rolling(20).mean()
+    # 【新增】計算 MA30
+    ma30 = close.rolling(30).mean()
     ma60 = close.rolling(60).mean()
     ma120 = close.rolling(120).mean()
-    # 【修正3】將 MA240 改為計算 MA300
+    # 【新增】計算 MA240 (配合多頭排列檢查)
+    ma240 = close.rolling(240).mean()
+    # MA300 (配合長線保護)
     ma300 = close.rolling(300).mean()
     
     vol_ma5 = volume.rolling(5).mean()
@@ -119,21 +121,22 @@ def check_strategy_original(df):
     
     curr_ma5 = float(ma5.iloc[-1])
     curr_ma10 = float(ma10.iloc[-1])
-    # 【修正4】補上取得 curr_ma12 數值
     curr_ma12 = float(ma12.iloc[-1])
-    
     curr_ma20 = float(ma20.iloc[-1])
+    # 【新增】取得 curr_ma30
+    curr_ma30 = float(ma30.iloc[-1])
     curr_ma60 = float(ma60.iloc[-1])
     curr_ma120 = float(ma120.iloc[-1]) 
-    # 【修正5】取得 curr_ma300 數值
+    # 【新增】取得 curr_ma240
+    curr_ma240 = float(ma240.iloc[-1])
     curr_ma300 = float(ma300.iloc[-1])
     
     curr_vol_ma5 = float(vol_ma5.iloc[-1])
     prev_l = float(low.iloc[-2])
 
-    # === 強制檢查 MA300 (嚴格過濾) ===
-    if math.isnan(curr_ma300): return False, None # 資料不足，剔除
-    if curr_c < curr_ma300: return False, None    # 跌破年線(MA300)，剔除
+    # === 強制檢查 MA300 (長線過濾, V53新增) ===
+    if math.isnan(curr_ma300): return False, None 
+    if curr_c < curr_ma300: return False, None    
 
     # 過濾：成交量門檻需 > 1000張
     if curr_vol_ma5 < 1000000: return False, None 
@@ -141,8 +144,10 @@ def check_strategy_original(df):
     # 1. 長線保護
     if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     
-    # 2. 多頭排列
-    if not ((curr_ma10 > curr_ma20) and (curr_ma20 > curr_ma60)): return False, None
+    # 2. 【修改】六線完美多頭排列
+    # MA10 > MA20 > MA30 > MA60 > MA120 > MA240
+    if math.isnan(curr_ma30) or math.isnan(curr_ma240): return False, None
+    if not (curr_ma10 > curr_ma20 > curr_ma30 > curr_ma60 > curr_ma120 > curr_ma240): return False, None
     
     # 3. 位階控制
     bias_ma60 = (curr_c - curr_ma60) / curr_ma60
@@ -156,7 +161,7 @@ def check_strategy_original(df):
     # 5. 量縮整理
     if curr_v >= curr_vol_ma5: return False, None
     
-    # 6. 支撐確認 (使用 MA12)
+    # 6. 支撐確認 (MA12)
     if curr_c <= curr_ma12: return False, None
     
     # 7. 底部打樁
@@ -170,19 +175,17 @@ def check_strategy_original(df):
         "ma5": round(close.rolling(5).mean().iloc[-1], 2),
         "ma10": round(curr_ma10, 2),
         "ma20": round(curr_ma20, 2),
-        # 【修正6】回傳 ma300 供顯示
         "ma300": round(curr_ma300, 2)
     }
 
 def check_strategy_vcp_pro(df):
     """
-    策略 B：VCP 技術面 (Strict VCP - MA300版 + 多頭排列)
+    策略 B：VCP 技術面 (Strict VCP)
     """
     try:
         close = df['Close']
         volume = df['Volume']
 
-        # 【修正7】資料長度檢查需配合 MA300
         if len(close) < 310: return False, None
 
         # ===== 1. 計算指標 =====
@@ -192,10 +195,9 @@ def check_strategy_vcp_pro(df):
         ma150 = close.rolling(150).mean()
         ma200 = close.rolling(200).mean()
         ma60 = close.rolling(60).mean()
-        # 【修正8】計算 MA300
         ma300 = close.rolling(300).mean()
         
-        # 【新增】計算 MA120 與 MA240 (用於多頭排列檢查)
+        # 多頭排列檢查用
         ma120 = close.rolling(120).mean()
         ma240 = close.rolling(240).mean()
         
@@ -213,23 +215,21 @@ def check_strategy_vcp_pro(df):
         curr_ma150 = float(ma150.iloc[-1])
         curr_ma200 = float(ma200.iloc[-1])
         curr_ma60 = float(ma60.iloc[-1])
-        # 【修正9】取得 curr_ma300
         curr_ma300 = float(ma300.iloc[-1])
         
-        # 【新增】取得 curr_ma120 與 curr_ma240
         curr_ma120 = float(ma120.iloc[-1])
         curr_ma240 = float(ma240.iloc[-1])
         
         curr_bb_width = float(bb_width.iloc[-1])
 
         # ===== 硬指標過濾 =====
-        # 1. 股價必須站上 MA300 (年線)
+        # 1. 股價必須站上 MA300
         if math.isnan(curr_ma300) or curr_c < curr_ma300: return False, None
         
-        # 2. 股價必須站上 MA60 (季線)
+        # 2. 股價必須站上 MA60
         if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
         
-        # 3. [新增] 多頭排列檢查: MA60 > MA120 > MA240
+        # 3. 多頭排列檢查: MA60 > MA120 > MA240
         if math.isnan(curr_ma120) or math.isnan(curr_ma240): return False, None
         if not (curr_ma60 > curr_ma120 > curr_ma240): return False, None
 
@@ -280,12 +280,12 @@ def check_strategy_vcp_pro(df):
         "ma20": round(curr_ma20, 2),
         "ma150": round(curr_ma150, 2),
         "ma200": round(curr_ma200, 2),
-        "ma300": round(curr_ma300, 2), # 回傳 MA300
+        "ma300": round(curr_ma300, 2),
         "bb_width": round(curr_bb_width * 100, 1)
     }
 
 # ==========================================
-# 4. 關鍵功能: 更新歷史績效
+# 4. 更新歷史績效 (盤中即時更新)
 # ==========================================
 def update_history_roi(history_db):
     print("正在更新歷史名單績效 (ROI Update)...")
@@ -425,7 +425,7 @@ def run_scanner():
                             
                         tags_str = " & ".join(strategy_tags)
                         
-                        # 【修正10】從字典取得 'ma300' 並顯示在備註
+                        # 顯示 MA300 在備註
                         note_ma300 = round(final_info.get('ma300', 0), 2)
                         note_str = f"{tags_str} / MA300 {note_ma300}"
 
@@ -505,3 +505,4 @@ def run_scanner():
 
 if __name__ == "__main__":
     run_scanner()
+   
