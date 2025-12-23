@@ -32,7 +32,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.10' # 修正：升級至 3.10 以支援 yfinance 新版語法 (Union Type |)
 
     - name: Install dependencies
       run: |
