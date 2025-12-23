@@ -9,14 +9,20 @@ Update: 盤中即時更新 ROI、盤後歷史名單去重、Python 3.10+ 支援
 
 【保留策略說明】
 1. 策略 A (拉回佈局): 
-   - 長線保護 (MA240, MA120, MA60)
-   - 多頭排列 (MA10 > MA20 > MA60)
-   - 乖離率 < 25%, 均線糾結 < 8%, 量縮, 支撐, 底部打樁, 5日均量 > 500張
+   1. 長線保護：收盤 > MA240, MA120, MA60。
+   2. 多頭排列：MA10 > MA20 > MA60。
+   3. 位階安全：乖離率 < 25%。
+   4. 均線糾結：差異 < 8%。
+   5. 量縮整理：成交量 < 5日均量。
+   6. 支撐確認：收盤 > MA12。
+   7. 底部打樁：|今日最低 - 昨日最低| < 1%。
+   8. 流動性：5日均量 > 1000張。
 2. 策略 B (Strict VCP):
-   - 硬指標 (股價 > MA240 & MA60, 量 > 500張)
-   - 價格位階 (靠近 52 週新高)
-   - 波動收縮 (布林頻寬 < 15%)
-   - 量能遞減, 回檔收縮 (r1 > r2 > r3)
+  1. 硬指標過濾：股價 > MA240 & > MA60 & 成交量 > 500張。
+  2. 價格位階：靠近 52 週新高。
+  3. 波動收縮：布林帶寬度 < 15%。
+  4. 量能遞減：5日均量 < 20日均量。
+  5. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
 """
 
 import yfinance as yf
@@ -118,8 +124,8 @@ def check_strategy_original(df):
     if math.isnan(curr_ma240): return False, None # 資料不足，剔除
     if curr_c < curr_ma240: return False, None    # 跌破年線，剔除
 
-    # 過濾：成交量門檻
-    if curr_vol_ma5 < 500000: return False, None 
+    # 過濾：成交量門檻需>1000張
+    if curr_vol_ma5 < 1000000: return False, None 
 
     # 1. 長線保護 (包含 MA60 與 MA120 檢查)
     if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
@@ -139,7 +145,7 @@ def check_strategy_original(df):
     # 5. 量縮整理
     if curr_v >= curr_vol_ma5: return False, None
     # 6. 支撐確認
-    if curr_c <= curr_ma10: return False, None
+    if curr_c <= curr_ma12: return False, None
     
     # 7. 底部打樁
     if prev_l > 0:
@@ -200,8 +206,8 @@ def check_strategy_vcp_pro(df):
         # 2. [新增] 股價必須站上 MA60 (季線)
         if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
         
-        # 3. 成交量 > 500 張
-        if curr_v < 500000: return False, None
+        # 3. 成交量 > 1000 張
+        if curr_v < 1000000: return False, None
 
         # ===== 條件 1：趨勢確認 =====
         if curr_c < curr_ma200: return False, None
