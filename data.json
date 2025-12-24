@@ -1,5 +1,5 @@
 {
-  "date": "2025/12/24 04:04:56",
+  "date": "2025/12/24 09:17:20",
   "source": "GitHub Actions",
   "list": [
     {
@@ -460,7 +460,7 @@
       "ma10": 1414.0,
       "changeRate": 2.37,
       "isValid": true,
-      "note": "拉回佈局 & Strict-VCP / MA300 807.5",
+      "note": "Strict-VCP / MA300 807.5",
       "buy_price": 1510.0,
       "latest_price": 1510.0,
       "roi": 0.0,

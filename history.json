@@ -13,7 +13,7 @@
       "note": "拉回佈局 / MA300 11.07",
       "buy_price": 11.45,
       "latest_price": 11.45,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 0.88
     },
     {
@@ -45,7 +45,7 @@
       "note": "拉回佈局 / MA300 39.17",
       "buy_price": 50.3,
       "latest_price": 50.3,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": -1.37
     },
     {
@@ -109,7 +109,7 @@
       "note": "拉回佈局 / MA300 32.29",
       "buy_price": 40.55,
       "latest_price": 40.55,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 1.37
     },
     {
@@ -205,7 +205,7 @@
       "note": "拉回佈局 / MA300 38.29",
       "buy_price": 53.1,
       "latest_price": 53.1,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": -2.03
     },
     {
