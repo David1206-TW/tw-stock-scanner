@@ -1,23 +1,7 @@
 {
-  "date": "2025/12/24 16:41:10",
+  "date": "2025/12/25 04:26:02",
   "source": "GitHub Actions",
   "list": [
-    {
-      "id": "1409",
-      "name": "新纖",
-      "group": "紡織纖維",
-      "type": "上市",
-      "price": 15.2,
-      "ma5": 15.46,
-      "ma10": 15.18,
-      "changeRate": -2.88,
-      "isValid": true,
-      "note": "Strict-VCP / MA300 13.89",
-      "buy_price": 15.2,
-      "latest_price": 15.2,
-      "roi": 0.0,
-      "daily_change": -2.88
-    },
     {
       "id": "1519",
       "name": "華城",
@@ -657,6 +641,22 @@
       "latest_price": 91.3,
       "roi": 0.0,
       "daily_change": 3.99
+    },
+    {
+      "id": "3264",
+      "name": "欣銓",
+      "group": "IC-封測",
+      "type": "上櫃",
+      "price": 93.1,
+      "ma5": 91.2,
+      "ma10": 91.83,
+      "changeRate": 2.53,
+      "isValid": true,
+      "note": "Strict-VCP / MA300 71.08",
+      "buy_price": 93.1,
+      "latest_price": 93.1,
+      "roi": 0.0,
+      "daily_change": 2.53
     },
     {
       "id": "3323",
