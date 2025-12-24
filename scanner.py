@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V57 Strategy A K-Line Consolidation
+台股自動掃描策略機器人 (Scanner Bot) - V58 Weak Pattern Exclusion
 
 【版本資訊】
-Base Version: V56
-Update: 策略 A (拉回佈局) 將「底部打樁」修改為「K線收斂」以捕捉噴出前的整理型態。
+Base Version: V57
+Update: 策略 A 與 B 新增「弱勢殺盤剔除」條件，避開光腳黑K破底的股票。
 
 【保留策略說明】
 1. 策略 A (拉回佈局): 
    1. 長線保護：收盤 > MA300, MA120, MA60。
-   2. 多頭排列：MA10 > MA60 > MA120 > MA240。(V56 關鍵均線排列)
+   2. 多頭排列：MA10 > MA60 > MA120 > MA240。(關鍵均線排列)
    3. 位階安全：乖離率 < 25%。
    4. 均線糾結：差異 < 8%。
    5. 量縮整理：成交量 < 5日均量。
    6. 支撐確認：收盤 > MA12。
-   7. K線收斂：(新增) 當日振幅 < 4.5% 且 實體幅度 < 2.5% (捕捉噴出前寧靜)。
+   7. K線收斂：當日振幅 < 4.5% 且 實體幅度 < 2.5%。
    8. 流動性：5日均量 > 1000張。
+   9. (新增) 弱勢剔除：收黑 + 光腳(無下影線) + 低點跌破昨日低點1.5%以上。
+
 2. 策略 B (Strict VCP):
   1. 硬指標過濾：股價 > MA300 & > MA60 & 成交量 > 1000張。
   2. 多頭排列：MA60 > MA120 > MA240。
@@ -23,6 +25,7 @@ Update: 策略 A (拉回佈局) 將「底部打樁」修改為「K線收斂」�
   4. 波動收縮：布林帶寬度 < 15%。
   5. 量能遞減：5日均量 < 20日均量。
   6. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
+  7. (新增) 弱勢剔除：收黑 + 光腳(無下影線) + 低點跌破昨日低點1.5%以上。
 """
 
 import yfinance as yf
@@ -86,19 +89,19 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 3. 策略邏輯 (V57 更新)
+# 3. 策略邏輯 (V58 更新)
 # ==========================================
 
 def check_strategy_original(df):
     """
-    策略 A：拉回佈局 (V57: K線收斂型態)
+    策略 A：拉回佈局 (V58: 弱勢殺盤剔除)
     """
     # 資料長度檢查
     if len(df) < 310: return False, None
     
     close = df['Close']
-    open_p = df['Open'] # 新增 Open
-    high = df['High']   # 新增 High
+    open_p = df['Open'] 
+    high = df['High']   
     volume = df['Volume']
     low = df['Low']
     
@@ -119,7 +122,8 @@ def check_strategy_original(df):
     curr_v = float(volume.iloc[-1])
     curr_l = float(low.iloc[-1])
     
-    prev_c = float(close.iloc[-2])  # 昨日收盤 (計算振幅用)
+    prev_c = float(close.iloc[-2])  # 昨日收盤
+    prev_l = float(low.iloc[-2])    # 昨日最低 (用於弱勢剔除判定)
     
     curr_ma5 = float(ma5.iloc[-1])
     curr_ma10 = float(ma10.iloc[-1])
@@ -142,8 +146,7 @@ def check_strategy_original(df):
     # 1. 長線保護
     if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
     
-    # 2. 關鍵均線多頭排列 (V56)
-    # MA10 > MA60 > MA120 > MA240
+    # 2. 關鍵均線多頭排列
     if math.isnan(curr_ma240): return False, None
     if not (curr_ma10 > curr_ma60 > curr_ma120 > curr_ma240): return False, None
     
@@ -162,14 +165,24 @@ def check_strategy_original(df):
     # 6. 支撐確認 (MA12)
     if curr_c <= curr_ma12: return False, None
     
-    # 7. 【修改】K線收斂 (Consolidation) - 捕捉噴出前的寧靜
-    # 條件A: 當日振幅 (High-Low) / PrevClose < 4.5% (波動極小)
+    # 7. K線收斂 (Consolidation)
     daily_range_pct = (curr_h - curr_l) / prev_c
     if daily_range_pct >= 0.045: return False, None
-    
-    # 條件B: 實體幅度 abs(Close-Open) / PrevClose < 2.5% (十字線或小紅小黑)
     entity_pct = abs(curr_c - curr_o) / prev_c
     if entity_pct >= 0.025: return False, None
+
+    # ==========================================
+    # 8. (新增) 弱勢殺盤剔除條件
+    # 邏輯: 收黑(C<O) 且 光腳(C==L, 無下影線) 且 破底(CurrLow < PrevLow * 0.985)
+    # ==========================================
+    if curr_c < curr_o: # 收黑
+        # 判斷是否光腳 (收盤價等於最低價)
+        if curr_c == curr_l: 
+            # 判斷是否大幅破底 (比昨日低點低 1.5% 以上)
+            if prev_l > 0:
+                drop_from_prev_low = (prev_l - curr_l) / prev_l
+                if drop_from_prev_low > 0.015: 
+                    return False, None
 
     return True, {
         "tag": "拉回佈局",
@@ -182,11 +195,13 @@ def check_strategy_original(df):
 
 def check_strategy_vcp_pro(df):
     """
-    策略 B：VCP 技術面 (Strict VCP)
+    策略 B：VCP 技術面 (V58: 弱勢殺盤剔除)
     """
     try:
         close = df['Close']
+        open_p = df['Open'] # 新增 Open
         volume = df['Volume']
+        low = df['Low']     # 新增 Low
 
         if len(close) < 310: return False, None
 
@@ -210,6 +225,9 @@ def check_strategy_vcp_pro(df):
         bb_width = (bb_upper - bb_lower) / ma20
 
         curr_c = float(close.iloc[-1])
+        curr_o = float(open_p.iloc[-1]) # 取 Open
+        curr_l = float(low.iloc[-1])    # 取 Low
+        prev_l = float(low.iloc[-2])    # 取 Prev Low
         curr_v = float(volume.iloc[-1])
 
         curr_ma20 = float(ma20.iloc[-1])
@@ -270,6 +288,16 @@ def check_strategy_vcp_pro(df):
         r3 = calc_retrace(close.iloc[-10:])
         
         if not (r1 > r2 > r3): return False, None
+
+        # ==========================================
+        # 條件 6 (新增) 弱勢殺盤剔除條件
+        # ==========================================
+        if curr_c < curr_o: # 收黑
+            if curr_c == curr_l: # 光腳(無下影線)
+                if prev_l > 0:
+                    drop_from_prev_low = (prev_l - curr_l) / prev_l
+                    if drop_from_prev_low > 0.015: # 破底 1.5%
+                        return False, None
 
     except Exception:
         return False, None
