@@ -1,5 +1,5 @@
 {
-  "date": "2025/12/24 13:58:27",
+  "date": "2025/12/24 16:41:10",
   "source": "GitHub Actions",
   "list": [
     {
@@ -616,15 +616,15 @@
       "group": "其他",
       "type": "上市",
       "price": 63.85,
-      "ma5": 62.48,
-      "ma10": 62.97,
-      "changeRate": 2.16,
+      "ma5": 62.77,
+      "ma10": 62.98,
+      "changeRate": 0.24,
       "isValid": true,
-      "note": "拉回佈局 / MA300 50.54",
+      "note": "拉回佈局 / MA300 50.6",
       "buy_price": 63.85,
       "latest_price": 63.85,
       "roi": 0.0,
-      "daily_change": 2.16
+      "daily_change": 0.24
     },
     {
       "id": "0056",
@@ -632,15 +632,15 @@
       "group": "其他",
       "type": "上市",
       "price": 36.55,
-      "ma5": 36.26,
-      "ma10": 36.36,
-      "changeRate": 0.47,
+      "ma5": 36.36,
+      "ma10": 36.35,
+      "changeRate": 0.03,
       "isValid": true,
-      "note": "拉回佈局 / MA300 33.76",
+      "note": "拉回佈局 & Strict-VCP / MA300 33.77",
       "buy_price": 36.55,
       "latest_price": 36.55,
       "roi": 0.0,
-      "daily_change": 0.47
+      "daily_change": 0.03
     },
     {
       "id": "1815",
