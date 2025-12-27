@@ -61,7 +61,7 @@
       "note": "拉回佈局 / MA300 23.79",
       "buy_price": 26.3,
       "latest_price": 26.3,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 0.57
     },
     {
@@ -77,7 +77,7 @@
       "note": "Strict-VCP / MA300 16.06",
       "buy_price": 27.9,
       "latest_price": 27.9,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 4.49
     },
     {
@@ -157,7 +157,7 @@
       "note": "Strict-VCP / MA300 60.2",
       "buy_price": 86.7,
       "latest_price": 86.7,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 3.58
     },
     {
@@ -189,7 +189,7 @@
       "note": "拉回佈局 / MA300 19.55",
       "buy_price": 28.9,
       "latest_price": 28.9,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": -1.03
     },
     {
