@@ -1,5 +1,5 @@
 {
-  "date": "2025/12/30 13:54:04",
+  "date": "2025/12/30 22:07:50",
   "source": "GitHub Actions",
   "list": [
     {
@@ -615,16 +615,32 @@
       "name": "元大台灣50",
       "group": "其他",
       "type": "上市",
-      "price": 65.15,
-      "ma5": 64.1,
-      "ma10": 63.19,
-      "changeRate": 1.16,
+      "price": 65.03,
+      "ma5": 64.45,
+      "ma10": 63.42,
+      "changeRate": -0.34,
       "isValid": true,
-      "note": "拉回佈局 / MA300 50.79",
-      "buy_price": 65.15,
-      "latest_price": 65.15,
+      "note": "拉回佈局 / MA300 50.85",
+      "buy_price": 65.03,
+      "latest_price": 65.03,
       "roi": 0.0,
-      "daily_change": 1.16
+      "daily_change": -0.34
+    },
+    {
+      "id": "0056",
+      "name": "元大高股息",
+      "group": "其他",
+      "type": "上市",
+      "price": 36.65,
+      "ma5": 36.62,
+      "ma10": 36.46,
+      "changeRate": -0.22,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 33.81",
+      "buy_price": 36.65,
+      "latest_price": 36.65,
+      "roi": 0.0,
+      "daily_change": -0.22
     },
     {
       "id": "3363",
