@@ -29,7 +29,7 @@
       "note": "拉回佈局 / MA300 60.14",
       "buy_price": 89.7,
       "latest_price": 89.7,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 1.13
     },
     {
@@ -158,7 +158,7 @@
       "buy_price": 47.9,
       "latest_price": 47.9,
       "roi": 0.0,
-      "daily_change": -0.0
+      "daily_change": 0.0
     },
     {
       "id": "8088",
