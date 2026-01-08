@@ -1392,9 +1392,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 45.8",
       "buy_price": 70.0,
-      "latest_price": 65.3,
-      "roi": -6.71,
-      "daily_change": -0.46
+      "latest_price": 65.0,
+      "roi": -7.14,
+      "daily_change": -0.91
     },
     {
       "id": "5340",
@@ -2470,9 +2470,9 @@
       "isValid": true,
       "note": "拉回佈局 & Strict-VCP / 年線288.91",
       "buy_price": 491.0,
-      "latest_price": 636.0,
-      "roi": 29.53,
-      "daily_change": -2.9
+      "latest_price": 645.0,
+      "roi": 31.36,
+      "daily_change": -1.53
     }
   ],
   "2025/12/18": [
