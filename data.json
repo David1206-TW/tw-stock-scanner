@@ -1,5 +1,5 @@
 {
-  "date": "2026/01/08 13:56:42",
+  "date": "2026/01/09 00:11:22",
   "source": "GitHub Actions",
   "list": [
     {
@@ -23,16 +23,16 @@
       "name": "智邦",
       "group": "網通",
       "type": "上市",
-      "price": 1260.0,
-      "ma5": 1207.0,
-      "ma10": 1203.0,
-      "changeRate": 4.56,
+      "price": 1265.0,
+      "ma5": 1208.0,
+      "ma10": 1203.5,
+      "changeRate": 4.98,
       "isValid": true,
-      "note": "Strict-VCP / MA300 805.74",
-      "buy_price": 1260.0,
-      "latest_price": 1260.0,
+      "note": "Strict-VCP / MA300 805.75",
+      "buy_price": 1265.0,
+      "latest_price": 1265.0,
       "roi": 0.0,
-      "daily_change": 4.56
+      "daily_change": 4.98
     },
     {
       "id": "2441",
@@ -279,16 +279,32 @@
       "name": "元大台灣50",
       "group": "其他",
       "type": "上市",
-      "price": 70.1,
-      "ma5": 69.37,
-      "ma10": 67.11,
-      "changeRate": 0.27,
+      "price": 69.83,
+      "ma5": 69.31,
+      "ma10": 67.08,
+      "changeRate": -0.03,
       "isValid": true,
       "note": "拉回佈局 / MA300 51.29",
-      "buy_price": 70.1,
-      "latest_price": 70.1,
+      "buy_price": 69.83,
+      "latest_price": 69.83,
       "roi": 0.0,
-      "daily_change": 0.27
+      "daily_change": -0.03
+    },
+    {
+      "id": "0056",
+      "name": "元大高股息",
+      "group": "其他",
+      "type": "上市",
+      "price": 37.38,
+      "ma5": 37.28,
+      "ma10": 36.97,
+      "changeRate": -0.64,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 33.88",
+      "buy_price": 37.38,
+      "latest_price": 37.38,
+      "roi": 0.0,
+      "daily_change": -0.64
     },
     {
       "id": "3265",
