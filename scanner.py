@@ -5,6 +5,7 @@
 【版本資訊】
 Base Version: V57
 Update: 新增兩項「絕對排除」的風控條件，避免選到轉弱股。
+Fix: 修正 History ROI 回溯計算問題，增加欄位對應的容錯率，確保 history.json 能正確寫入鎖定的績效值。
 
 【新增排除條件 (兩策略皆適用)】
 1. 墓碑線排除：當日K線只有上引線(>0.2%)，沒有下引線(<0.1%)。
@@ -340,27 +341,68 @@ def update_history_roi(history_db):
 
     print(f"追蹤股票數量: {len(tickers_to_check)}，下載 2 年歷史資料以進行回測與補值...")
     
-    # 擴大範圍至 2 年 (2y)，確保能涵蓋歷史建倉日
+    # 下載歷史資料
+    close_df = None
     try:
         data = yf.download(list(tickers_to_check), period="2y", auto_adjust=True, threads=True, progress=False)
-        close_df = data['Close']
+        
+        # 處理資料格式，確保 close_df 是一個 DataFrame
+        if isinstance(data, pd.DataFrame):
+            if 'Close' in data.columns and isinstance(data.columns, pd.MultiIndex):
+                close_df = data['Close']
+            elif 'Close' in data.columns:
+                # 單一股票，欄位可能是 Open, Close...，沒有 MultiIndex
+                # 手動構建 DataFrame 以便後續統一處理
+                if len(tickers_to_check) == 1:
+                    ticker = list(tickers_to_check)[0]
+                    close_df = pd.DataFrame({ticker: data['Close']})
+                else:
+                    close_df = data['Close']
+            else:
+                 # 可能是單一股票直接回傳 Close Series 或其他奇怪格式
+                 close_df = data # 嘗試直接使用
+        
+        # 確保移除時區
+        if close_df is not None and close_df.index.tz is not None:
+            close_df.index = close_df.index.tz_localize(None)
+            
     except Exception as e:
         print(f"Error downloading history data: {e}")
+        return history_db
+
+    if close_df is None or close_df.empty:
+        print("⚠️ 無法取得歷史股價資料，跳過 ROI 更新。")
         return history_db
 
     # Helper function: 從 DataFrame 獲取某個日期(或之前)的最後收盤價
     def get_price_at_date(ticker_symbol, target_date, dataframe):
         try:
-            if ticker_symbol not in dataframe.columns:
+            target_col = None
+            # 1. 精準比對 (e.g. 2330.TW)
+            if ticker_symbol in dataframe.columns:
+                target_col = ticker_symbol
+            # 2. 去除後綴比對 (e.g. 2330)
+            elif ticker_symbol.split('.')[0] in dataframe.columns:
+                target_col = ticker_symbol.split('.')[0]
+            # 3. 嘗試在 Columns 中尋找包含該代號的欄位 (更寬鬆的匹配)
+            else:
+                simple_code = ticker_symbol.split('.')[0]
+                for col in dataframe.columns:
+                    if simple_code == str(col).split('.')[0]:
+                        target_col = col
+                        break
+            
+            if not target_col:
+                # print(f"  Debug: Column '{ticker_symbol}' not found.")
                 return None
             
-            # 取得該股票的所有收盤價 Series (含 Date Index)
-            series = dataframe[ticker_symbol].dropna()
+            # 取得該股票的所有收盤價 Series
+            series = dataframe[target_col].dropna()
             
-            # 轉換 target_date 為 pd.Timestamp 以便比較 (設為當天最後一刻)
+            # 轉換 target_date 為 timestamp (當天 23:59:59)
             target_ts = pd.Timestamp(target_date) + pd.Timedelta(hours=23, minutes=59)
             
-            # 篩選出日期小於等於 target_date 的資料
+            # 篩選 <= target_ts 的資料
             past_data = series[series.index <= target_ts]
             
             if not past_data.empty:
@@ -370,13 +412,22 @@ def update_history_roi(history_db):
         except Exception:
             return None
 
+    # Helper function: 解析多種日期格式
+    def parse_record_date(date_str):
+        formats = ["%Y/%m/%d", "%Y-%m-%d", "%Y/%m/%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"]
+        for fmt in formats:
+            try:
+                return datetime.strptime(date_str, fmt).date()
+            except ValueError:
+                continue
+        return None
+
     # 開始更新每一筆歷史紀錄
     for date_str, stocks in history_db.items():
-        try:
-            record_date = datetime.strptime(date_str, "%Y/%m/%d").date()
+        record_date = parse_record_date(date_str)
+        if record_date:
             days_diff = (today_date - record_date).days
-        except: 
-            record_date = today_date
+        else:
             days_diff = 0
         
         for stock in stocks:
@@ -387,43 +438,46 @@ def update_history_roi(history_db):
             latest_price = get_price_at_date(symbol, today_date, close_df)
             
             if latest_price:
-                prev_price = get_price_at_date(symbol, today_date - timedelta(days=1), close_df)
-                if not prev_price: prev_price = latest_price
-
                 roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
-                daily_change = round(((latest_price - prev_price) / prev_price) * 100, 2)
-                
                 stock['latest_price'] = round(latest_price, 2)
-                stock['roi'] = roi
-                stock['daily_change'] = daily_change
+                stock['roi'] = roi # 這是「最新」ROI
+                
+                # 計算日變動
+                prev_price = get_price_at_date(symbol, today_date - timedelta(days=1), close_df)
+                if prev_price:
+                     stock['daily_change'] = round(((latest_price - prev_price) / prev_price) * 100, 2)
             else:
-                # 若抓不到今日價格，保持原樣或設為 0
                 roi = stock.get('roi', 0.0)
 
             # 2. 分階段鎖定 ROI 邏輯 (Backfill)
-            # 定義各階段的「結算日」(End Date)
             targets = [
-                (1, 5, 'roi_1', 4),      # 區間 [1, 5), 鎖定日: Day 4
-                (5, 10, 'roi_5', 9),     # 區間 [5, 10), 鎖定日: Day 9
-                (10, 20, 'roi_10', 19),  # 區間 [10, 20), 鎖定日: Day 19
-                (20, 60, 'roi_20', 59),  # 區間 [20, 60), 鎖定日: Day 59
-                (60, 120, 'roi_60', 119) # 區間 [60, 120), 鎖定日: Day 119
+                (1, 5, 'roi_1', 4),      # Day 1-4, Lock Day 4
+                (5, 10, 'roi_5', 9),     # Day 5-9, Lock Day 9
+                (10, 20, 'roi_10', 19),  # Day 10-19, Lock Day 19
+                (20, 60, 'roi_20', 59),  # Day 20-59, Lock Day 59
+                (60, 120, 'roi_60', 119) # Day 60-119, Lock Day 119
             ]
 
             for start_day, end_day, field_name, lock_day_offset in targets:
-                # 情況 A: 已經過了這個區間 (例如現在是第 20 天，要鎖定 roi_1, roi_5, roi_10)
+                # 情況 A: 已經過了這個區間 (例如天數=22, 處理 roi_1, roi_5, roi_10)
                 if days_diff >= end_day:
-                    # 回溯鎖定：不論是否已有值，都重新計算以確保正確 (根據使用者需求 "重新把績效計算完")
+                    # 必須鎖定：回溯抓取鎖定日的價格
                     lock_date = record_date + timedelta(days=lock_day_offset)
                     hist_price = get_price_at_date(symbol, lock_date, close_df)
                     
                     if hist_price:
                         hist_roi = round(((hist_price - buy_price) / buy_price) * 100, 2)
                         stock[field_name] = hist_roi
+                        # print(f"  [Locked] {stock['id']} {field_name}: {hist_roi}%")
+                    else:
+                        # ⚠️ 如果抓不到歷史價格，不要留空，改為保留舊值或填入 'N/A' 避免前端誤判
+                        # 這裡選擇不更新，讓它保持原樣(如果原樣是空，前端可能會顯示roi)
+                        # 但為了debug，我們印出來
+                        print(f"  ⚠️ Missing history price for {stock['id']} on {lock_date}")
                 
-                # 情況 B: 正處於這個區間內 (例如現在是第 3 天，更新 roi_1)
+                # 情況 B: 正處於這個區間內 (例如天數=22, 處理 roi_20)
                 elif start_day <= days_diff < end_day:
-                    # 使用最新的 ROI (因為還沒到鎖定日，持續浮動)
+                    # 使用最新的 ROI (浮動中)
                     stock[field_name] = roi
 
             # 特別處理 >= 120 天
