@@ -325,6 +325,11 @@ def check_strategy_vcp_pro(df):
 def update_history_roi(history_db):
     print("正在更新歷史名單績效 (ROI Update)...")
     tickers_to_check = set()
+    
+    # 建立日期物件以計算天數
+    tw_tz = pytz.timezone('Asia/Taipei')
+    today_date = datetime.now(tw_tz).date()
+
     for date_str, stocks in history_db.items():
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
@@ -366,8 +371,12 @@ def update_history_roi(history_db):
 
     for date_str, stocks in history_db.items():
         try:
-             pass
-        except: continue
+            # 解析記錄日期
+            record_date = datetime.strptime(date_str, "%Y/%m/%d").date()
+            # 計算經過天數
+            days_diff = (today_date - record_date).days
+        except: 
+            days_diff = 0
         
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
@@ -380,8 +389,25 @@ def update_history_roi(history_db):
                 daily_change = round(((latest_price - prev_price) / prev_price) * 100, 2)
                 
                 stock['latest_price'] = round(latest_price, 2)
-                stock['roi'] = roi
+                stock['roi'] = roi # 持續更新最新ROI，方便查看目前狀態
                 stock['daily_change'] = daily_change
+
+                # === 分階段鎖定 ROI 邏輯 ===
+                # 依據天數更新特定欄位，過了該天數區間後該欄位即不再變動 (鎖定)
+                # 使用標準台股/技術分析慣用區間: 1日, 5日(週), 10日(雙週), 20日(月), 60日(季), 120日(半年)
+
+                if 1 <= days_diff < 5:
+                    stock['roi_1'] = roi
+                elif 5 <= days_diff < 10:
+                    stock['roi_5'] = roi
+                elif 10 <= days_diff < 20:
+                    stock['roi_10'] = roi
+                elif 20 <= days_diff < 60:
+                    stock['roi_20'] = roi
+                elif 60 <= days_diff < 120:
+                    stock['roi_60'] = roi
+                elif days_diff >= 120:
+                    stock['roi_120'] = roi
 
     print("歷史績效更新完成 (In-Memory)。")
     return history_db
@@ -540,4 +566,3 @@ def run_scanner():
 
 if __name__ == "__main__":
     run_scanner()
-   
