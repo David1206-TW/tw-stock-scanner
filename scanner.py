@@ -338,11 +338,11 @@ def update_history_roi(history_db):
 
     if not tickers_to_check: return history_db
 
-    print(f"追蹤股票數量: {len(tickers_to_check)}，下載 3 個月歷史資料以進行回測與補值...")
+    print(f"追蹤股票數量: {len(tickers_to_check)}，下載 2 年歷史資料以進行回測與補值...")
     
-    # 擴大範圍至 3 個月 (3mo)，以確保能涵蓋 12/18 的舊資料
+    # 擴大範圍至 2 年 (2y)，確保能涵蓋歷史建倉日
     try:
-        data = yf.download(list(tickers_to_check), period="3mo", auto_adjust=True, threads=True, progress=False)
+        data = yf.download(list(tickers_to_check), period="2y", auto_adjust=True, threads=True, progress=False)
         close_df = data['Close']
     except Exception as e:
         print(f"Error downloading history data: {e}")
@@ -402,10 +402,6 @@ def update_history_roi(history_db):
 
             # 2. 分階段鎖定 ROI 邏輯 (Backfill)
             # 定義各階段的「結算日」(End Date)
-            # 1~4天: 結算日為 Day 4 (即 record_date + 4 days)
-            # 5~9天: 結算日為 Day 9
-            # ...以此類推
-            
             targets = [
                 (1, 5, 'roi_1', 4),      # 區間 [1, 5), 鎖定日: Day 4
                 (5, 10, 'roi_5', 9),     # 區間 [5, 10), 鎖定日: Day 9
@@ -417,8 +413,7 @@ def update_history_roi(history_db):
             for start_day, end_day, field_name, lock_day_offset in targets:
                 # 情況 A: 已經過了這個區間 (例如現在是第 20 天，要鎖定 roi_1, roi_5, roi_10)
                 if days_diff >= end_day:
-                    # 如果欄位是空的，或者是 0 (可能之前沒跑程式)，就去補抓歷史價格
-                    # 或者即使有值，也重新確認一次歷史鎖定價 (Re-retrieve)
+                    # 回溯鎖定：不論是否已有值，都重新計算以確保正確 (根據使用者需求 "重新把績效計算完")
                     lock_date = record_date + timedelta(days=lock_day_offset)
                     hist_price = get_price_at_date(symbol, lock_date, close_df)
                     
