@@ -323,13 +323,14 @@ def check_strategy_vcp_pro(df):
 # 4. 更新歷史績效 (盤中即時更新)
 # ==========================================
 def update_history_roi(history_db):
-    print("正在更新歷史名單績效 (ROI Update)...")
+    print("正在更新歷史名單績效 (Backfill & ROI Update)...")
     tickers_to_check = set()
     
     # 建立日期物件以計算天數
     tw_tz = pytz.timezone('Asia/Taipei')
     today_date = datetime.now(tw_tz).date()
 
+    # 收集所有需要查詢的股票代號
     for date_str, stocks in history_db.items():
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
@@ -337,79 +338,104 @@ def update_history_roi(history_db):
 
     if not tickers_to_check: return history_db
 
-    print(f"追蹤股票數量: {len(tickers_to_check)}")
-    current_data = {}
+    print(f"追蹤股票數量: {len(tickers_to_check)}，下載 3 個月歷史資料以進行回測與補值...")
+    
+    # 擴大範圍至 3 個月 (3mo)，以確保能涵蓋 12/18 的舊資料
     try:
-        data = yf.download(list(tickers_to_check), period="5d", auto_adjust=True, threads=True, progress=False)
+        data = yf.download(list(tickers_to_check), period="3mo", auto_adjust=True, threads=True, progress=False)
         close_df = data['Close']
-        
-        if len(tickers_to_check) == 1:
-             ticker = list(tickers_to_check)[0]
-             if isinstance(close_df, pd.DataFrame):
-                 closes = close_df[ticker].dropna().values if ticker in close_df.columns else close_df.iloc[:, 0].dropna().values
-             else:
-                 closes = close_df.dropna().values
-             if len(closes) >= 1:
-                 current_price = float(closes[-1])
-                 prev_price = float(closes[-2]) if len(closes) >= 2 else current_price
-                 current_data[ticker] = { 'price': current_price, 'prev': prev_price }
-        else:
-            for ticker in tickers_to_check:
-                try:
-                    if ticker in close_df.columns:
-                        series = close_df[ticker].dropna()
-                    else:
-                        continue
-                    if len(series) >= 1:
-                        current_price = float(series.iloc[-1])
-                        prev_price = float(series.iloc[-2]) if len(series) >= 2 else current_price
-                        current_data[ticker] = { 'price': current_price, 'prev': prev_price }
-                except: pass
     except Exception as e:
-        print(f"Error updating history: {e}")
+        print(f"Error downloading history data: {e}")
         return history_db
 
+    # Helper function: 從 DataFrame 獲取某個日期(或之前)的最後收盤價
+    def get_price_at_date(ticker_symbol, target_date, dataframe):
+        try:
+            if ticker_symbol not in dataframe.columns:
+                return None
+            
+            # 取得該股票的所有收盤價 Series (含 Date Index)
+            series = dataframe[ticker_symbol].dropna()
+            
+            # 轉換 target_date 為 pd.Timestamp 以便比較 (設為當天最後一刻)
+            target_ts = pd.Timestamp(target_date) + pd.Timedelta(hours=23, minutes=59)
+            
+            # 篩選出日期小於等於 target_date 的資料
+            past_data = series[series.index <= target_ts]
+            
+            if not past_data.empty:
+                return float(past_data.iloc[-1])
+            else:
+                return None
+        except Exception:
+            return None
+
+    # 開始更新每一筆歷史紀錄
     for date_str, stocks in history_db.items():
         try:
-            # 解析記錄日期
             record_date = datetime.strptime(date_str, "%Y/%m/%d").date()
-            # 計算經過天數
             days_diff = (today_date - record_date).days
         except: 
+            record_date = today_date
             days_diff = 0
         
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
-            if symbol in current_data:
-                latest_price = current_data[symbol]['price']
-                prev_price = current_data[symbol]['prev']
-                buy_price = float(stock['buy_price'])
-                
+            buy_price = float(stock['buy_price'])
+
+            # 1. 更新今日最新價格與 ROI (即時監控用)
+            latest_price = get_price_at_date(symbol, today_date, close_df)
+            
+            if latest_price:
+                prev_price = get_price_at_date(symbol, today_date - timedelta(days=1), close_df)
+                if not prev_price: prev_price = latest_price
+
                 roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
                 daily_change = round(((latest_price - prev_price) / prev_price) * 100, 2)
                 
                 stock['latest_price'] = round(latest_price, 2)
-                stock['roi'] = roi # 持續更新最新ROI，方便查看目前狀態
+                stock['roi'] = roi
                 stock['daily_change'] = daily_change
+            else:
+                # 若抓不到今日價格，保持原樣或設為 0
+                roi = stock.get('roi', 0.0)
 
-                # === 分階段鎖定 ROI 邏輯 ===
-                # 依據天數更新特定欄位，過了該天數區間後該欄位即不再變動 (鎖定)
-                # 使用標準台股/技術分析慣用區間: 1日, 5日(週), 10日(雙週), 20日(月), 60日(季), 120日(半年)
+            # 2. 分階段鎖定 ROI 邏輯 (Backfill)
+            # 定義各階段的「結算日」(End Date)
+            # 1~4天: 結算日為 Day 4 (即 record_date + 4 days)
+            # 5~9天: 結算日為 Day 9
+            # ...以此類推
+            
+            targets = [
+                (1, 5, 'roi_1', 4),      # 區間 [1, 5), 鎖定日: Day 4
+                (5, 10, 'roi_5', 9),     # 區間 [5, 10), 鎖定日: Day 9
+                (10, 20, 'roi_10', 19),  # 區間 [10, 20), 鎖定日: Day 19
+                (20, 60, 'roi_20', 59),  # 區間 [20, 60), 鎖定日: Day 59
+                (60, 120, 'roi_60', 119) # 區間 [60, 120), 鎖定日: Day 119
+            ]
 
-                if 1 <= days_diff < 5:
-                    stock['roi_1'] = roi
-                elif 5 <= days_diff < 10:
-                    stock['roi_5'] = roi
-                elif 10 <= days_diff < 20:
-                    stock['roi_10'] = roi
-                elif 20 <= days_diff < 60:
-                    stock['roi_20'] = roi
-                elif 60 <= days_diff < 120:
-                    stock['roi_60'] = roi
-                elif days_diff >= 120:
-                    stock['roi_120'] = roi
+            for start_day, end_day, field_name, lock_day_offset in targets:
+                # 情況 A: 已經過了這個區間 (例如現在是第 20 天，要鎖定 roi_1, roi_5, roi_10)
+                if days_diff >= end_day:
+                    # 如果欄位是空的，或者是 0 (可能之前沒跑程式)，就去補抓歷史價格
+                    # 或者即使有值，也重新確認一次歷史鎖定價 (Re-retrieve)
+                    lock_date = record_date + timedelta(days=lock_day_offset)
+                    hist_price = get_price_at_date(symbol, lock_date, close_df)
+                    
+                    if hist_price:
+                        hist_roi = round(((hist_price - buy_price) / buy_price) * 100, 2)
+                        stock[field_name] = hist_roi
+                
+                # 情況 B: 正處於這個區間內 (例如現在是第 3 天，更新 roi_1)
+                elif start_day <= days_diff < end_day:
+                    # 使用最新的 ROI (因為還沒到鎖定日，持續浮動)
+                    stock[field_name] = roi
 
-    print("歷史績效更新完成 (In-Memory)。")
+            # 特別處理 >= 120 天
+            if days_diff >= 120:
+                stock['roi_120'] = roi
+
+    print("歷史績效更新完成 (含歷史回溯補值)。")
     return history_db
 
 # ==========================================
