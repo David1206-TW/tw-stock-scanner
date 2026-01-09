@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V58.2 Fix Key Mismatch
+台股自動掃描策略機器人 (Scanner Bot) - V58.3 Trend Support
 
 【版本資訊】
 Base Version: V58
-Fix: 修正 V58.1 中「歷史回測寫入欄位」與「前端讀取欄位」名稱不一致的 Bug。
-     (後端原本誤寫為 roi_1, 現已更正為 perf_1d 以配合前端)
+Update V58.3:
+1. 實作「20日均線扣抵值」過濾，確保月線趨勢向上。
+2. Fix: 修正歷史回測欄位名稱 (roi_1 -> perf_1d) 以匹配前端顯示。
 
 【新增排除條件 (兩策略皆適用)】
 1. 墓碑線排除：當日K線只有上引線(>0.2%)，沒有下引線(<0.1%)。
@@ -21,6 +22,7 @@ Fix: 修正 V58.1 中「歷史回測寫入欄位」與「前端讀取欄位」�
    6. 支撐確認：收盤 > MA12。
    7. K線收斂：當日振幅 < 4.5% 且 實體幅度 < 2.5%。
    8. 流動性：5日均量 > 1000張。
+   9. 趨勢支撐：當日收盤 > 20日均線扣抵值 (確保月線維持上揚力道)。
 2. 策略 B (Strict VCP):
    1. 硬指標過濾：股價 > MA300 & > MA60 & 成交量 > 1000張。
    2. 多頭排列：MA60 > MA120 > MA240。
@@ -28,6 +30,7 @@ Fix: 修正 V58.1 中「歷史回測寫入欄位」與「前端讀取欄位」�
    4. 波動收縮：布林帶寬度 < 15%。
    5. 量能遞減：5日均量 < 20日均量。
    6. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
+   7. 趨勢支撐：當日收盤 > 20日均線扣抵值。
 """
 
 import yfinance as yf
@@ -91,12 +94,12 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 3. 策略邏輯 (V58 更新)
+# 3. 策略邏輯 (V58.3 更新)
 # ==========================================
 
 def check_strategy_original(df):
     """
-    策略 A：拉回佈局 (V58: 新增風控排除條件)
+    策略 A：拉回佈局 (含風控排除 + 扣抵值過濾)
     """
     # 資料長度檢查
     if len(df) < 310: return False, None
@@ -125,7 +128,7 @@ def check_strategy_original(df):
     curr_l = float(low.iloc[-1])
     
     prev_c = float(close.iloc[-2])
-    prev_l = float(low.iloc[-2]) # 昨日最低
+    prev_l = float(low.iloc[-2])
     
     curr_ma5 = float(ma5.iloc[-1])
     curr_ma10 = float(ma10.iloc[-1])
@@ -138,17 +141,22 @@ def check_strategy_original(df):
     
     curr_vol_ma5 = float(vol_ma5.iloc[-1])
 
-    # === 0. 新增風控排除條件 ===
+    # === 0. 風控排除條件 ===
     
-    # 排除 1: 只有上影線，沒有下影線 (墓碑線/倒T)
-    # 邏輯: 上影線長度 > 股價0.2% (有明顯上影線) 且 下影線長度 < 股價0.1% (幾乎無下影線)
+    # 排除 1: 墓碑線 (上影線長, 無下影線)
     upper_shadow = curr_h - max(curr_c, curr_o)
     lower_shadow = min(curr_c, curr_o) - curr_l
     if (upper_shadow / curr_c > 0.002) and (lower_shadow / curr_c < 0.001):
         return False, None
 
-    # 排除 2: 當日最低價小於前日最低價 1.5% 以上 (破底疑慮)
+    # 排除 2: 破底 (當日最低比昨日最低低 1.5% 以上)
     if prev_l > 0 and (prev_l - curr_l) / prev_l > 0.015:
+        return False, None
+
+    # 排除 3: 當日收盤價 < 20日均線扣抵值 (V58.3)
+    # iloc[-20] 代表 20 天前的收盤價 (即將被扣抵的值)
+    deduction_20 = float(close.iloc[-20])
+    if curr_c < deduction_20:
         return False, None
 
     # === 1. 基本過濾 ===
@@ -179,7 +187,7 @@ def check_strategy_original(df):
     # 支撐確認 (MA12)
     if curr_c <= curr_ma12: return False, None
     
-    # K線收斂 (Consolidation)
+    # K線收斂
     daily_range_pct = (curr_h - curr_l) / prev_c
     if daily_range_pct >= 0.045: return False, None
     entity_pct = abs(curr_c - curr_o) / prev_c
@@ -196,13 +204,13 @@ def check_strategy_original(df):
 
 def check_strategy_vcp_pro(df):
     """
-    策略 B：VCP 技術面 (V58: 新增風控排除條件)
+    策略 B：Strict VCP (含風控排除 + 扣抵值過濾)
     """
     try:
         close = df['Close']
-        open_p = df['Open'] # V58新增抓取
-        high = df['High']   # V58新增抓取
-        low = df['Low']     # V58新增抓取
+        open_p = df['Open']
+        high = df['High']
+        low = df['Low']
         volume = df['Volume']
 
         if len(close) < 310: return False, None
@@ -216,23 +224,21 @@ def check_strategy_vcp_pro(df):
         ma60 = close.rolling(60).mean()
         ma300 = close.rolling(300).mean()
         
-        # 多頭排列檢查用
         ma120 = close.rolling(120).mean()
         ma240 = close.rolling(240).mean()
         
-        # 布林帶
         std20 = close.rolling(20).std()
         bb_upper = ma20 + (std20 * 2)
         bb_lower = ma20 - (std20 * 2)
         bb_width = (bb_upper - bb_lower) / ma20
 
         curr_c = float(close.iloc[-1])
-        curr_o = float(open_p.iloc[-1]) # V58新增
-        curr_h = float(high.iloc[-1])   # V58新增
-        curr_l = float(low.iloc[-1])    # V58新增
+        curr_o = float(open_p.iloc[-1])
+        curr_h = float(high.iloc[-1])
+        curr_l = float(low.iloc[-1])
         curr_v = float(volume.iloc[-1])
 
-        prev_l = float(low.iloc[-2])    # V58新增
+        prev_l = float(low.iloc[-2])
 
         curr_ma20 = float(ma20.iloc[-1])
         curr_ma50 = float(ma50.iloc[-1])
@@ -246,30 +252,30 @@ def check_strategy_vcp_pro(df):
         
         curr_bb_width = float(bb_width.iloc[-1])
 
-        # === 0. 新增風控排除條件 (與策略A同步) ===
+        # === 0. 風控排除條件 ===
         
-        # 排除 1: 只有上影線，沒有下影線
+        # 排除 1: 墓碑線
         upper_shadow = curr_h - max(curr_c, curr_o)
         lower_shadow = min(curr_c, curr_o) - curr_l
         if (upper_shadow / curr_c > 0.002) and (lower_shadow / curr_c < 0.001):
             return False, None
 
-        # 排除 2: 當日最低價小於前日最低價 1.5% 以上
+        # 排除 2: 破底
         if prev_l > 0 and (prev_l - curr_l) / prev_l > 0.015:
             return False, None
 
+        # 排除 3: 當日收盤價 < 20日均線扣抵值 (V58.3)
+        deduction_20 = float(close.iloc[-20])
+        if curr_c < deduction_20:
+            return False, None
+
         # ===== 硬指標過濾 =====
-        # 1. 股價必須站上 MA300
         if math.isnan(curr_ma300) or curr_c < curr_ma300: return False, None
-        
-        # 2. 股價必須站上 MA60
         if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
         
-        # 3. 多頭排列檢查: MA60 > MA120 > MA240
         if math.isnan(curr_ma120) or math.isnan(curr_ma240): return False, None
         if not (curr_ma60 > curr_ma120 > curr_ma240): return False, None
 
-        # 4. 成交量 > 1000 張
         if curr_v < 1000000: return False, None
 
         # ===== 條件 1：趨勢確認 =====
@@ -321,17 +327,15 @@ def check_strategy_vcp_pro(df):
     }
 
 # ==========================================
-# 4. 更新歷史績效 (盤中即時更新 + 里程碑)
+# 4. 更新歷史績效 (包含里程碑紀錄)
 # ==========================================
 def update_history_roi(history_db):
     print("正在更新歷史名單績效 (ROI & Milestone Update)...")
     tickers_to_check = set()
     
-    # 建立日期物件以計算天數
     tw_tz = pytz.timezone('Asia/Taipei')
     today_date = datetime.now(tw_tz).date()
 
-    # 收集所有需要查詢的股票代號
     for date_str, stocks in history_db.items():
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
@@ -339,14 +343,12 @@ def update_history_roi(history_db):
 
     if not tickers_to_check: return history_db
 
-    print(f"追蹤股票數量: {len(tickers_to_check)}，下載 2 年歷史資料以進行回測與補值...")
+    print(f"追蹤股票數量: {len(tickers_to_check)}，下載 2 年歷史資料...")
     
-    # 下載歷史資料
     close_df = None
     try:
         data = yf.download(list(tickers_to_check), period="2y", auto_adjust=True, threads=True, progress=False)
         
-        # 處理資料格式，確保 close_df 是一個 DataFrame
         if isinstance(data, pd.DataFrame):
             if 'Close' in data.columns and isinstance(data.columns, pd.MultiIndex):
                 close_df = data['Close']
@@ -357,9 +359,8 @@ def update_history_roi(history_db):
                 else:
                     close_df = data['Close']
             else:
-                 close_df = data # 嘗試直接使用
+                 close_df = data
         
-        # 確保移除時區
         if close_df is not None and close_df.index.tz is not None:
             close_df.index = close_df.index.tz_localize(None)
             
@@ -371,7 +372,6 @@ def update_history_roi(history_db):
         print("⚠️ 無法取得歷史股價資料，跳過 ROI 更新。")
         return history_db
 
-    # Helper function: 從 DataFrame 獲取某個日期(或之前)的最後收盤價
     def get_price_at_date(ticker_symbol, target_date, dataframe):
         try:
             target_col = None
@@ -397,7 +397,6 @@ def update_history_roi(history_db):
         except Exception:
             return None
 
-    # Helper function: 解析多種日期格式
     def parse_record_date(date_str):
         formats = ["%Y/%m/%d", "%Y-%m-%d", "%Y/%m/%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"]
         for fmt in formats:
@@ -405,7 +404,6 @@ def update_history_roi(history_db):
             except ValueError: continue
         return None
 
-    # 開始更新每一筆歷史紀錄
     for date_str, stocks in history_db.items():
         record_date = parse_record_date(date_str)
         if record_date:
@@ -417,51 +415,42 @@ def update_history_roi(history_db):
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
             buy_price = float(stock['buy_price'])
 
-            # 1. 更新今日最新價格與 ROI (即時監控用)
             latest_price = get_price_at_date(symbol, today_date, close_df)
             
             if latest_price:
                 roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
                 stock['latest_price'] = round(latest_price, 2)
-                stock['roi'] = roi # 這是「最新」ROI
+                stock['roi'] = roi
                 
-                # 計算日變動
                 prev_price = get_price_at_date(symbol, today_date - timedelta(days=1), close_df)
                 if prev_price:
                      stock['daily_change'] = round(((latest_price - prev_price) / prev_price) * 100, 2)
             else:
                 roi = stock.get('roi', 0.0)
 
-            # 2. 分階段鎖定 ROI 邏輯 (Backfill)
-            # [修正重點] 這裡的欄位名稱必須對應 index.html 讀取的變數 (perf_1d, perf_5d...)
+            # [Fix]: 修正欄位名稱為 perf_Xd，與 index.html 對應
             targets = [
-                (1, 5, 'perf_1d', 4),      # Day 1-4, Lock Day 4
-                (5, 10, 'perf_5d', 9),     # Day 5-9, Lock Day 9
-                (10, 20, 'perf_10d', 19),  # Day 10-19, Lock Day 19
-                (20, 60, 'perf_20d', 59),  # Day 20-59, Lock Day 59
-                (60, 120, 'perf_60d', 119) # Day 60-119, Lock Day 119
+                (1, 5, 'perf_1d', 4),      
+                (5, 10, 'perf_5d', 9),     
+                (10, 20, 'perf_10d', 19),  
+                (20, 60, 'perf_20d', 59),  
+                (60, 120, 'perf_60d', 119) 
             ]
 
             for start_day, end_day, field_name, lock_day_offset in targets:
-                # 情況 A: 已經過了這個區間 (例如天數=22, 處理 perf_1d, perf_5d, perf_10d)
                 if days_diff >= end_day:
-                    # 必須鎖定：回溯抓取鎖定日的價格
                     lock_date = record_date + timedelta(days=lock_day_offset)
                     hist_price = get_price_at_date(symbol, lock_date, close_df)
                     
                     if hist_price:
                         hist_roi = round(((hist_price - buy_price) / buy_price) * 100, 2)
                         stock[field_name] = hist_roi
-                        # print(f"  [Locked] {stock['id']} {field_name}: {hist_roi}%")
                     else:
                         print(f"  ⚠️ Missing history price for {stock['id']} on {lock_date}")
                 
-                # 情況 B: 正處於這個區間內 (例如天數=22, 處理 perf_20d)
                 elif start_day <= days_diff < end_day:
-                    # 使用最新的 ROI (浮動中)
                     stock[field_name] = roi
 
-            # 特別處理 >= 120 天
             if days_diff >= 120:
                 stock['perf_120d'] = roi
 
@@ -491,7 +480,6 @@ def run_scanner():
     for i in range(0, len(full_list), batch_size):
         batch = full_list[i:i+batch_size]
         try:
-            # 2y (730天) 足夠計算 MA300
             data = yf.download(batch, period="2y", group_by='ticker', threads=True, progress=False, auto_adjust=True)
             
             for ticker in batch:
@@ -542,7 +530,6 @@ def run_scanner():
                             
                         tags_str = " & ".join(strategy_tags)
                         
-                        # 顯示 MA300 在備註
                         note_ma300 = round(final_info.get('ma300', 0), 2)
                         note_str = f"{tags_str} / MA300 {note_ma300}"
 
@@ -561,8 +548,7 @@ def run_scanner():
                             "latest_price": final_info['price'], 
                             "roi": 0.0, 
                             "daily_change": change_rate,
-                            # === 新增初始化欄位 (Milestone Tracker) ===
-                            # [修正重點] 這裡初始化也要確保 key 是 perf_xd
+                            # [Fix]: 初始化正確的 key (perf_xd)
                             "perf_1d": None, "perf_5d": None, "perf_10d": None,
                             "perf_20d": None, "perf_30d": None, "perf_60d": None, "perf_120d": None
                         }
