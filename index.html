@@ -236,6 +236,17 @@
                         let totalStocks = 0;
                         let winStocks = 0;
 
+                        // 統計物件：Key 對應各區間
+                        const stats = {
+                            1: { total: 0, win: 0, sumRoi: 0, label: '持有 1-4天' },
+                            5: { total: 0, win: 0, sumRoi: 0, label: '持有 5-9天' },
+                            10: { total: 0, win: 0, sumRoi: 0, label: '持有 10-19天' },
+                            20: { total: 0, win: 0, sumRoi: 0, label: '持有 20-29天' },
+                            30: { total: 0, win: 0, sumRoi: 0, label: '持有 30-59天' },
+                            60: { total: 0, win: 0, sumRoi: 0, label: '持有 60-119天' },
+                            120: { total: 0, win: 0, sumRoi: 0, label: '持有 120天+' }
+                        };
+
                         Object.keys(historyData).forEach(date => {
                             const entryDate = new Date(date);
                             const today = new Date();
@@ -244,7 +255,7 @@
                             historyData[date].forEach(stock => {
                                 const roi = parseFloat(stock.roi || 0);
                                 
-                                // 解析 Note 取得策略 (簡單檢查是否包含字串)
+                                // 解析 Note 取得策略
                                 let strategy = '其他';
                                 const note = stock.note || '';
                                 if (note.includes('Strict-VCP') && note.includes('拉回佈局')) strategy = '雙策略';
@@ -258,11 +269,34 @@
                                     daily_change: parseFloat(stock.daily_change || 0),
                                     roi: roi,
                                     latest_price: parseFloat(stock.latest_price || 0),
-                                    strategy: strategy // 加入策略欄位
+                                    strategy: strategy 
                                 };
-                                [1, 5, 10, 20, 30, 60, 120].forEach(d => {
-                                    stockObj[`roi_${d}`] = (diffDays >= d) ? roi : null;
-                                });
+
+                                // --- 區間分組邏輯 (Mutually Exclusive) ---
+                                // 先初始化所有 roi_X 為 null
+                                [1, 5, 10, 20, 30, 60, 120].forEach(d => stockObj[`roi_${d}`] = null);
+
+                                let bucket = 0;
+                                if (diffDays >= 120) bucket = 120;
+                                else if (diffDays >= 60) bucket = 60;
+                                else if (diffDays >= 30) bucket = 30;
+                                else if (diffDays >= 20) bucket = 20;
+                                else if (diffDays >= 10) bucket = 10;
+                                else if (diffDays >= 5) bucket = 5;
+                                else if (diffDays >= 1) bucket = 1;
+
+                                // 將 ROI 填入對應區間的欄位
+                                if (bucket > 0) {
+                                    stockObj[`roi_${bucket}`] = roi;
+                                    
+                                    // 更新該區間的統計數據
+                                    if(stats[bucket]) {
+                                        stats[bucket].total++;
+                                        if (roi > 0) stats[bucket].win++;
+                                        stats[bucket].sumRoi += roi;
+                                    }
+                                }
+
                                 this.historyList.push(stockObj);
                                 totalStocks++;
                                 if (roi > 0) winStocks++;
@@ -278,24 +312,6 @@
                             else this.ui.winRateBadge.className = "ml-2 text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono";
                         }
                         
-                        const stats = {
-                            1: { total: 0, win: 0, sumRoi: 0 },
-                            5: { total: 0, win: 0, sumRoi: 0 },
-                            10: { total: 0, win: 0, sumRoi: 0 },
-                            20: { total: 0, win: 0, sumRoi: 0 },
-                            30: { total: 0, win: 0, sumRoi: 0 },
-                            60: { total: 0, win: 0, sumRoi: 0 },
-                            120: { total: 0, win: 0, sumRoi: 0 }
-                        };
-                        this.historyList.forEach(s => {
-                            [1, 5, 10, 20, 30, 60, 120].forEach(d => {
-                                if (s.daysHeld >= d) {
-                                    stats[d].total++;
-                                    if (s.roi > 0) stats[d].win++;
-                                    stats[d].sumRoi += s.roi;
-                                }
-                            });
-                        });
                         this.renderPerfStats(stats);
                     }
                 } catch(e) { console.log('No history'); }
@@ -310,7 +326,8 @@
                         const avgRoi = (s.sumRoi / s.total).toFixed(1);
                         const color = avgRoi > 0 ? 'text-red-400' : (avgRoi < 0 ? 'text-green-400' : 'text-gray-400');
                         const border = avgRoi > 0 ? 'border-red-500/50 bg-red-900/20' : (avgRoi < 0 ? 'border-green-500/50 bg-green-900/20' : 'border-gray-500/30');
-                        html += `<div class="stat-card ${border}"><div class="text-[9px] text-gray-400 font-medium mb-0.5">持有 > ${d}天</div><div class="text-xs font-bold text-white mb-0.5">勝率 ${winRate}%</div><div class="text-[10px] ${color} font-mono">均 ${avgRoi > 0 ? '+' : ''}${avgRoi}%</div></div>`;
+                        // 顯示自定義 Label (例如: 持有 1-4天)
+                        html += `<div class="stat-card ${border}"><div class="text-[9px] text-gray-400 font-medium mb-0.5 whitespace-nowrap">${s.label}</div><div class="text-xs font-bold text-white mb-0.5">勝率 ${winRate}%</div><div class="text-[10px] ${color} font-mono">均 ${avgRoi > 0 ? '+' : ''}${avgRoi}%</div></div>`;
                     }
                 });
                 if(html === '') html = '<span class="text-xs text-gray-500 p-2">累積資料中...</span>';
@@ -327,6 +344,7 @@
                 const dir = this.state.perfSortDir === 'asc' ? 1 : -1;
                 this.historyList.sort((a, b) => {
                     let valA = a[key], valB = b[key];
+                    // 針對數值欄位處理 (null 值視為極小，排在最後)
                     if (['latest_price', 'daily_change', 'roi', 'buy_price'].includes(key) || key.startsWith('roi_')) {
                         const vA = (valA === null || valA === undefined) ? -99999999 : parseFloat(valA);
                         const vB = (valB === null || valB === undefined) ? -99999999 : parseFloat(valB);
@@ -352,17 +370,18 @@
                     const roiClass = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-400');
                     const dayClass = dayChg > 0 ? 'text-red-400' : (dayChg < 0 ? 'text-green-400' : 'text-gray-400');
                     
-                    // 根據策略決定標籤顏色
                     let strategyBadge = '';
                     if (s.strategy === 'VCP') strategyBadge = '<span class="text-[9px] text-purple-300 bg-purple-900/40 px-1 py-0.5 rounded border border-purple-700/50">VCP</span>';
                     else if (s.strategy === '拉回') strategyBadge = '<span class="text-[9px] text-blue-300 bg-blue-900/40 px-1 py-0.5 rounded border border-blue-700/50">拉回</span>';
                     else if (s.strategy === '雙策略') strategyBadge = '<span class="text-[9px] text-yellow-300 bg-yellow-900/40 px-1 py-0.5 rounded border border-yellow-700/50">雙</span>';
                     else strategyBadge = '<span class="text-[9px] text-gray-400">-</span>';
 
+                    // 檢查每一個區間欄位，如果有值才顯示
                     const cols = [1, 5, 10, 20, 30, 60, 120].map(d => {
-                        if (s.daysHeld >= d) {
-                            const c = roi > 0 ? 'text-red-400' : (roi < 0 ? 'text-green-400' : 'text-gray-500');
-                            return `<td class="px-1 py-2 text-right text-[10px] ${c}">${roi > 0 ? '+' : ''}${roi}%</td>`;
+                        const val = s[`roi_${d}`];
+                        if (val !== null && val !== undefined) {
+                            const c = val > 0 ? 'text-red-400' : (val < 0 ? 'text-green-400' : 'text-gray-500');
+                            return `<td class="px-1 py-2 text-right text-[10px] ${c}">${val > 0 ? '+' : ''}${val}%</td>`;
                         } else {
                             return `<td class="px-1 py-2 text-right text-[10px] text-gray-600">-</td>`;
                         }
@@ -377,7 +396,6 @@
                                     <div class="text-[9px] text-gray-500 font-normal no-underline">${s.id}</div>
                                 </a>
                             </td>
-                            <!-- 顯示策略標籤 -->
                             <td class="px-1 py-2 text-center border-r border-slate-800/50">${strategyBadge}</td>
                             <td class="px-1 py-2 text-right text-xs text-gray-500">${s.buy_price}</td>
                             <td class="px-1 py-2 text-right text-xs text-gray-300">${s.latest_price}</td>
