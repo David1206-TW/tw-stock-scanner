@@ -1,5 +1,5 @@
 {
-  "date": "2026/01/10 01:35:41",
+  "date": "2026/01/10 02:03:46",
   "source": "GitHub Actions",
   "list": [
     {
@@ -16,7 +16,13 @@
       "buy_price": 138.5,
       "latest_price": 138.5,
       "roi": 0.0,
-      "daily_change": 1.47
+      "daily_change": 1.47,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "1519",
@@ -32,7 +38,13 @@
       "buy_price": 786.0,
       "latest_price": 786.0,
       "roi": 0.0,
-      "daily_change": 6.94
+      "daily_change": 6.94,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2308",
@@ -48,7 +60,13 @@
       "buy_price": 1015.0,
       "latest_price": 1015.0,
       "roi": 0.0,
-      "daily_change": 0.5
+      "daily_change": 0.5,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2327",
@@ -64,7 +82,13 @@
       "buy_price": 241.5,
       "latest_price": 241.5,
       "roi": 0.0,
-      "daily_change": 1.68
+      "daily_change": 1.68,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2399",
@@ -80,7 +104,13 @@
       "buy_price": 24.8,
       "latest_price": 24.8,
       "roi": 0.0,
-      "daily_change": 0.81
+      "daily_change": 0.81,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2441",
@@ -96,7 +126,13 @@
       "buy_price": 91.5,
       "latest_price": 91.5,
       "roi": 0.0,
-      "daily_change": 4.45
+      "daily_change": 4.45,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2501",
@@ -112,7 +148,13 @@
       "buy_price": 24.05,
       "latest_price": 24.05,
       "roi": 0.0,
-      "daily_change": -0.82
+      "daily_change": -0.82,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2605",
@@ -128,7 +170,13 @@
       "buy_price": 27.75,
       "latest_price": 27.75,
       "roi": 0.0,
-      "daily_change": 2.97
+      "daily_change": 2.97,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2612",
@@ -144,7 +192,13 @@
       "buy_price": 60.8,
       "latest_price": 60.8,
       "roi": 0.0,
-      "daily_change": 0.16
+      "daily_change": 0.16,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2633",
@@ -160,7 +214,13 @@
       "buy_price": 28.0,
       "latest_price": 28.0,
       "roi": 0.0,
-      "daily_change": 0.36
+      "daily_change": 0.36,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2834",
@@ -176,7 +236,13 @@
       "buy_price": 16.15,
       "latest_price": 16.15,
       "roi": 0.0,
-      "daily_change": 0.0
+      "daily_change": 0.0,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2867",
@@ -192,7 +258,13 @@
       "buy_price": 7.79,
       "latest_price": 7.79,
       "roi": 0.0,
-      "daily_change": -0.13
+      "daily_change": -0.13,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2881",
@@ -208,7 +280,13 @@
       "buy_price": 95.5,
       "latest_price": 95.5,
       "roi": 0.0,
-      "daily_change": -1.55
+      "daily_change": -1.55,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2882",
@@ -224,7 +302,13 @@
       "buy_price": 75.9,
       "latest_price": 75.9,
       "roi": 0.0,
-      "daily_change": -0.65
+      "daily_change": -0.65,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2885",
@@ -240,7 +324,13 @@
       "buy_price": 40.8,
       "latest_price": 40.8,
       "roi": 0.0,
-      "daily_change": -0.73
+      "daily_change": -0.73,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2887",
@@ -256,7 +346,13 @@
       "buy_price": 20.85,
       "latest_price": 20.85,
       "roi": 0.0,
-      "daily_change": 0.48
+      "daily_change": 0.48,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2889",
@@ -272,7 +368,13 @@
       "buy_price": 16.75,
       "latest_price": 16.75,
       "roi": 0.0,
-      "daily_change": 0.3
+      "daily_change": 0.3,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2890",
@@ -288,7 +390,13 @@
       "buy_price": 29.2,
       "latest_price": 29.2,
       "roi": 0.0,
-      "daily_change": -0.0
+      "daily_change": -0.0,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "2891",
@@ -304,7 +412,13 @@
       "buy_price": 49.7,
       "latest_price": 49.7,
       "roi": 0.0,
-      "daily_change": 0.71
+      "daily_change": 0.71,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "3036",
@@ -320,7 +434,13 @@
       "buy_price": 146.5,
       "latest_price": 146.5,
       "roi": 0.0,
-      "daily_change": 0.69
+      "daily_change": 0.69,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "3037",
@@ -336,7 +456,13 @@
       "buy_price": 225.5,
       "latest_price": 225.5,
       "roi": 0.0,
-      "daily_change": -0.88
+      "daily_change": -0.88,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "3044",
@@ -352,7 +478,13 @@
       "buy_price": 318.5,
       "latest_price": 318.5,
       "roi": 0.0,
-      "daily_change": 0.47
+      "daily_change": 0.47,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "5234",
@@ -368,7 +500,13 @@
       "buy_price": 365.0,
       "latest_price": 365.0,
       "roi": 0.0,
-      "daily_change": -1.22
+      "daily_change": -1.22,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "6691",
@@ -384,7 +522,13 @@
       "buy_price": 583.0,
       "latest_price": 583.0,
       "roi": 0.0,
-      "daily_change": -0.34
+      "daily_change": -0.34,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "0050",
@@ -400,7 +544,13 @@
       "buy_price": 69.63,
       "latest_price": 69.63,
       "roi": 0.0,
-      "daily_change": -0.67
+      "daily_change": -0.67,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "0056",
@@ -416,7 +566,13 @@
       "buy_price": 37.42,
       "latest_price": 37.42,
       "roi": 0.0,
-      "daily_change": 0.03
+      "daily_change": 0.03,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "3363",
@@ -432,7 +588,13 @@
       "buy_price": 429.0,
       "latest_price": 429.0,
       "roi": 0.0,
-      "daily_change": 0.12
+      "daily_change": 0.12,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "4971",
@@ -448,7 +610,13 @@
       "buy_price": 292.5,
       "latest_price": 292.5,
       "roi": 0.0,
-      "daily_change": 1.92
+      "daily_change": 1.92,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "6026",
@@ -464,7 +632,13 @@
       "buy_price": 14.15,
       "latest_price": 14.15,
       "roi": 0.0,
-      "daily_change": 0.35
+      "daily_change": 0.35,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "6175",
@@ -480,7 +654,13 @@
       "buy_price": 53.0,
       "latest_price": 53.0,
       "roi": 0.0,
-      "daily_change": 2.32
+      "daily_change": 2.32,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "6284",
@@ -496,7 +676,13 @@
       "buy_price": 82.5,
       "latest_price": 82.5,
       "roi": 0.0,
-      "daily_change": 0.86
+      "daily_change": 0.86,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "8064",
@@ -512,7 +698,13 @@
       "buy_price": 46.2,
       "latest_price": 46.2,
       "roi": 0.0,
-      "daily_change": -1.49
+      "daily_change": -1.49,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "8086",
@@ -528,7 +720,13 @@
       "buy_price": 111.0,
       "latest_price": 111.0,
       "roi": 0.0,
-      "daily_change": 0.91
+      "daily_change": 0.91,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     },
     {
       "id": "8390",
@@ -544,7 +742,13 @@
       "buy_price": 96.5,
       "latest_price": 96.5,
       "roi": 0.0,
-      "daily_change": 2.44
+      "daily_change": 2.44,
+      "roi_1": null,
+      "roi_5": null,
+      "roi_10": null,
+      "roi_20": null,
+      "roi_60": null,
+      "roi_120": null
     }
   ]
 }
