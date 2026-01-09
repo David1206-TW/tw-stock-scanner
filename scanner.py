@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V58 Safety Filters
+台股自動掃描策略機器人 (Scanner Bot) - V58.2 Fix Key Mismatch
 
 【版本資訊】
-Base Version: V57
-Update: 新增兩項「絕對排除」的風控條件，避免選到轉弱股。
-Fix: 修正 History ROI 回溯計算問題，增加欄位對應的容錯率，確保 history.json 能正確寫入鎖定的績效值。
+Base Version: V58
+Fix: 修正 V58.1 中「歷史回測寫入欄位」與「前端讀取欄位」名稱不一致的 Bug。
+     (後端原本誤寫為 roi_1, 現已更正為 perf_1d 以配合前端)
 
 【新增排除條件 (兩策略皆適用)】
 1. 墓碑線排除：當日K線只有上引線(>0.2%)，沒有下引線(<0.1%)。
@@ -321,10 +321,10 @@ def check_strategy_vcp_pro(df):
     }
 
 # ==========================================
-# 4. 更新歷史績效 (盤中即時更新)
+# 4. 更新歷史績效 (盤中即時更新 + 里程碑)
 # ==========================================
 def update_history_roi(history_db):
-    print("正在更新歷史名單績效 (Backfill & ROI Update)...")
+    print("正在更新歷史名單績效 (ROI & Milestone Update)...")
     tickers_to_check = set()
     
     # 建立日期物件以計算天數
@@ -351,15 +351,12 @@ def update_history_roi(history_db):
             if 'Close' in data.columns and isinstance(data.columns, pd.MultiIndex):
                 close_df = data['Close']
             elif 'Close' in data.columns:
-                # 單一股票，欄位可能是 Open, Close...，沒有 MultiIndex
-                # 手動構建 DataFrame 以便後續統一處理
                 if len(tickers_to_check) == 1:
                     ticker = list(tickers_to_check)[0]
                     close_df = pd.DataFrame({ticker: data['Close']})
                 else:
                     close_df = data['Close']
             else:
-                 # 可能是單一股票直接回傳 Close Series 或其他奇怪格式
                  close_df = data # 嘗試直接使用
         
         # 確保移除時區
@@ -378,13 +375,10 @@ def update_history_roi(history_db):
     def get_price_at_date(ticker_symbol, target_date, dataframe):
         try:
             target_col = None
-            # 1. 精準比對 (e.g. 2330.TW)
             if ticker_symbol in dataframe.columns:
                 target_col = ticker_symbol
-            # 2. 去除後綴比對 (e.g. 2330)
             elif ticker_symbol.split('.')[0] in dataframe.columns:
                 target_col = ticker_symbol.split('.')[0]
-            # 3. 嘗試在 Columns 中尋找包含該代號的欄位 (更寬鬆的匹配)
             else:
                 simple_code = ticker_symbol.split('.')[0]
                 for col in dataframe.columns:
@@ -392,23 +386,14 @@ def update_history_roi(history_db):
                         target_col = col
                         break
             
-            if not target_col:
-                # print(f"  Debug: Column '{ticker_symbol}' not found.")
-                return None
+            if not target_col: return None
             
-            # 取得該股票的所有收盤價 Series
             series = dataframe[target_col].dropna()
-            
-            # 轉換 target_date 為 timestamp (當天 23:59:59)
             target_ts = pd.Timestamp(target_date) + pd.Timedelta(hours=23, minutes=59)
-            
-            # 篩選 <= target_ts 的資料
             past_data = series[series.index <= target_ts]
             
-            if not past_data.empty:
-                return float(past_data.iloc[-1])
-            else:
-                return None
+            if not past_data.empty: return float(past_data.iloc[-1])
+            else: return None
         except Exception:
             return None
 
@@ -416,10 +401,8 @@ def update_history_roi(history_db):
     def parse_record_date(date_str):
         formats = ["%Y/%m/%d", "%Y-%m-%d", "%Y/%m/%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"]
         for fmt in formats:
-            try:
-                return datetime.strptime(date_str, fmt).date()
-            except ValueError:
-                continue
+            try: return datetime.strptime(date_str, fmt).date()
+            except ValueError: continue
         return None
 
     # 開始更新每一筆歷史紀錄
@@ -450,16 +433,17 @@ def update_history_roi(history_db):
                 roi = stock.get('roi', 0.0)
 
             # 2. 分階段鎖定 ROI 邏輯 (Backfill)
+            # [修正重點] 這裡的欄位名稱必須對應 index.html 讀取的變數 (perf_1d, perf_5d...)
             targets = [
-                (1, 5, 'roi_1', 4),      # Day 1-4, Lock Day 4
-                (5, 10, 'roi_5', 9),     # Day 5-9, Lock Day 9
-                (10, 20, 'roi_10', 19),  # Day 10-19, Lock Day 19
-                (20, 60, 'roi_20', 59),  # Day 20-59, Lock Day 59
-                (60, 120, 'roi_60', 119) # Day 60-119, Lock Day 119
+                (1, 5, 'perf_1d', 4),      # Day 1-4, Lock Day 4
+                (5, 10, 'perf_5d', 9),     # Day 5-9, Lock Day 9
+                (10, 20, 'perf_10d', 19),  # Day 10-19, Lock Day 19
+                (20, 60, 'perf_20d', 59),  # Day 20-59, Lock Day 59
+                (60, 120, 'perf_60d', 119) # Day 60-119, Lock Day 119
             ]
 
             for start_day, end_day, field_name, lock_day_offset in targets:
-                # 情況 A: 已經過了這個區間 (例如天數=22, 處理 roi_1, roi_5, roi_10)
+                # 情況 A: 已經過了這個區間 (例如天數=22, 處理 perf_1d, perf_5d, perf_10d)
                 if days_diff >= end_day:
                     # 必須鎖定：回溯抓取鎖定日的價格
                     lock_date = record_date + timedelta(days=lock_day_offset)
@@ -470,19 +454,16 @@ def update_history_roi(history_db):
                         stock[field_name] = hist_roi
                         # print(f"  [Locked] {stock['id']} {field_name}: {hist_roi}%")
                     else:
-                        # ⚠️ 如果抓不到歷史價格，不要留空，改為保留舊值或填入 'N/A' 避免前端誤判
-                        # 這裡選擇不更新，讓它保持原樣(如果原樣是空，前端可能會顯示roi)
-                        # 但為了debug，我們印出來
                         print(f"  ⚠️ Missing history price for {stock['id']} on {lock_date}")
                 
-                # 情況 B: 正處於這個區間內 (例如天數=22, 處理 roi_20)
+                # 情況 B: 正處於這個區間內 (例如天數=22, 處理 perf_20d)
                 elif start_day <= days_diff < end_day:
                     # 使用最新的 ROI (浮動中)
                     stock[field_name] = roi
 
             # 特別處理 >= 120 天
             if days_diff >= 120:
-                stock['roi_120'] = roi
+                stock['perf_120d'] = roi
 
     print("歷史績效更新完成 (含歷史回溯補值)。")
     return history_db
@@ -581,8 +562,9 @@ def run_scanner():
                             "roi": 0.0, 
                             "daily_change": change_rate,
                             # === 新增初始化欄位 (Milestone Tracker) ===
-                            "roi_1": None, "roi_5": None, "roi_10": None,
-                            "roi_20": None, "roi_60": None, "roi_120": None
+                            # [修正重點] 這裡初始化也要確保 key 是 perf_xd
+                            "perf_1d": None, "perf_5d": None, "perf_10d": None,
+                            "perf_20d": None, "perf_30d": None, "perf_60d": None, "perf_120d": None
                         }
                         daily_results.append(stock_entry)
                         print(f" -> Found: {raw_code} {name} [{tags_str}]")
