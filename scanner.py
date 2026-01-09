@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V58.3 Trend Support
+台股自動掃描策略機器人 (Scanner Bot) - V58.5 K-Bar ROI Tracking
 
 【版本資訊】
-Base Version: V58
-Update V58.3:
-1. 實作「20日均線扣抵值」過濾，確保月線趨勢向上。
-2. Fix: 修正歷史回測欄位名稱 (roi_1 -> perf_1d) 以匹配前端顯示。
+Base Version: V58.4
+Update V58.5:
+1. [MA定義確認] 代碼中的 MA (rolling) 本身即為 K棒定義，無需修改。
+2. [ROI優化] 將歷史績效追蹤從「日曆天」改為「K棒數 (Trading Days)」。
+   - perf_20d 現在代表「持有 20 根 K棒」後的績效，完全排除假日干擾。
+   - 透過 iloc 定位進場日與里程碑日，確保回測精準度。
 
 【新增排除條件 (兩策略皆適用)】
 1. 墓碑線排除：當日K線只有上引線(>0.2%)，沒有下引線(<0.1%)。
 2. 破底排除：當日最低價小於前日最低價 1.5% 以上。
+3. 扣抵值排除：當日收盤價 < 20交易日前收盤價 (確保趨勢向上)。
 
 【保留策略說明】
 1. 策略 A (拉回佈局): 
@@ -94,12 +97,12 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 3. 策略邏輯 (V58.3 更新)
+# 3. 策略邏輯 (V58.5)
 # ==========================================
 
 def check_strategy_original(df):
     """
-    策略 A：拉回佈局 (含風控排除 + 扣抵值過濾)
+    策略 A：拉回佈局 (含交易日扣抵值過濾)
     """
     # 資料長度檢查
     if len(df) < 310: return False, None
@@ -110,6 +113,7 @@ def check_strategy_original(df):
     volume = df['Volume']
     low = df['Low']
     
+    # 這裡的 rolling(N) 就是 K 棒定義 (過去 N 筆交易日)
     ma5 = close.rolling(5).mean()
     ma10 = close.rolling(10).mean()
     ma12 = close.rolling(12).mean()
@@ -143,18 +147,18 @@ def check_strategy_original(df):
 
     # === 0. 風控排除條件 ===
     
-    # 排除 1: 墓碑線 (上影線長, 無下影線)
+    # 排除 1: 墓碑線
     upper_shadow = curr_h - max(curr_c, curr_o)
     lower_shadow = min(curr_c, curr_o) - curr_l
     if (upper_shadow / curr_c > 0.002) and (lower_shadow / curr_c < 0.001):
         return False, None
 
-    # 排除 2: 破底 (當日最低比昨日最低低 1.5% 以上)
+    # 排除 2: 破底
     if prev_l > 0 and (prev_l - curr_l) / prev_l > 0.015:
         return False, None
 
-    # 排除 3: 當日收盤價 < 20日均線扣抵值 (V58.3)
-    # iloc[-20] 代表 20 天前的收盤價 (即將被扣抵的值)
+    # 排除 3: 當日收盤價 < 20交易日均線扣抵值
+    # iloc[-20] 代表往回數第 20 根 K 棒，這是純 K 棒定義
     deduction_20 = float(close.iloc[-20])
     if curr_c < deduction_20:
         return False, None
@@ -204,7 +208,7 @@ def check_strategy_original(df):
 
 def check_strategy_vcp_pro(df):
     """
-    策略 B：Strict VCP (含風控排除 + 扣抵值過濾)
+    策略 B：Strict VCP (含交易日扣抵值過濾)
     """
     try:
         close = df['Close']
@@ -264,7 +268,7 @@ def check_strategy_vcp_pro(df):
         if prev_l > 0 and (prev_l - curr_l) / prev_l > 0.015:
             return False, None
 
-        # 排除 3: 當日收盤價 < 20日均線扣抵值 (V58.3)
+        # 排除 3: 當日收盤價 < 20交易日均線扣抵值
         deduction_20 = float(close.iloc[-20])
         if curr_c < deduction_20:
             return False, None
@@ -327,15 +331,13 @@ def check_strategy_vcp_pro(df):
     }
 
 # ==========================================
-# 4. 更新歷史績效 (包含里程碑紀錄)
+# 4. 更新歷史績效 (改為 K棒數計算)
 # ==========================================
 def update_history_roi(history_db):
-    print("正在更新歷史名單績效 (ROI & Milestone Update)...")
+    print("正在更新歷史名單績效 (K-Bar ROI Tracking)...")
     tickers_to_check = set()
     
-    tw_tz = pytz.timezone('Asia/Taipei')
-    today_date = datetime.now(tw_tz).date()
-
+    # 這裡只需要下載資料，不需要算今天日期 (因為是看 K 棒相對位置)
     for date_str, stocks in history_db.items():
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
@@ -372,7 +374,8 @@ def update_history_roi(history_db):
         print("⚠️ 無法取得歷史股價資料，跳過 ROI 更新。")
         return history_db
 
-    def get_price_at_date(ticker_symbol, target_date, dataframe):
+    # Helper: 取得該股票的 Series
+    def get_stock_series(ticker_symbol, dataframe):
         try:
             target_col = None
             if ticker_symbol in dataframe.columns:
@@ -387,16 +390,10 @@ def update_history_roi(history_db):
                         break
             
             if not target_col: return None
-            
-            series = dataframe[target_col].dropna()
-            target_ts = pd.Timestamp(target_date) + pd.Timedelta(hours=23, minutes=59)
-            past_data = series[series.index <= target_ts]
-            
-            if not past_data.empty: return float(past_data.iloc[-1])
-            else: return None
-        except Exception:
-            return None
+            return dataframe[target_col].dropna()
+        except: return None
 
+    # Helper: 解析日期
     def parse_record_date(date_str):
         formats = ["%Y/%m/%d", "%Y-%m-%d", "%Y/%m/%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"]
         for fmt in formats:
@@ -404,57 +401,87 @@ def update_history_roi(history_db):
             except ValueError: continue
         return None
 
+    # 開始遍歷歷史紀錄
     for date_str, stocks in history_db.items():
-        record_date = parse_record_date(date_str)
-        if record_date:
-            days_diff = (today_date - record_date).days
-        else:
-            days_diff = 0
+        record_date_obj = parse_record_date(date_str)
+        if not record_date_obj: continue
         
+        # 將 datetime.date 轉為 pd.Timestamp 以便比對 Index
+        record_ts = pd.Timestamp(record_date_obj)
+
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
             buy_price = float(stock['buy_price'])
-
-            latest_price = get_price_at_date(symbol, today_date, close_df)
             
-            if latest_price:
-                roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
-                stock['latest_price'] = round(latest_price, 2)
-                stock['roi'] = roi
-                
-                prev_price = get_price_at_date(symbol, today_date - timedelta(days=1), close_df)
-                if prev_price:
-                     stock['daily_change'] = round(((latest_price - prev_price) / prev_price) * 100, 2)
-            else:
-                roi = stock.get('roi', 0.0)
+            series = get_stock_series(symbol, close_df)
+            if series is None or series.empty: continue
 
-            # [Fix]: 修正欄位名稱為 perf_Xd，與 index.html 對應
+            # 1. 找到進場日在 series 中的位置 (Index Location)
+            # 使用 searchsorted 找到 >= record_ts 的第一個位置
+            # 如果 scanner 是盤後跑，record_date 應該就是當天。
+            try:
+                # 找到最接近 record_ts 的位置 (如果當天沒資料，找下一個交易日，雖然理論上 scanner 當天應該有資料)
+                # 這裡假設 record_date 當天或之後有資料
+                start_idx = series.index.searchsorted(record_ts)
+                
+                # 如果 start_idx 超出範圍，代表資料庫比紀錄時間還舊 (不合理但防呆)
+                if start_idx >= len(series): continue
+                
+                # 取得該位置的日期，確認是否差距太遠 (例如超過 5 天沒對上，可能是資料錯誤)
+                found_date = series.index[start_idx]
+                if (found_date - record_ts).days > 7: 
+                    # print(f"Warning: {symbol} entry date mismatch. Rec: {record_ts}, Found: {found_date}")
+                    pass
+
+            except Exception: continue
+
+            # 2. 計算目前持有幾根 K 棒
+            # 目前最新的資料位置是 len(series) - 1
+            # 持有 K 棒數 = (最新位置) - (進場位置)
+            # 例如: 進場日 idx=100, 今天 idx=105 -> 持有 5 根
+            current_idx = len(series) - 1
+            bars_held = current_idx - start_idx
+            
+            # 存回 stock 物件，方便前端參考 (前端 daysHeld 可以改用這個)
+            stock['days_held'] = int(bars_held) 
+
+            # 3. 更新最新報價與 ROI
+            latest_price = float(series.iloc[-1])
+            roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
+            
+            stock['latest_price'] = round(latest_price, 2)
+            stock['roi'] = roi
+            
+            if len(series) >= 2:
+                prev_price = float(series.iloc[-2])
+                stock['daily_change'] = round(((latest_price - prev_price) / prev_price) * 100, 2)
+
+            # 4. 里程碑鎖定 (基於 K 棒數)
             targets = [
-                (1, 5, 'perf_1d', 4),      
-                (5, 10, 'perf_5d', 9),     
-                (10, 20, 'perf_10d', 19),  
-                (20, 60, 'perf_20d', 59),  
-                (60, 120, 'perf_60d', 119) 
+                (1, 'perf_1d'),
+                (5, 'perf_5d'),
+                (10, 'perf_10d'),
+                (20, 'perf_20d'),
+                (60, 'perf_60d'),
+                (120, 'perf_120d')
             ]
 
-            for start_day, end_day, field_name, lock_day_offset in targets:
-                if days_diff >= end_day:
-                    lock_date = record_date + timedelta(days=lock_day_offset)
-                    hist_price = get_price_at_date(symbol, lock_date, close_df)
+            for bar_threshold, field_name in targets:
+                # 如果持有 K 棒數 >= 門檻，且該欄位尚未被鎖定(或是想更新歷史鎖定值)
+                # 這裡邏輯：只要過了門檻，就去抓「剛好滿門檻那天」的價格來鎖定
+                if bars_held >= bar_threshold:
+                    target_idx = start_idx + bar_threshold
                     
-                    if hist_price:
-                        hist_roi = round(((hist_price - buy_price) / buy_price) * 100, 2)
-                        stock[field_name] = hist_roi
-                    else:
-                        print(f"  ⚠️ Missing history price for {stock['id']} on {lock_date}")
+                    # 確保 target_idx 在資料範圍內 (理論上 bars_held >= threshold 則一定在)
+                    if target_idx < len(series):
+                        lock_price = float(series.iloc[target_idx])
+                        lock_roi = round(((lock_price - buy_price) / buy_price) * 100, 2)
+                        stock[field_name] = lock_roi
                 
-                elif start_day <= days_diff < end_day:
-                    stock[field_name] = roi
+                # 如果還沒到門檻，但正在進行中 (例如持有 3 天，顯示 perf_1d 的鎖定值? 不，perf_1d 已經鎖定)
+                # 如果是「未達到的未來里程碑」，保持 None
 
-            if days_diff >= 120:
-                stock['perf_120d'] = roi
-
-    print("歷史績效更新完成 (含歷史回溯補值)。")
+    print("歷史績效更新完成 (K-Bar Based)。")
     return history_db
 
 # ==========================================
@@ -548,7 +575,6 @@ def run_scanner():
                             "latest_price": final_info['price'], 
                             "roi": 0.0, 
                             "daily_change": change_rate,
-                            # [Fix]: 初始化正確的 key (perf_xd)
                             "perf_1d": None, "perf_5d": None, "perf_10d": None,
                             "perf_20d": None, "perf_30d": None, "perf_60d": None, "perf_120d": None
                         }
