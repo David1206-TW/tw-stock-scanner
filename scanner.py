@@ -579,7 +579,10 @@ def run_scanner():
                             "buy_price": final_info['price'], 
                             "latest_price": final_info['price'], 
                             "roi": 0.0, 
-                            "daily_change": change_rate
+                            "daily_change": change_rate,
+                            # === 新增初始化欄位 (Milestone Tracker) ===
+                            "roi_1": None, "roi_5": None, "roi_10": None,
+                            "roi_20": None, "roi_60": None, "roi_120": None
                         }
                         daily_results.append(stock_entry)
                         print(f" -> Found: {raw_code} {name} [{tags_str}]")
