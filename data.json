@@ -1,5 +1,5 @@
 {
-  "date": "2026/01/10 02:03:46",
+  "date": "2026/01/10 02:24:28",
   "source": "GitHub Actions",
   "list": [
     {
@@ -17,12 +17,13 @@
       "latest_price": 138.5,
       "roi": 0.0,
       "daily_change": 1.47,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "1519",
@@ -39,12 +40,13 @@
       "latest_price": 786.0,
       "roi": 0.0,
       "daily_change": 6.94,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2308",
@@ -61,12 +63,13 @@
       "latest_price": 1015.0,
       "roi": 0.0,
       "daily_change": 0.5,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2327",
@@ -83,12 +86,13 @@
       "latest_price": 241.5,
       "roi": 0.0,
       "daily_change": 1.68,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2399",
@@ -105,12 +109,13 @@
       "latest_price": 24.8,
       "roi": 0.0,
       "daily_change": 0.81,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2441",
@@ -127,12 +132,13 @@
       "latest_price": 91.5,
       "roi": 0.0,
       "daily_change": 4.45,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2501",
@@ -149,12 +155,13 @@
       "latest_price": 24.05,
       "roi": 0.0,
       "daily_change": -0.82,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2605",
@@ -171,12 +178,13 @@
       "latest_price": 27.75,
       "roi": 0.0,
       "daily_change": 2.97,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2612",
@@ -193,12 +201,13 @@
       "latest_price": 60.8,
       "roi": 0.0,
       "daily_change": 0.16,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2633",
@@ -215,12 +224,13 @@
       "latest_price": 28.0,
       "roi": 0.0,
       "daily_change": 0.36,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2834",
@@ -237,12 +247,13 @@
       "latest_price": 16.15,
       "roi": 0.0,
       "daily_change": 0.0,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2867",
@@ -259,12 +270,13 @@
       "latest_price": 7.79,
       "roi": 0.0,
       "daily_change": -0.13,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2881",
@@ -281,12 +293,13 @@
       "latest_price": 95.5,
       "roi": 0.0,
       "daily_change": -1.55,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2882",
@@ -303,12 +316,13 @@
       "latest_price": 75.9,
       "roi": 0.0,
       "daily_change": -0.65,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2885",
@@ -325,12 +339,13 @@
       "latest_price": 40.8,
       "roi": 0.0,
       "daily_change": -0.73,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2887",
@@ -347,12 +362,13 @@
       "latest_price": 20.85,
       "roi": 0.0,
       "daily_change": 0.48,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2889",
@@ -369,12 +385,13 @@
       "latest_price": 16.75,
       "roi": 0.0,
       "daily_change": 0.3,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2890",
@@ -391,12 +408,13 @@
       "latest_price": 29.2,
       "roi": 0.0,
       "daily_change": -0.0,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "2891",
@@ -413,12 +431,13 @@
       "latest_price": 49.7,
       "roi": 0.0,
       "daily_change": 0.71,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "3036",
@@ -435,12 +454,13 @@
       "latest_price": 146.5,
       "roi": 0.0,
       "daily_change": 0.69,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "3037",
@@ -457,12 +477,13 @@
       "latest_price": 225.5,
       "roi": 0.0,
       "daily_change": -0.88,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "3044",
@@ -479,12 +500,13 @@
       "latest_price": 318.5,
       "roi": 0.0,
       "daily_change": 0.47,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "5234",
@@ -501,12 +523,13 @@
       "latest_price": 365.0,
       "roi": 0.0,
       "daily_change": -1.22,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "6691",
@@ -523,12 +546,13 @@
       "latest_price": 583.0,
       "roi": 0.0,
       "daily_change": -0.34,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "0050",
@@ -545,12 +569,13 @@
       "latest_price": 69.63,
       "roi": 0.0,
       "daily_change": -0.67,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "0056",
@@ -567,12 +592,13 @@
       "latest_price": 37.42,
       "roi": 0.0,
       "daily_change": 0.03,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "3363",
@@ -589,12 +615,13 @@
       "latest_price": 429.0,
       "roi": 0.0,
       "daily_change": 0.12,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "4971",
@@ -611,12 +638,13 @@
       "latest_price": 292.5,
       "roi": 0.0,
       "daily_change": 1.92,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "6026",
@@ -633,12 +661,13 @@
       "latest_price": 14.15,
       "roi": 0.0,
       "daily_change": 0.35,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "6175",
@@ -655,12 +684,13 @@
       "latest_price": 53.0,
       "roi": 0.0,
       "daily_change": 2.32,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "6284",
@@ -677,12 +707,13 @@
       "latest_price": 82.5,
       "roi": 0.0,
       "daily_change": 0.86,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "8064",
@@ -699,12 +730,13 @@
       "latest_price": 46.2,
       "roi": 0.0,
       "daily_change": -1.49,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "8086",
@@ -721,12 +753,13 @@
       "latest_price": 111.0,
       "roi": 0.0,
       "daily_change": 0.91,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     },
     {
       "id": "8390",
@@ -743,12 +776,13 @@
       "latest_price": 96.5,
       "roi": 0.0,
       "daily_change": 2.44,
-      "roi_1": null,
-      "roi_5": null,
-      "roi_10": null,
-      "roi_20": null,
-      "roi_60": null,
-      "roi_120": null
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
     }
   ]
 }
