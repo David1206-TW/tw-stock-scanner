@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/01/12": [
@@ -3379,9 +3380,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線52.53",
       "buy_price": 73.5,
-      "latest_price": 67.1,
-      "roi": -8.71,
-      "daily_change": -3.03,
+      "latest_price": 67.0,
+      "roi": -8.84,
+      "daily_change": -3.18,
       "roi_10": -5.17,
       "roi_1": 3.13,
       "roi_5": -0.41,
