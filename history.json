@@ -2890,16 +2890,16 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 50.54",
       "buy_price": 63.8,
-      "latest_price": 72.6,
-      "roi": 13.79,
-      "daily_change": 0.83,
+      "latest_price": 72.8,
+      "roi": 14.11,
+      "daily_change": 0.28,
       "roi_10": 9.14,
       "roi_1": 0.94,
       "roi_5": 4.94,
       "perf_1d": 0.94,
       "perf_5d": 4.94,
       "perf_10d": 9.48,
-      "days_held": 16
+      "days_held": 17
     },
     {
       "id": "0056",
