@@ -1,30 +1,7 @@
 {
-  "date": "2026/01/22 13:50:02",
+  "date": "2026/01/22 13:54:54",
   "source": "GitHub Actions",
   "list": [
-    {
-      "id": "1304",
-      "name": "台聚",
-      "group": "塑膠",
-      "type": "上市",
-      "price": 11.5,
-      "ma5": 11.56,
-      "ma10": 11.52,
-      "changeRate": 1.32,
-      "isValid": true,
-      "note": "拉回佈局 / MA300 10.85",
-      "buy_price": 11.5,
-      "latest_price": 11.5,
-      "roi": 0.0,
-      "daily_change": 1.32,
-      "perf_1d": null,
-      "perf_5d": null,
-      "perf_10d": null,
-      "perf_20d": null,
-      "perf_30d": null,
-      "perf_60d": null,
-      "perf_120d": null
-    },
     {
       "id": "1560",
       "name": "中砂",
