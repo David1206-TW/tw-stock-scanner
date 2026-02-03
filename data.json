@@ -1,5 +1,5 @@
 {
-  "date": "2026/02/03 13:59:52",
+  "date": "2026/02/03 14:28:38",
   "source": "GitHub Actions",
   "list": [
     {
@@ -132,6 +132,29 @@
       "latest_price": 62.1,
       "roi": 0.0,
       "daily_change": 0.98,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    },
+    {
+      "id": "2887",
+      "name": "台新金",
+      "group": "金控",
+      "type": "上市",
+      "price": 22.75,
+      "ma5": 22.7,
+      "ma10": 22.6,
+      "changeRate": 1.79,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 17.26",
+      "buy_price": 22.75,
+      "latest_price": 22.75,
+      "roi": 0.0,
+      "daily_change": 1.79,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,
