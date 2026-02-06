@@ -1,5 +1,5 @@
 {
-  "date": "2026/02/06 14:30:41",
+  "date": "2026/02/07 03:22:59",
   "source": "GitHub Actions",
   "list": [
     {
@@ -247,29 +247,6 @@
       "latest_price": 92.2,
       "roi": 0.0,
       "daily_change": 1.21,
-      "perf_1d": null,
-      "perf_5d": null,
-      "perf_10d": null,
-      "perf_20d": null,
-      "perf_30d": null,
-      "perf_60d": null,
-      "perf_120d": null
-    },
-    {
-      "id": "0050",
-      "name": "元大台灣50",
-      "group": "其他",
-      "type": "上市",
-      "price": 71.9,
-      "ma5": 72.22,
-      "ma10": 72.69,
-      "changeRate": 0.08,
-      "isValid": true,
-      "note": "Strict-VCP / MA300 52.29",
-      "buy_price": 71.9,
-      "latest_price": 71.9,
-      "roi": 0.0,
-      "daily_change": 0.08,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,
