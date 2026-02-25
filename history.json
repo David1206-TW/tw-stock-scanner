@@ -13,7 +13,7 @@
       "note": "拉回佈局 / MA300 27.35",
       "buy_price": 29.9,
       "latest_price": 29.9,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": -0.33,
       "perf_1d": null,
       "perf_5d": null,
@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "4916",
@@ -36,7 +37,7 @@
       "note": "拉回佈局 / MA300 47.83",
       "buy_price": 63.6,
       "latest_price": 63.6,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": -1.7,
       "perf_1d": null,
       "perf_5d": null,
@@ -44,7 +45,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/02/24": [
@@ -2288,9 +2290,9 @@
       "isValid": true,
       "note": "拉回佈局 & Strict-VCP / MA300 238.04",
       "buy_price": 318.0,
-      "latest_price": 393.0,
-      "roi": 23.58,
-      "daily_change": 0.26,
+      "latest_price": 397.0,
+      "roi": 24.84,
+      "daily_change": 1.28,
       "roi_1": 0.16,
       "perf_1d": -0.16,
       "days_held": 29,
@@ -3693,9 +3695,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 82.53",
       "buy_price": 106.5,
-      "latest_price": 121.0,
-      "roi": 13.62,
-      "daily_change": 1.26,
+      "latest_price": 122.5,
+      "roi": 15.02,
+      "daily_change": 2.51,
       "roi_10": 3.29,
       "roi_1": -0.47,
       "roi_5": 10.33,
