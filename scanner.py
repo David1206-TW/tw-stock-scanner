@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V58.7 K-Bar ROI Tracking
+台股自動掃描策略機器人 (Scanner Bot) - V58.9 歷史新高壓縮版
 
 【版本資訊】
 Base Version: V58.4
 Update V58.5:
 1. [MA定義確認] 代碼中的 MA (rolling) 本身即為 K棒定義，無需修改。
 2. [ROI優化] 將歷史績效追蹤從「日曆天」改為「K棒數 (Trading Days)」。
-   - perf_20d 現在代表「持有 20 根 K棒」後的績效，完全排除假日干擾。
-   - 透過 iloc 定位進場日與里程碑日，確保回測精準度。
-Update V58.6/V58.7:
-1. [策略新增與極致緊縮] 新增策略 C「N字形上攻」，抓出逼近前高、準備衝出整理區間的潛力股。
+Update V58.8:
+1. [策略C極限壓縮] 距離前高的容忍值從 -3% 嚴格縮小至 -1% ~ +2%，只抓「貼臉前高」的最強勢股。
+Update V58.9:
+1. [位階過濾殺手鐧] 新增「歷史新高」位階過濾。近期前高必須是近兩年來的最高點 (誤差3%內)，徹底排除在半山腰或底部反彈「還在地上爬」的雜魚。
+2. [長天期多頭確認] 新增 MA60 > MA120 條件，保證趨勢結構穩健向上。
 
 【新增排除條件 (兩策略皆適用)】
 1. 墓碑線排除：當日K線只有上引線(>0.2%)，沒有下引線(<0.1%)。
@@ -27,7 +28,7 @@ Update V58.6/V58.7:
    6. 支撐確認：收盤 > MA12。
    7. K線收斂：當日振幅 < 4.5% 且 實體幅度 < 2.5%。
    8. 流動性：5日均量 > 1000張。
-   9. 趨勢支撐：當日收盤 > 20日均線扣抵值 (確保月線維持上揚力道)。
+   9. 趨勢支撐：當日收盤 > 20日均線扣抵值。
 2. 策略 B (Strict VCP):
    1. 硬指標過濾：股價 > MA300 & > MA60 & 成交量 > 1000張。
    2. 多頭排列：MA60 > MA120 > MA240。
@@ -36,11 +37,11 @@ Update V58.6/V58.7:
    5. 量能遞減：5日均量 < 20日均量。
    6. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
    7. 趨勢支撐：當日收盤 > 20日均線扣抵值。
-3. 策略 C (N字形上攻 - 逼近前高突破版):
-   1. 長線保護：股價必須在年線之上 (防死貓反彈)。
-   2. 尋找前高：過去 30 天內必須有波段高點。
+3. 策略 C (N字形上攻 - 歷史新高壓縮版):
+   1. 長線保護：股價必須在年線之上，且 MA60 > MA120 (拒絕底部反彈)。
+   2. 創高位階：尋找近30天前高，且該前高必須是「近兩年來的最高點」(準備第二次創高)。
    3. 實質回檔：前高之後的低點，必須跌落超過 8% (證明有洗盤)。
-   4. 逼近前高：今日收盤價距離前高在 -3% 到 +2% 以內 (準備衝出整理區間)。
+   4. 逼近前高：今日收盤價距離前高在 -1% 到 +2% 以內 (極度壓縮，貼臉前高)。
    5. 短線轉強：今日收盤價站穩 5MA 與 10MA 之上。
 """
 
@@ -106,14 +107,13 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 3. 策略邏輯 (V58.7)
+# 3. 策略邏輯 (V58.9)
 # ==========================================
 
 def check_strategy_original(df):
     """
     策略 A：拉回佈局 (含交易日扣抵值過濾)
     """
-    # 資料長度檢查
     if len(df) < 310: return False, None
     
     close = df['Close']
@@ -122,7 +122,6 @@ def check_strategy_original(df):
     volume = df['Volume']
     low = df['Low']
     
-    # 這裡的 rolling(N) 就是 K 棒定義 (過去 N 筆交易日)
     ma5 = close.rolling(5).mean()
     ma10 = close.rolling(10).mean()
     ma12 = close.rolling(12).mean()
@@ -154,22 +153,13 @@ def check_strategy_original(df):
     
     curr_vol_ma5 = float(vol_ma5.iloc[-1])
 
-    # === 0. 風控排除條件 ===
-    
-    # 排除 1: 墓碑線
+    # === 0. 風控排除 ===
     upper_shadow = curr_h - max(curr_c, curr_o)
     lower_shadow = min(curr_c, curr_o) - curr_l
-    if (upper_shadow / curr_c > 0.002) and (lower_shadow / curr_c < 0.001):
-        return False, None
-
-    # 排除 2: 破底
-    if prev_l > 0 and (prev_l - curr_l) / prev_l > 0.015:
-        return False, None
-
-    # 排除 3: 當日收盤價 < 20交易日均線扣抵值
+    if (upper_shadow / curr_c > 0.002) and (lower_shadow / curr_c < 0.001): return False, None
+    if prev_l > 0 and (prev_l - curr_l) / prev_l > 0.015: return False, None
     deduction_20 = float(close.iloc[-20])
-    if curr_c < deduction_20:
-        return False, None
+    if curr_c < deduction_20: return False, None
 
     # === 1. 基本過濾 ===
     if math.isnan(curr_ma300): return False, None 
@@ -177,29 +167,20 @@ def check_strategy_original(df):
     if curr_vol_ma5 < 1000000: return False, None 
 
     # === 2. 策略核心 ===
-    # 長線保護
     if curr_c <= curr_ma120 or curr_c <= curr_ma60: return False, None
-    
-    # 關鍵均線多頭排列
     if math.isnan(curr_ma240): return False, None
     if not (curr_ma10 > curr_ma60 > curr_ma120 > curr_ma240): return False, None
     
-    # 位階控制
     bias_ma60 = (curr_c - curr_ma60) / curr_ma60
     if bias_ma60 >= 0.25: return False, None
     
-    # 均線糾結
     mas = [curr_ma5, curr_ma10, curr_ma20]
     ma_divergence = (max(mas) - min(mas)) / min(mas)
     if ma_divergence >= 0.08: return False, None
     
-    # 量縮整理
     if curr_v >= curr_vol_ma5: return False, None
-    
-    # 支撐確認 (MA12)
     if curr_c <= curr_ma12: return False, None
     
-    # K線收斂
     daily_range_pct = (curr_h - curr_l) / prev_c
     if daily_range_pct >= 0.045: return False, None
     entity_pct = abs(curr_c - curr_o) / prev_c
@@ -216,7 +197,7 @@ def check_strategy_original(df):
 
 def check_strategy_vcp_pro(df):
     """
-    策略 B：Strict VCP (含交易日扣抵值過濾)
+    策略 B：Strict VCP
     """
     try:
         close = df['Close']
@@ -227,7 +208,6 @@ def check_strategy_vcp_pro(df):
 
         if len(close) < 310: return False, None
 
-        # ===== 1. 計算指標 =====
         ma10 = close.rolling(10).mean()
         ma20 = close.rolling(20).mean()
         ma50 = close.rolling(50).mean()
@@ -264,54 +244,37 @@ def check_strategy_vcp_pro(df):
         
         curr_bb_width = float(bb_width.iloc[-1])
 
-        # === 0. 風控排除條件 ===
-        
-        # 排除 1: 墓碑線
+        # === 0. 風控排除 ===
         upper_shadow = curr_h - max(curr_c, curr_o)
         lower_shadow = min(curr_c, curr_o) - curr_l
-        if (upper_shadow / curr_c > 0.002) and (lower_shadow / curr_c < 0.001):
-            return False, None
-
-        # 排除 2: 破底
-        if prev_l > 0 and (prev_l - curr_l) / prev_l > 0.015:
-            return False, None
-
-        # 排除 3: 當日收盤價 < 20交易日均線扣抵值
+        if (upper_shadow / curr_c > 0.002) and (lower_shadow / curr_c < 0.001): return False, None
+        if prev_l > 0 and (prev_l - curr_l) / prev_l > 0.015: return False, None
         deduction_20 = float(close.iloc[-20])
-        if curr_c < deduction_20:
-            return False, None
+        if curr_c < deduction_20: return False, None
 
-        # ===== 硬指標過濾 =====
         if math.isnan(curr_ma300) or curr_c < curr_ma300: return False, None
         if math.isnan(curr_ma60) or curr_c <= curr_ma60: return False, None
-        
         if math.isnan(curr_ma120) or math.isnan(curr_ma240): return False, None
         if not (curr_ma60 > curr_ma120 > curr_ma240): return False, None
-
         if curr_v < 1000000: return False, None
 
-        # ===== 條件 1：趨勢確認 =====
         if curr_c < curr_ma200: return False, None
         if curr_ma200 <= float(ma200.iloc[-20]): return False, None
         if curr_c < curr_ma150: return False, None
 
-        # ===== 條件 2：價格位階 =====
         high_52w = close.iloc[-250:].max()
         low_52w = close.iloc[-250:].min()
         if curr_c < low_52w * 1.3: return False, None
         if curr_c < high_52w * 0.75: return False, None
 
-        # ===== 條件 3：波動收縮 =====
         if curr_bb_width > 0.15: return False, None
         if curr_c < curr_ma20 * 0.98: return False, None
 
-        # ===== 條件 4：量能遞減 =====
         vol_ma5 = volume.rolling(5).mean()
         vol_ma20 = volume.rolling(20).mean()
         if float(vol_ma5.iloc[-1]) > float(vol_ma20.iloc[-1]): return False, None
         if float(vol_ma5.iloc[-1]) < 300000: return False, None
 
-        # ===== 條件 5：回檔幅度遞減 =====
         def calc_retrace(series):
             peak = series.max()
             trough = series.min()
@@ -340,8 +303,8 @@ def check_strategy_vcp_pro(df):
 
 def check_strategy_n_shape(df):
     """
-    策略 C：N字形上攻 (逼近前高突破版)
-    專門抓取剛爬出洗盤區間，收盤價逼近近期高點的強勢股 (如 6517)
+    策略 C：N字形上攻 (V58.9 歷史新高壓縮版)
+    專門抓取剛爬出洗盤區間，收盤價緊貼「兩年新高」準備第二次突破的強勢股
     """
     try:
         if len(df) < 250: return False, None
@@ -356,50 +319,71 @@ def check_strategy_n_shape(df):
         ma5 = close.rolling(5).mean()
         ma10 = close.rolling(10).mean()
         ma20 = close.rolling(20).mean()
+        ma60 = close.rolling(60).mean()
+        ma120 = close.rolling(120).mean()
         ma240 = close.rolling(240).mean()
         ma300 = close.rolling(300).mean()
 
         curr_ma5 = float(ma5.iloc[-1])
         curr_ma10 = float(ma10.iloc[-1])
         curr_ma20 = float(ma20.iloc[-1])
+        curr_ma60 = float(ma60.iloc[-1])
+        curr_ma120 = float(ma120.iloc[-1])
         curr_ma240 = float(ma240.iloc[-1])
         curr_ma300 = float(ma300.iloc[-1])
 
-        # 🛡️ 條件零：年線之上 (防死貓反彈)
+        # ==========================================
+        # 🛡️ 條件零：絕對多頭排列 (徹底排除地上爬的)
+        # ==========================================
         if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
+        
+        # 殺手鐧 1：季線必須大於半年線，保證它已經爬出谷底很久，正處於穩健的上升坡道
+        if not (curr_ma60 > curr_ma120): return False, None
 
-        # 🎯 條件一：找出 N 字形的「左側高點 (前高)」與「底部回檔」
-        # 我們回溯過去 30 天，但不包含最近 3 天，尋找一個明顯的高點
+        # ==========================================
+        # 🎯 條件一：找出 N 字形的「左側高點 (近期前高)」與「底部回檔」
+        # ==========================================
         highs_window = high.iloc[-30:-3]
         if len(highs_window) == 0: return False, None
         
-        # 獲取前高數值
         peak_high = float(highs_window.max())
-        
-        # 精準定位前高發生的 index
         peak_pos_in_slice = np.argmax(highs_window.values)
         peak_abs_pos = len(df) - 30 + peak_pos_in_slice
 
-        # 從前高發生那一天，到昨天為止，找出最低點 (洗盤深度)
         pullback_zone = low.iloc[peak_abs_pos : -1]
         if len(pullback_zone) < 2: return False, None
         pullback_low = float(pullback_zone.min())
 
-        # 🎯 條件二：有實質洗盤回檔 (高低點落差至少大於 8%)
+        # ==========================================
+        # ⭐ 條件二：創歷史新高位階確認 (V58.9 核心殺手鐧)
+        # ==========================================
+        # 找出這檔股票兩年內 (資料長度內) 的絕對最高點
+        historical_high = float(high.max())
+        
+        # 殺手鐧 2：近期的這個前高，必須就是「兩年來的絕對最高點」(只容許 3% 極小誤差)
+        # 這樣才能確保它現在是準備「第二次突破歷史新高」，直接殺光從半山腰跌深反彈的股票
+        if peak_high < historical_high * 0.97: return False, None
+
+        # ==========================================
+        # 🎯 條件三：有實質洗盤回檔 (高低點落差至少大於 8%)
+        # ==========================================
         if pullback_low <= 0: return False, None
         if peak_high / pullback_low < 1.08: return False, None
 
-        # 🎯 條件三：逼近前高 (準備突破) -> 大幅緊縮條件的關鍵！
-        # 今天的收盤價，必須已經從谷底爬上來，距離前高在 -3% 到 +2% 以內
-        # 也就是說，它正在敲打天花板 (像 6517)
-        near_peak = (curr_c >= peak_high * 0.97) and (curr_c <= peak_high * 1.02)
+        # ==========================================
+        # 🎯 條件四：極限逼近前高 (準備第二次突破)
+        # ==========================================
+        # 今天的收盤價，必須距離前高在 -1% 到 +2% 以內 (極致壓縮！)
+        near_peak = (curr_c >= peak_high * 0.99) and (curr_c <= peak_high * 1.02)
 
-        # 🎯 條件四：短線重回多頭
-        # 既然準備衝前高，均線一定要強
+        # ==========================================
+        # 🎯 條件五：短線重回多頭
+        # ==========================================
         short_trend_up = (curr_c > curr_ma5) and (curr_c > curr_ma10)
 
-        # 🎯 條件五：成交量過濾
-        # 排除流動性過低的股票
+        # ==========================================
+        # 🎯 條件六：成交量過濾
+        # ==========================================
         vol_ma5 = float(volume.rolling(5).mean().iloc[-1])
         if vol_ma5 < 800000: return False, None
 
@@ -417,6 +401,7 @@ def check_strategy_n_shape(df):
         return False, None
     except Exception:
         return False, None
+
 
 # ==========================================
 # 4. 更新歷史績效 (改為 K棒數計算)
@@ -505,28 +490,17 @@ def update_history_roi(history_db):
             if series is None or series.empty: continue
 
             # 1. 找到進場日在 series 中的位置 (Index Location)
-            # 使用 searchsorted 找到 >= record_ts 的第一個位置
-            # 如果 scanner 是盤後跑，record_date 應該就是當天。
             try:
-                # 找到最接近 record_ts 的位置 (如果當天沒資料，找下一個交易日，雖然理論上 scanner 當天應該有資料)
-                # 這裡假設 record_date 當天或之後有資料
                 start_idx = series.index.searchsorted(record_ts)
                 
-                # 如果 start_idx 超出範圍，代表資料庫比紀錄時間還舊 (不合理但防呆)
                 if start_idx >= len(series): continue
                 
-                # 取得該位置的日期，確認是否差距太遠 (例如超過 5 天沒對上，可能是資料錯誤)
                 found_date = series.index[start_idx]
-                if (found_date - record_ts).days > 7: 
-                    # print(f"Warning: {symbol} entry date mismatch. Rec: {record_ts}, Found: {found_date}")
-                    pass
+                if (found_date - record_ts).days > 7: pass
 
             except Exception: continue
 
             # 2. 計算目前持有幾根 K 棒
-            # 目前最新的資料位置是 len(series) - 1
-            # 持有 K 棒數 = (最新位置) - (進場位置)
-            # 例如: 進場日 idx=100, 今天 idx=105 -> 持有 5 根
             current_idx = len(series) - 1
             bars_held = current_idx - start_idx
             
@@ -555,19 +529,13 @@ def update_history_roi(history_db):
             ]
 
             for bar_threshold, field_name in targets:
-                # 如果持有 K 棒數 >= 門檻，且該欄位尚未被鎖定(或是想更新歷史鎖定值)
-                # 這裡邏輯：只要過了門檻，就去抓「剛好滿門檻那天」的價格來鎖定
                 if bars_held >= bar_threshold:
                     target_idx = start_idx + bar_threshold
                     
-                    # 確保 target_idx 在資料範圍內 (理論上 bars_held >= threshold 則一定在)
                     if target_idx < len(series):
                         lock_price = float(series.iloc[target_idx])
                         lock_roi = round(((lock_price - buy_price) / buy_price) * 100, 2)
                         stock[field_name] = lock_roi
-                
-                # 如果還沒到門檻，但正在進行中 (例如持有 3 天，顯示 perf_1d 的鎖定值? 不，perf_1d 已經鎖定)
-                # 如果是「未達到的未來里程碑」，保持 None
 
     print("歷史績效更新完成 (K-Bar Based)。")
     return history_db
@@ -615,7 +583,6 @@ def run_scanner():
                     required_cols = ['Close', 'Volume', 'Low', 'High', 'Open']
                     if not all(col in df.columns for col in required_cols): continue
 
-                    # 分別檢查三種策略
                     is_match_1, info_1 = check_strategy_original(df)
                     is_match_2, info_2 = check_strategy_vcp_pro(df)
                     is_match_3, info_3 = check_strategy_n_shape(df)
