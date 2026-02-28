@@ -57,6 +57,7 @@
                         <span id="data-count" class="text-[10px] text-gray-400 font-mono whitespace-nowrap">總: 0</span>
                         <span class="flex items-center gap-1 text-[10px] text-blue-300 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block"></span>拉回:<span id="count-pullback" class="font-bold">0</span></span>
                         <span class="flex items-center gap-1 text-[10px] text-purple-300 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block"></span>VCP:<span id="count-vcp" class="font-bold">0</span></span>
+                        <span class="flex items-center gap-1 text-[10px] text-orange-300 whitespace-nowrap"><span class="w-1.5 h-1.5 rounded-full bg-orange-400 inline-block"></span>N字:<span id="count-nshape" class="font-bold">0</span></span>
                     </div>
                     <button onclick="app.toggleMaFilter()" id="btn-ma-filter" class="bg-slate-700 text-gray-300 text-[10px] font-bold py-1 px-2.5 rounded shadow active:scale-95 transition-all whitespace-nowrap flex-shrink-0">過濾支撐</button>
                 </div>
@@ -163,6 +164,7 @@
                     winRateBadge: document.getElementById('win-rate-badge'),
                     countPullback: document.getElementById('count-pullback'),
                     countVcp: document.getElementById('count-vcp'),
+                    countNShape: document.getElementById('count-nshape'),
                     pageHeatmap: document.getElementById('page-heatmap'),
                     pageList: document.getElementById('page-list'),
                     pagePerf: document.getElementById('page-perf'),
@@ -246,9 +248,19 @@
                                 
                                 let strategy = '其他';
                                 const note = stock.note || '';
-                                if (note.includes('Strict-VCP') && note.includes('拉回佈局')) strategy = '雙策略';
-                                else if (note.includes('Strict-VCP')) strategy = 'VCP';
-                                else if (note.includes('拉回佈局')) strategy = '拉回';
+                                const hasVCP = note.includes('Strict-VCP');
+                                const hasPullback = note.includes('拉回佈局');
+                                const hasNShape = note.includes('N字形');
+
+                                let matchCount = 0;
+                                if(hasVCP) matchCount++;
+                                if(hasPullback) matchCount++;
+                                if(hasNShape) matchCount++;
+
+                                if (matchCount >= 2) strategy = '多策略';
+                                else if (hasNShape) strategy = 'N字形';
+                                else if (hasVCP) strategy = 'VCP';
+                                else if (hasPullback) strategy = '拉回';
 
                                 const stockObj = {
                                     ...stock,
@@ -258,7 +270,6 @@
                                     roi: roi,
                                     latest_price: parseFloat(stock.latest_price || 0),
                                     strategy: strategy,
-                                    // 修正：直接從 JSON 讀取歷史里程碑數據，而非動態計算
                                     roi_1: stock.perf_1d,
                                     roi_5: stock.perf_5d,
                                     roi_10: stock.perf_10d,
@@ -282,7 +293,7 @@
                             else this.ui.winRateBadge.className = "ml-2 text-[9px] bg-slate-800 text-yellow-400 border border-yellow-600/30 px-1.5 py-0.5 rounded font-mono";
                         }
                         
-                        // 計算統計數據 (僅計算有數值的部分)
+                        // 計算統計數據
                         const stats = {
                             1: { total: 0, win: 0, sumRoi: 0 },
                             5: { total: 0, win: 0, sumRoi: 0 },
@@ -294,7 +305,6 @@
                         };
                         this.historyList.forEach(s => {
                             [1, 5, 10, 20, 30, 60, 120].forEach(d => {
-                                // 檢查對應的 roi_X 是否有值
                                 const val = s[`roi_${d}`];
                                 if (val !== null && val !== undefined) {
                                     stats[d].total++;
@@ -362,18 +372,17 @@
                     let strategyBadge = '';
                     if (s.strategy === 'VCP') strategyBadge = '<span class="text-[9px] text-purple-300 bg-purple-900/40 px-1 py-0.5 rounded border border-purple-700/50">VCP</span>';
                     else if (s.strategy === '拉回') strategyBadge = '<span class="text-[9px] text-blue-300 bg-blue-900/40 px-1 py-0.5 rounded border border-blue-700/50">拉回</span>';
-                    else if (s.strategy === '雙策略') strategyBadge = '<span class="text-[9px] text-yellow-300 bg-yellow-900/40 px-1 py-0.5 rounded border border-yellow-700/50">雙</span>';
+                    else if (s.strategy === 'N字形') strategyBadge = '<span class="text-[9px] text-orange-300 bg-orange-900/40 px-1 py-0.5 rounded border border-orange-700/50">N字</span>';
+                    else if (s.strategy === '多策略') strategyBadge = '<span class="text-[9px] text-yellow-300 bg-yellow-900/40 px-1 py-0.5 rounded border border-yellow-700/50">多重</span>';
                     else strategyBadge = '<span class="text-[9px] text-gray-400">-</span>';
 
                     const cols = [1, 5, 10, 20, 30, 60, 120].map(d => {
-                        // 修正：直接使用 roi_X 的值
                         const val = s[`roi_${d}`];
                         if (val !== null && val !== undefined) {
                             const v = parseFloat(val);
                             const c = v > 0 ? 'text-red-400' : (v < 0 ? 'text-green-400' : 'text-gray-500');
                             return `<td class="px-1 py-2 text-right text-[10px] ${c}">${v > 0 ? '+' : ''}${v}%</td>`;
                         } else {
-                            // 若無資料顯示 -
                             return `<td class="px-1 py-2 text-right text-[10px] text-gray-600">-</td>`;
                         }
                     }).join('');
@@ -418,12 +427,15 @@
 
                 let pbCount = 0;
                 let vcpCount = 0;
+                let nShapeCount = 0;
                 list.forEach(s => {
                     if (s.note && s.note.includes('拉回佈局')) pbCount++;
                     if (s.note && s.note.includes('Strict-VCP')) vcpCount++;
+                    if (s.note && s.note.includes('N字形')) nShapeCount++;
                 });
                 this.ui.countPullback.innerText = pbCount;
                 this.ui.countVcp.innerText = vcpCount;
+                this.ui.countNShape.innerText = nShapeCount;
                 this.ui.dataCount.innerText = `總: ${list.length}`; 
 
                 if (this.state.sortBy) {
@@ -458,7 +470,8 @@
                     
                     let noteHtml = stock.note || '';
                     noteHtml = noteHtml.replace('Strict-VCP', '<span class="text-purple-300 bg-purple-900/30 px-1 rounded border border-purple-700/50">VCP</span>')
-                                       .replace('拉回佈局', '<span class="text-blue-300 bg-blue-900/30 px-1 rounded border border-blue-700/50">拉回</span>');
+                                       .replace('拉回佈局', '<span class="text-blue-300 bg-blue-900/30 px-1 rounded border border-blue-700/50">拉回</span>')
+                                       .replace('N字形', '<span class="text-orange-300 bg-orange-900/30 px-1 rounded border border-orange-700/50">N字</span>');
 
                     return `
                         <tr class="hover:bg-slate-800 transition-colors border-b border-slate-800">
