@@ -1,52 +1,5 @@
 {
-  "date": "2026/03/09 11:29:19",
+  "date": "2026/03/09 13:08:03",
   "source": "GitHub Actions",
-  "list": [
-    {
-      "id": "2010",
-      "name": "春源",
-      "group": "鋼鐵",
-      "type": "上市",
-      "price": 22.3,
-      "ma5": 22.57,
-      "ma10": 22.69,
-      "changeRate": -2.41,
-      "isValid": true,
-      "note": "Strict-VCP / MA300 19.4",
-      "buy_price": 22.3,
-      "latest_price": 22.3,
-      "roi": 0.0,
-      "daily_change": -2.41,
-      "perf_1d": null,
-      "perf_5d": null,
-      "perf_10d": null,
-      "perf_20d": null,
-      "perf_30d": null,
-      "perf_60d": null,
-      "perf_120d": null
-    },
-    {
-      "id": "3653",
-      "name": "健策",
-      "group": "散熱零組件",
-      "type": "上市",
-      "price": 3160.0,
-      "ma5": 3127.0,
-      "ma10": 3095.0,
-      "changeRate": -7.47,
-      "isValid": true,
-      "note": "N字形 / MA300 1835.58",
-      "buy_price": 3160.0,
-      "latest_price": 3160.0,
-      "roi": 0.0,
-      "daily_change": -7.47,
-      "perf_1d": null,
-      "perf_5d": null,
-      "perf_10d": null,
-      "perf_20d": null,
-      "perf_30d": null,
-      "perf_60d": null,
-      "perf_120d": null
-    }
-  ]
+  "list": []
 }
