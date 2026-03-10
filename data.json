@@ -1,5 +1,5 @@
 {
-  "date": "2026/03/10 14:07:26",
+  "date": "2026/03/11 00:27:51",
   "source": "GitHub Actions",
   "list": [
     {
@@ -40,29 +40,6 @@
       "latest_price": 113.0,
       "roi": 0.0,
       "daily_change": 0.89,
-      "perf_1d": null,
-      "perf_5d": null,
-      "perf_10d": null,
-      "perf_20d": null,
-      "perf_30d": null,
-      "perf_60d": null,
-      "perf_120d": null
-    },
-    {
-      "id": "2617",
-      "name": "台航",
-      "group": "航運",
-      "type": "上市",
-      "price": 31.9,
-      "ma5": 31.63,
-      "ma10": 31.41,
-      "changeRate": 3.57,
-      "isValid": true,
-      "note": "拉回佈局 / MA300 28.63",
-      "buy_price": 31.9,
-      "latest_price": 31.9,
-      "roi": 0.0,
-      "daily_change": 3.57,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,
