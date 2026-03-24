@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "2022",
@@ -36,7 +37,7 @@
       "note": "拉回佈局 / MA300 8.44",
       "buy_price": 9.37,
       "latest_price": 9.37,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 1.19,
       "perf_1d": null,
       "perf_5d": null,
@@ -44,7 +45,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "2030",
@@ -59,15 +61,16 @@
       "note": "拉回佈局 / MA300 15.04",
       "buy_price": 16.3,
       "latest_price": 16.3,
-      "roi": 0.0,
-      "daily_change": 1.88,
+      "roi": -0.0,
+      "daily_change": 1.87,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "6142",
@@ -82,7 +85,7 @@
       "note": "拉回佈局 / MA300 9.89",
       "buy_price": 9.99,
       "latest_price": 9.99,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 1.42,
       "perf_1d": null,
       "perf_5d": null,
@@ -90,7 +93,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/03/23": [
