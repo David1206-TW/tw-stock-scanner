@@ -13,7 +13,7 @@
       "note": "拉回佈局 / MA300 18.06",
       "buy_price": 18.8,
       "latest_price": 18.8,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 0.8,
       "perf_1d": null,
       "perf_5d": null,
@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "2049",
@@ -44,7 +45,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "2305",
@@ -59,7 +61,7 @@
       "note": "拉回佈局 / MA300 12.0",
       "buy_price": 14.7,
       "latest_price": 14.7,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 1.73,
       "perf_1d": null,
       "perf_5d": null,
@@ -67,7 +69,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "2436",
@@ -90,7 +93,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "6164",
@@ -105,7 +109,7 @@
       "note": "拉回佈局 / MA300 11.23",
       "buy_price": 12.65,
       "latest_price": 12.65,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 1.61,
       "perf_1d": null,
       "perf_5d": null,
@@ -113,7 +117,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "5452",
@@ -136,7 +141,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "6207",
@@ -159,7 +165,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/03/24": [
