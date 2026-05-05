@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "6282",
@@ -36,7 +37,7 @@
       "note": "拉回佈局 / MA300 35.71",
       "buy_price": 49.8,
       "latest_price": 49.8,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 1.74,
       "perf_1d": null,
       "perf_5d": null,
@@ -44,7 +45,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/05/04": [
