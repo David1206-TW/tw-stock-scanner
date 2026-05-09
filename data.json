@@ -1,5 +1,5 @@
 {
-  "date": "2026/05/08 15:07:41",
+  "date": "2026/05/09 15:25:50",
   "source": "GitHub Actions",
   "list": [
     {
@@ -178,6 +178,29 @@
       "latest_price": 240.5,
       "roi": 0.0,
       "daily_change": 9.82,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    },
+    {
+      "id": "4977",
+      "name": "眾達-KY",
+      "group": "網通",
+      "type": "上市",
+      "price": 228.0,
+      "ma5": 226.1,
+      "ma10": 219.2,
+      "changeRate": 0.0,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 122.88",
+      "buy_price": 228.0,
+      "latest_price": 228.0,
+      "roi": 0.0,
+      "daily_change": 0.0,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,

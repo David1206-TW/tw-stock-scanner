@@ -612,7 +612,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 6
+      "days_held": 7
     },
     {
       "id": "3402",
@@ -6600,14 +6600,14 @@
       "buy_price": 145.5,
       "latest_price": 228.0,
       "roi": 56.7,
-      "daily_change": 2.24,
+      "daily_change": 0.0,
       "roi_10": -12.37,
       "roi_1": -1.72,
       "roi_5": -3.44,
       "perf_1d": -4.81,
       "perf_5d": -6.87,
       "perf_10d": -9.97,
-      "days_held": 82,
+      "days_held": 83,
       "perf_20d": -17.18,
       "perf_60d": 22.34
     },
