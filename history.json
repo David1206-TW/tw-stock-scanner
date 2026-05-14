@@ -14,14 +14,15 @@
       "buy_price": 64.4,
       "latest_price": 64.4,
       "roi": 0.0,
-      "daily_change": -0.0,
+      "daily_change": 0.0,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/05/13": [
