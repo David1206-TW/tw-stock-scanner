@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "3605",
@@ -44,7 +45,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "6226",
@@ -59,7 +61,7 @@
       "note": "Strict-VCP / MA300 8.28",
       "buy_price": 13.15,
       "latest_price": 13.15,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 5.2,
       "perf_1d": null,
       "perf_5d": null,
@@ -67,7 +69,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/05/21": [
