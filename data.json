@@ -1,5 +1,5 @@
 {
-  "date": "2026/05/22 16:37:10",
+  "date": "2026/05/23 15:55:31",
   "source": "GitHub Actions",
   "list": [
     {
@@ -546,6 +546,29 @@
       "latest_price": 181.5,
       "roi": 0.0,
       "daily_change": 5.52,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    },
+    {
+      "id": "3363",
+      "name": "上詮",
+      "group": "被動元件",
+      "type": "上櫃",
+      "price": 852.0,
+      "ma5": 805.2,
+      "ma10": 839.5,
+      "changeRate": 4.16,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 402.91",
+      "buy_price": 852.0,
+      "latest_price": 852.0,
+      "roi": 0.0,
+      "daily_change": 4.16,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,
