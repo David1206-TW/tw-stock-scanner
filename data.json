@@ -1,30 +1,7 @@
 {
-  "date": "2026/06/08 13:21:32",
+  "date": "2026/06/08 17:58:37",
   "source": "GitHub Actions",
   "list": [
-    {
-      "id": "2838",
-      "name": "聯邦銀",
-      "group": "銀行",
-      "type": "上市",
-      "price": 20.95,
-      "ma5": 21.11,
-      "ma10": 20.75,
-      "changeRate": -2.78,
-      "isValid": true,
-      "note": "拉回佈局 / MA300 18.11",
-      "buy_price": 20.95,
-      "latest_price": 20.95,
-      "roi": 0.0,
-      "daily_change": -2.78,
-      "perf_1d": null,
-      "perf_5d": null,
-      "perf_10d": null,
-      "perf_20d": null,
-      "perf_30d": null,
-      "perf_60d": null,
-      "perf_120d": null
-    },
     {
       "id": "4904",
       "name": "遠傳",
