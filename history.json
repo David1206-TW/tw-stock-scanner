@@ -13,7 +13,7 @@
       "note": "Strict-VCP / MA300 6.55",
       "buy_price": 7.29,
       "latest_price": 7.29,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 2.24,
       "perf_1d": null,
       "perf_5d": null,
@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/06/15": [
