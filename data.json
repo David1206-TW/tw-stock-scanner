@@ -1,5 +1,5 @@
 {
-  "date": "2026/06/18 17:56:36",
+  "date": "2026/06/19 14:05:12",
   "source": "GitHub Actions",
   "list": [
     {
@@ -440,29 +440,6 @@
       "perf_120d": null
     },
     {
-      "id": "6944",
-      "name": "兆聯實業",
-      "group": "綠能環保",
-      "type": "上市",
-      "price": 1045.0,
-      "ma5": 1012.8,
-      "ma10": 968.6,
-      "changeRate": 1.95,
-      "isValid": true,
-      "note": "拉回佈局 / MA300 614.48",
-      "buy_price": 1045.0,
-      "latest_price": 1045.0,
-      "roi": 0.0,
-      "daily_change": 1.95,
-      "perf_1d": null,
-      "perf_5d": null,
-      "perf_10d": null,
-      "perf_20d": null,
-      "perf_30d": null,
-      "perf_60d": null,
-      "perf_120d": null
-    },
-    {
       "id": "8112",
       "name": "至上",
       "group": "IC-通路",
@@ -518,7 +495,7 @@
       "ma10": 103.51,
       "changeRate": 1.23,
       "isValid": true,
-      "note": "Strict-VCP / MA300 63.64",
+      "note": "拉回佈局 & Strict-VCP / MA300 63.64",
       "buy_price": 107.3,
       "latest_price": 107.3,
       "roi": 0.0,
@@ -541,7 +518,7 @@
       "ma10": 51.01,
       "changeRate": 1.64,
       "isValid": true,
-      "note": "Strict-VCP / MA300 35.62",
+      "note": "拉回佈局 & Strict-VCP / MA300 35.62",
       "buy_price": 52.8,
       "latest_price": 52.8,
       "roi": 0.0,
