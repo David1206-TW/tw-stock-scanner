@@ -2668,15 +2668,15 @@
       "buy_price": 179.0,
       "latest_price": 150.5,
       "roi": -15.92,
-      "daily_change": -0.33,
+      "daily_change": 0.0,
       "perf_1d": -19.55,
-      "perf_5d": -1.52,
+      "perf_5d": -15.92,
       "perf_10d": -3.91,
       "perf_20d": -10.89,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 4
+      "days_held": 5
     }
   ],
   "2026/05/18": [
@@ -6718,7 +6718,7 @@
       "perf_30d": null,
       "perf_60d": -16.26,
       "perf_120d": null,
-      "days_held": 105
+      "days_held": 106
     }
   ],
   "2026/02/05": [
@@ -6834,8 +6834,8 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 12.33",
       "buy_price": 16.4,
-      "latest_price": 24.45,
-      "roi": 49.09,
+      "latest_price": 21.73,
+      "roi": 32.52,
       "daily_change": -0.61,
       "perf_1d": 0.3,
       "perf_5d": -0.61,
