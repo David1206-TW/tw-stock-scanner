@@ -6837,12 +6837,12 @@
       "latest_price": 21.73,
       "roi": 32.52,
       "daily_change": -0.61,
-      "perf_1d": 0.3,
-      "perf_5d": -0.61,
-      "perf_10d": 10.06,
-      "perf_20d": 5.18,
+      "perf_1d": -10.84,
+      "perf_5d": -11.65,
+      "perf_10d": -2.17,
+      "perf_20d": -6.5,
       "perf_30d": null,
-      "perf_60d": 42.38,
+      "perf_60d": 26.56,
       "perf_120d": null,
       "days_held": 111
     }
