@@ -1,5 +1,5 @@
 {
-  "date": "2026/07/28 14:16:21",
+  "date": "2026/07/28 16:01:54",
   "source": "GitHub Actions",
   "list": [
     {
@@ -146,15 +146,15 @@
       "group": "金控",
       "type": "上市",
       "price": 38.65,
-      "ma5": 38.45,
-      "ma10": 38.2,
-      "changeRate": 0.26,
+      "ma5": 38.7,
+      "ma10": 38.39,
+      "changeRate": -2.4,
       "isValid": true,
-      "note": "拉回佈局 / MA300 27.01",
+      "note": "拉回佈局 / MA300 27.08",
       "buy_price": 38.65,
       "latest_price": 38.65,
       "roi": 0.0,
-      "daily_change": 0.26,
+      "daily_change": -2.4,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,
