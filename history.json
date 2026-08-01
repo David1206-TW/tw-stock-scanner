@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/07/28": [
@@ -2767,17 +2768,17 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 128.4",
       "buy_price": 179.0,
-      "latest_price": 134.0,
-      "roi": -25.14,
-      "daily_change": -2.55,
+      "latest_price": 142.5,
+      "roi": -20.39,
+      "daily_change": 6.34,
       "perf_1d": -19.55,
       "perf_5d": -15.92,
-      "perf_10d": -3.91,
+      "perf_10d": -20.39,
       "perf_20d": -10.89,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 9
+      "days_held": 10
     }
   ],
   "2026/05/18": [
@@ -6097,7 +6098,7 @@
       "buy_price": 213.0,
       "latest_price": 208.5,
       "roi": -2.11,
-      "daily_change": -3.02,
+      "daily_change": 0.0,
       "perf_1d": -10.92,
       "perf_5d": -13.68,
       "perf_10d": 5.99,
@@ -6105,7 +6106,7 @@
       "perf_30d": null,
       "perf_60d": 48.25,
       "perf_120d": null,
-      "days_held": 100
+      "days_held": 101
     },
     {
       "id": "6187",
@@ -9912,13 +9913,13 @@
       "roi_10": -7.77,
       "roi_1": -2.59,
       "roi_5": -1.29,
-      "perf_1d": -3.42,
-      "perf_5d": 1.07,
-      "perf_10d": -10.48,
+      "perf_1d": -3.44,
+      "perf_5d": 1.06,
+      "perf_10d": -10.49,
       "days_held": 142,
-      "perf_20d": -8.24,
-      "perf_60d": 22.89,
-      "perf_120d": 28.98
+      "perf_20d": -8.25,
+      "perf_60d": 22.87,
+      "perf_120d": 28.97
     },
     {
       "id": "4977",

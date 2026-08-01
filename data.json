@@ -1,5 +1,5 @@
 {
-  "date": "2026/07/31 16:18:21",
+  "date": "2026/08/01 15:49:38",
   "source": "GitHub Actions",
   "list": [
     {
@@ -77,11 +77,11 @@
       "group": "百貨",
       "type": "上櫃",
       "price": 72.0,
-      "ma5": 68.76,
-      "ma10": 65.63,
+      "ma5": 70.14,
+      "ma10": 66.68,
       "changeRate": 0.0,
       "isValid": true,
-      "note": "拉回佈局 / MA300 48.09",
+      "note": "拉回佈局 / MA300 48.18",
       "buy_price": 72.0,
       "latest_price": 72.0,
       "roi": 0.0,
