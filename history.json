@@ -192,13 +192,13 @@
       "roi": 0.0,
       "daily_change": 0.0,
       "perf_1d": 0.0,
-      "perf_5d": null,
+      "perf_5d": 0.0,
       "perf_10d": null,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 4
+      "days_held": 5
     }
   ],
   "2026/07/28": [
@@ -2944,9 +2944,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 128.4",
       "buy_price": 179.0,
-      "latest_price": 145.5,
-      "roi": -18.72,
-      "daily_change": -2.68,
+      "latest_price": 142.5,
+      "roi": -20.39,
+      "daily_change": -2.06,
       "perf_1d": -19.55,
       "perf_5d": -15.92,
       "perf_10d": -20.39,
@@ -2954,7 +2954,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     }
   ],
   "2026/05/18": [
