@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/08/13": [
@@ -594,7 +595,7 @@
       "daily_change": -0.7,
       "perf_1d": -0.46,
       "perf_5d": -1.59,
-      "perf_10d": -2.41,
+      "perf_10d": -0.11,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
@@ -7219,7 +7220,7 @@
       "perf_30d": null,
       "perf_60d": -16.26,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 0
     }
   ],
   "2026/02/05": [
