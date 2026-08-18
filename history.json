@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/08/14": [
@@ -620,7 +621,7 @@
       "daily_change": 0.36,
       "perf_1d": -0.46,
       "perf_5d": -1.59,
-      "perf_10d": -0.11,
+      "perf_10d": -2.41,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
@@ -1087,9 +1088,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 13.65",
       "buy_price": 16.15,
-      "latest_price": 13.95,
-      "roi": -13.62,
-      "daily_change": -1.06,
+      "latest_price": 13.9,
+      "roi": -13.93,
+      "daily_change": -1.42,
       "perf_1d": -0.0,
       "perf_5d": -2.17,
       "perf_10d": -8.36,
@@ -1633,9 +1634,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 30.57",
       "buy_price": 42.71,
-      "latest_price": 43.97,
-      "roi": 2.95,
-      "daily_change": -0.63,
+      "latest_price": 43.96,
+      "roi": 2.93,
+      "daily_change": -0.66,
       "perf_1d": -1.24,
       "perf_5d": -3.58,
       "perf_10d": -0.12,
@@ -4375,9 +4376,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 156.67",
       "buy_price": 189.0,
-      "latest_price": 138.5,
-      "roi": -26.72,
-      "daily_change": -1.42,
+      "latest_price": 137.0,
+      "roi": -27.51,
+      "daily_change": -2.49,
       "perf_1d": -11.07,
       "perf_5d": -11.33,
       "perf_10d": -5.14,
@@ -7245,7 +7246,7 @@
       "perf_30d": null,
       "perf_60d": -16.26,
       "perf_120d": null,
-      "days_held": 0
+      "days_held": 7
     }
   ],
   "2026/02/05": [
@@ -13080,13 +13081,13 @@
       "roi_1": 1.87,
       "roi_5": 0.31,
       "roi_10": 0.94,
-      "perf_1d": -0.84,
-      "perf_5d": -1.46,
-      "perf_10d": -1.46,
-      "perf_20d": -2.38,
+      "perf_1d": -7.33,
+      "perf_5d": -7.9,
+      "perf_10d": -7.9,
+      "perf_20d": -8.76,
       "days_held": 159,
-      "perf_60d": -7.6,
-      "perf_120d": 9.29
+      "perf_60d": -13.64,
+      "perf_120d": 2.14
     },
     {
       "id": "2836",
