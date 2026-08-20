@@ -647,7 +647,7 @@
       "daily_change": -1.2,
       "perf_1d": -0.46,
       "perf_5d": -1.59,
-      "perf_10d": -0.11,
+      "perf_10d": -2.41,
       "perf_20d": -4.9,
       "perf_30d": null,
       "perf_60d": null,
@@ -7272,7 +7272,7 @@
       "perf_30d": null,
       "perf_60d": -16.26,
       "perf_120d": null,
-      "days_held": 0
+      "days_held": 7
     }
   ],
   "2026/02/05": [
@@ -13107,13 +13107,13 @@
       "roi_1": 1.87,
       "roi_5": 0.31,
       "roi_10": 0.94,
-      "perf_1d": -0.84,
-      "perf_5d": -1.46,
-      "perf_10d": -1.46,
-      "perf_20d": -2.38,
+      "perf_1d": -7.33,
+      "perf_5d": -7.9,
+      "perf_10d": -7.9,
+      "perf_20d": -8.76,
       "days_held": 161,
-      "perf_60d": -7.6,
-      "perf_120d": 9.29
+      "perf_60d": -13.64,
+      "perf_120d": 2.14
     },
     {
       "id": "2836",

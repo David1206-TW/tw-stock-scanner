@@ -1,5 +1,5 @@
 {
-  "date": "2026/08/20 13:55:54",
+  "date": "2026/08/20 13:59:57",
   "source": "GitHub Actions",
   "list": [
     {
@@ -132,6 +132,29 @@
       "latest_price": 23.85,
       "roi": 0.0,
       "daily_change": -0.21,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    },
+    {
+      "id": "2834",
+      "name": "臺企銀",
+      "group": "銀行",
+      "type": "上市",
+      "price": 16.55,
+      "ma5": 16.41,
+      "ma10": 16.44,
+      "changeRate": 0.91,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 14.59",
+      "buy_price": 16.55,
+      "latest_price": 16.55,
+      "roi": 0.0,
+      "daily_change": 0.91,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,
