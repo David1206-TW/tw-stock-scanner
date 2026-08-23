@@ -698,7 +698,7 @@
       "daily_change": 0.36,
       "perf_1d": -0.46,
       "perf_5d": -1.59,
-      "perf_10d": -0.11,
+      "perf_10d": -2.41,
       "perf_20d": -4.9,
       "perf_30d": null,
       "perf_60d": null,
@@ -1711,9 +1711,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 30.57",
       "buy_price": 42.71,
-      "latest_price": 43.12,
-      "roi": 0.96,
-      "daily_change": -0.99,
+      "latest_price": 44.17,
+      "roi": 3.42,
+      "daily_change": 2.44,
       "perf_1d": -1.24,
       "perf_5d": -3.58,
       "perf_10d": -0.12,
@@ -1721,7 +1721,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 40
+      "days_held": 41
     }
   ],
   "2026/06/24": [
@@ -7323,7 +7323,7 @@
       "perf_30d": null,
       "perf_60d": -16.26,
       "perf_120d": null,
-      "days_held": 0
+      "days_held": 7
     }
   ],
   "2026/02/05": [
@@ -11140,16 +11140,16 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 50.54",
       "buy_price": 63.8,
-      "latest_price": 103.8,
-      "roi": 62.7,
-      "daily_change": 0.68,
+      "latest_price": 104.65,
+      "roi": 64.03,
+      "daily_change": 0.82,
       "roi_10": 9.14,
       "roi_1": 0.94,
       "roi_5": 4.94,
       "perf_1d": -1.07,
       "perf_5d": 2.85,
       "perf_10d": 7.31,
-      "days_held": 157,
+      "days_held": 158,
       "perf_20d": 12.56,
       "perf_60d": 17.54,
       "perf_120d": 67.94
@@ -11166,16 +11166,16 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 33.76",
       "buy_price": 36.52,
-      "latest_price": 52.05,
-      "roi": 42.52,
-      "daily_change": 0.1,
+      "latest_price": 52.4,
+      "roi": 43.48,
+      "daily_change": 0.67,
       "roi_10": 2.46,
       "roi_1": 0.25,
       "roi_5": 1.34,
       "perf_1d": -6.91,
       "perf_5d": -5.89,
       "perf_10d": -4.9,
-      "days_held": 157,
+      "days_held": 158,
       "perf_20d": -1.84,
       "perf_60d": -0.85,
       "perf_120d": 41.87
@@ -13158,13 +13158,13 @@
       "roi_1": 1.87,
       "roi_5": 0.31,
       "roi_10": 0.94,
-      "perf_1d": -0.84,
-      "perf_5d": -1.46,
-      "perf_10d": -1.46,
-      "perf_20d": -2.38,
+      "perf_1d": -7.33,
+      "perf_5d": -7.9,
+      "perf_10d": -7.9,
+      "perf_20d": -8.76,
       "days_held": 162,
-      "perf_60d": -7.6,
-      "perf_120d": 9.29
+      "perf_60d": -13.64,
+      "perf_120d": 2.14
     },
     {
       "id": "2836",
