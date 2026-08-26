@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/08/25": [
@@ -7389,9 +7390,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 101.32",
       "buy_price": 170.0,
-      "latest_price": 212.0,
-      "roi": 24.71,
-      "daily_change": 3.41,
+      "latest_price": 211.0,
+      "roi": 24.12,
+      "daily_change": 2.93,
       "perf_1d": 5.18,
       "perf_5d": 17.78,
       "perf_10d": -2.73,
@@ -9930,9 +9931,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 25.61",
       "buy_price": 44.05,
-      "latest_price": 56.2,
-      "roi": 27.58,
-      "daily_change": 1.63,
+      "latest_price": 56.0,
+      "roi": 27.13,
+      "daily_change": 1.27,
       "roi_5": 8.97,
       "roi_1": 9.99,
       "roi_10": 8.97,
