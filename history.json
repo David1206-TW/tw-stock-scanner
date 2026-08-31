@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "6491",
@@ -44,7 +45,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/08/28": [
@@ -5369,12 +5371,12 @@
       "latest_price": 45.85,
       "roi": 1.21,
       "daily_change": -3.33,
-      "perf_1d": -1.93,
-      "perf_5d": 2.73,
-      "perf_10d": 12.69,
-      "perf_20d": 40.86,
+      "perf_1d": -6.6,
+      "perf_5d": -2.16,
+      "perf_10d": 7.32,
+      "perf_20d": 34.15,
       "perf_30d": null,
-      "perf_60d": 21.16,
+      "perf_60d": 15.39,
       "perf_120d": null,
       "days_held": 98
     },
@@ -8799,13 +8801,13 @@
       "latest_price": 45.8,
       "roi": -4.68,
       "daily_change": -2.87,
-      "perf_1d": 0.1,
-      "perf_5d": 0.3,
-      "perf_10d": 6.52,
-      "perf_20d": -10.78,
+      "perf_1d": -1.87,
+      "perf_5d": -1.66,
+      "perf_10d": 4.43,
+      "perf_20d": -12.53,
       "perf_30d": null,
-      "perf_60d": -17.93,
-      "perf_120d": -11.72,
+      "perf_60d": -19.54,
+      "perf_120d": -13.45,
       "days_held": 151
     }
   ],
