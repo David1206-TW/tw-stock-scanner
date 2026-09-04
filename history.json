@@ -1025,7 +1025,7 @@
       "daily_change": 0.35,
       "perf_1d": -0.46,
       "perf_5d": -1.59,
-      "perf_10d": -2.41,
+      "perf_10d": -0.11,
       "perf_20d": -4.9,
       "perf_30d": null,
       "perf_60d": null,
@@ -7418,9 +7418,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 22.06",
       "buy_price": 22.85,
-      "latest_price": 22.4,
-      "roi": -1.97,
-      "daily_change": 0.45,
+      "latest_price": 22.3,
+      "roi": -2.41,
+      "daily_change": 0.0,
       "perf_1d": -5.02,
       "perf_5d": -8.12,
       "perf_10d": -4.4,
@@ -7650,7 +7650,7 @@
       "perf_30d": null,
       "perf_60d": -16.26,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 0
     }
   ],
   "2026/02/05": [
@@ -13485,13 +13485,13 @@
       "roi_1": 1.87,
       "roi_5": 0.31,
       "roi_10": 0.94,
-      "perf_1d": -7.33,
-      "perf_5d": -7.9,
-      "perf_10d": -7.9,
-      "perf_20d": -8.76,
+      "perf_1d": -0.84,
+      "perf_5d": -1.46,
+      "perf_10d": -1.46,
+      "perf_20d": -2.38,
       "days_held": 172,
-      "perf_60d": -13.64,
-      "perf_120d": 2.14
+      "perf_60d": -7.6,
+      "perf_120d": 9.29
     },
     {
       "id": "2836",
