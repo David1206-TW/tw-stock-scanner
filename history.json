@@ -1025,7 +1025,7 @@
       "daily_change": 0.35,
       "perf_1d": -0.46,
       "perf_5d": -1.59,
-      "perf_10d": -0.11,
+      "perf_10d": -2.41,
       "perf_20d": -4.9,
       "perf_30d": null,
       "perf_60d": null,
@@ -1284,7 +1284,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 38
+      "days_held": 39
     },
     {
       "id": "2324",
@@ -2038,9 +2038,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 30.57",
       "buy_price": 42.71,
-      "latest_price": 49.0,
-      "roi": 14.73,
-      "daily_change": 4.03,
+      "latest_price": 48.2,
+      "roi": 12.85,
+      "daily_change": 2.34,
       "perf_1d": -1.24,
       "perf_5d": -3.58,
       "perf_10d": -0.12,
@@ -3598,9 +3598,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 128.4",
       "buy_price": 179.0,
-      "latest_price": 136.0,
-      "roi": -24.02,
-      "daily_change": -1.09,
+      "latest_price": 137.5,
+      "roi": -23.18,
+      "daily_change": 1.1,
       "perf_1d": -19.55,
       "perf_5d": -15.92,
       "perf_10d": -20.39,
@@ -3608,7 +3608,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 34
+      "days_held": 35
     }
   ],
   "2026/05/18": [
@@ -7650,7 +7650,7 @@
       "perf_30d": null,
       "perf_60d": -16.26,
       "perf_120d": null,
-      "days_held": 0
+      "days_held": 7
     }
   ],
   "2026/02/05": [
@@ -11467,9 +11467,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 50.54",
       "buy_price": 63.8,
-      "latest_price": 107.9,
-      "roi": 69.12,
-      "daily_change": 1.03,
+      "latest_price": 106.2,
+      "roi": 66.46,
+      "daily_change": -0.56,
       "roi_10": 9.14,
       "roi_1": 0.94,
       "roi_5": 4.94,
@@ -11493,9 +11493,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 33.76",
       "buy_price": 36.52,
-      "latest_price": 55.4,
-      "roi": 51.7,
-      "daily_change": 0.54,
+      "latest_price": 54.5,
+      "roi": 49.23,
+      "daily_change": -1.09,
       "roi_10": 2.46,
       "roi_1": 0.25,
       "roi_5": 1.34,
@@ -13028,7 +13028,7 @@
       "perf_5d": -0.25,
       "perf_10d": -0.5,
       "perf_20d": -1.63,
-      "days_held": 170,
+      "days_held": 171,
       "perf_60d": -3.75,
       "perf_120d": 7.38
     },
@@ -13485,13 +13485,13 @@
       "roi_1": 1.87,
       "roi_5": 0.31,
       "roi_10": 0.94,
-      "perf_1d": -0.84,
-      "perf_5d": -1.46,
-      "perf_10d": -1.46,
-      "perf_20d": -2.38,
+      "perf_1d": -7.33,
+      "perf_5d": -7.9,
+      "perf_10d": -7.9,
+      "perf_20d": -8.76,
       "days_held": 172,
-      "perf_60d": -7.6,
-      "perf_120d": 9.29
+      "perf_60d": -13.64,
+      "perf_120d": 2.14
     },
     {
       "id": "2836",
