@@ -13,7 +13,7 @@
       "note": "拉回佈局 / MA300 33.38",
       "buy_price": 36.6,
       "latest_price": 36.6,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": -1.35,
       "perf_1d": null,
       "perf_5d": null,
@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/09/02": [
