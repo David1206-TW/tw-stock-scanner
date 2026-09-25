@@ -1,4 +1,29 @@
 {
+  "2026/09/25": [
+    {
+      "id": "3014",
+      "name": "聯陽",
+      "group": "記憶體IC設計",
+      "type": "上市",
+      "price": 140.5,
+      "ma5": 139.5,
+      "ma10": 135.5,
+      "changeRate": -1.75,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 123.76",
+      "buy_price": 140.5,
+      "latest_price": 140.5,
+      "roi": 0.0,
+      "daily_change": -1.75,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    }
+  ],
   "2026/09/24": [
     {
       "id": "1402",
@@ -13,7 +38,7 @@
       "note": "拉回佈局 / MA300 26.68",
       "buy_price": 28.15,
       "latest_price": 28.15,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 0.9,
       "perf_1d": null,
       "perf_5d": null,
@@ -21,7 +46,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/09/22": [
@@ -633,7 +659,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 26
+      "days_held": 27
     }
   ],
   "2026/08/14": [
@@ -2245,9 +2271,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 30.57",
       "buy_price": 42.71,
-      "latest_price": 49.54,
-      "roi": 15.99,
-      "daily_change": -1.71,
+      "latest_price": 49.88,
+      "roi": 16.79,
+      "daily_change": -1.03,
       "perf_1d": -1.24,
       "perf_5d": -3.58,
       "perf_10d": -0.12,
@@ -11674,9 +11700,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 50.54",
       "buy_price": 63.8,
-      "latest_price": 112.4,
-      "roi": 76.18,
-      "daily_change": 0.49,
+      "latest_price": 112.45,
+      "roi": 76.25,
+      "daily_change": 0.54,
       "roi_10": 9.14,
       "roi_1": 0.94,
       "roi_5": 4.94,
@@ -11700,9 +11726,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 33.76",
       "buy_price": 36.52,
-      "latest_price": 56.65,
-      "roi": 55.12,
-      "daily_change": -0.35,
+      "latest_price": 56.6,
+      "roi": 54.98,
+      "daily_change": -0.44,
       "roi_10": 2.46,
       "roi_1": 0.25,
       "roi_5": 1.34,
