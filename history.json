@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "4716",
@@ -44,7 +45,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/10/02": [
@@ -14471,9 +14473,9 @@
       "isValid": true,
       "note": "Strict-VCP / 年線21.26",
       "buy_price": 24.55,
-      "latest_price": 19.35,
-      "roi": -21.18,
-      "daily_change": 2.65,
+      "latest_price": 19.05,
+      "roi": -22.4,
+      "daily_change": 1.06,
       "roi_20": -4.07,
       "roi_1": 1.43,
       "roi_5": -1.83,
