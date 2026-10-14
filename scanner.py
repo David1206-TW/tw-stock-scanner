@@ -56,9 +56,10 @@ Update V59.4 (新增雙月整理突破):
    6. 窒息量防追高：今日成交量 <= 昨日成交量的 50%，且距離 5MA 乖離不超過 2.5%。
 4. 策略 D (雙月整理突破):
    1. 長線保護：收盤價在年線 (MA240) 之上。
-   2. 整理時間：動態往回推算 40 ~ 120 交易日。
-   3. 緊密性過濾：整理期間所有收盤價皆在該區間平均價的 ±10% 以內，且總高低點振幅小於 25%。
-   4. 突破確認：今日收盤價向上突破該區間箱型上緣，且成交量放大。
+   2. 均線糾結：當日 5, 10, 20, 30, 60, 120 日均線數值差距必須在 5% 以內 (六線合一)。
+   3. 整理時間：動態往回推算 40 ~ 120 交易日。
+   4. 緊密性過濾：整理期間所有收盤價皆在該區間平均價的 ±10% 以內，且總高低點振幅小於 25%。
+   5. 突破確認：今日收盤價向上突破該區間箱型上緣，且成交量放大。
 """
 
 import yfinance as yf
@@ -426,16 +427,38 @@ def check_strategy_n_shape(df):
 
 def check_strategy_long_consolidation_breakout(df):
     """
-    策略 D：雙月整理突破 (動態回溯 40~120 天，均值 ±10% / 總振幅 25% 版)
+    策略 D：雙月整理突破 (動態回溯 40~120 天，均值 ±10% / 總振幅 25% 且均線極度糾結版)
     """
     try:
         if len(df) < 150: return False, None
 
         close = df['Close']
+        high = df['High']
+        low = df['Low']
         volume = df['Volume']
 
         curr_c = float(close.iloc[-1])
         curr_v = float(volume.iloc[-1])
+
+        # --- 新增：六線合一極度糾結檢查 (5, 10, 20, 30, 60, 120MA 差距在 5% 以內) ---
+        ma5 = float(close.rolling(5).mean().iloc[-1])
+        ma10 = float(close.rolling(10).mean().iloc[-1])
+        ma20 = float(close.rolling(20).mean().iloc[-1])
+        ma30 = float(close.rolling(30).mean().iloc[-1])
+        ma60 = float(close.rolling(60).mean().iloc[-1])
+        ma120 = float(close.rolling(120).mean().iloc[-1])
+        
+        mas = [ma5, ma10, ma20, ma30, ma60, ma120]
+        if any(math.isnan(m) or m <= 0 for m in mas):
+            return False, None
+            
+        ma_max = max(mas)
+        ma_min = min(mas)
+        
+        # 最高均線與最低均線的落差大於 5%，代表尚未完全收斂，直接過濾
+        if (ma_max - ma_min) / ma_min > 0.05:
+            return False, None
+        # ----------------------------------------------------------------------
 
         ma240 = close.rolling(240).mean()
         curr_ma240 = float(ma240.iloc[-1])
@@ -799,4 +822,3 @@ def run_scanner():
     return daily_results
 
 if __name__ == "__main__":
-    run_scanner()
