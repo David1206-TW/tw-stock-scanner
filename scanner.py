@@ -1,12 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V59.4 雙月整理突破版
+台股自動掃描策略機器人 (Scanner Bot) - V59.4 雙月整理突破增強版
 
 【版本資訊】
-Base Version: V59.3
-Update V59.4:
-1. [新增策略 D (雙月整理突破)] 專門尋找像 2344 一樣，橫盤整理 2 個月以上（約 40 個交易日以上），且在今日帶量突破整理區間上緣的標的。
-2. [保留現狀] 其他所有說明、策略 A、策略 B、策略 C 及核心框架均保持不變。
+Base Version: V58.4
+Update V58.5:
+1. [MA定義確認] 代碼中的 MA (rolling) 本身即為 K棒定義，無需修改。
+2. [ROI優化] 將歷史績效追蹤從「日曆天」改為「K棒數 (Trading Days)」。
+Update V58.8:
+1. [策略C極限壓縮] 距離前高的容忍值縮小至 -1% ~ +2%，只抓「貼臉前高」。
+Update V58.9:
+1. [位階過濾殺手鐧] 新增「歷史新高」位階過濾，近期前高必須是近兩年最高點。
+2. [長天期多頭確認] 新增 MA60 > MA120 條件。
+Update V59.0:
+1. [防追高與量縮樞紐] 新增「不可脫離五日線太遠 (乖離<2.5%)」且「今日比昨日量縮」。
+Update V59.1:
+1. [極致量縮與柄部放寬] 將量縮條件加嚴為「今日成交量 <= 昨日的 50%」。
+2. 將逼近前高的條件放寬至「距離前高 -9% ~ +2% 以內」。
+Update V59.3 (回歸純粹型態):
+1. [移除不必要條件] 移除 V59.2 的歷史 5 倍爆量條件，避免過度擬合。
+2. [確立核心過濾] 嚴格執行「前高距離 -9% ~ +2%」搭配「成交量縮減 50% 以上」的純粹窒息量樞紐點。
+Update V59.4 (新增雙月整理突破):
+1. [策略D] 新增動態雙月整理突破，嚴格限制區間收盤價在均價 ±10% 內，總振幅 < 25%。
 
 【新增排除條件 (兩策略皆適用)】
 1. 墓碑線排除：當日K線只有上引線(>0.2%)，沒有下引線(<0.1%)。
@@ -41,9 +56,9 @@ Update V59.4:
    6. 窒息量防追高：今日成交量 <= 昨日成交量的 50%，且距離 5MA 乖離不超過 2.5%。
 4. 策略 D (雙月整理突破):
    1. 長線保護：收盤價在年線 (MA240) 之上。
-   2. 整理時間：進行 2 個月以上（約 40 交易日至 120 交易日）的橫盤收斂整理，區間振幅小於 25%。
-   3. 突破確認：今日收盤價帶量突破過去 2 個月整理區間的最高上緣。
-   4. 量能條件：突破當日成交量大於 5 日均量且大於 1000 張。
+   2. 整理時間：動態往回推算 40 ~ 120 交易日。
+   3. 緊密性過濾：整理期間所有收盤價皆在該區間平均價的 ±10% 以內，且總高低點振幅小於 25%。
+   4. 突破確認：今日收盤價向上突破該區間箱型上緣，且成交量放大。
 """
 
 import yfinance as yf
@@ -370,6 +385,7 @@ def check_strategy_n_shape(df):
         # ==========================================
         # 🎯 條件四：柄部起漲 (放寬距離至 9%)
         # ==========================================
+        # 今天的收盤價，必須距離前高在 -9% 到 +2% 以內，涵蓋了洗盤剛站上均線的甜蜜點
         near_peak = (curr_c >= peak_high * 0.91) and (curr_c <= peak_high * 1.02)
 
         # ==========================================
@@ -380,9 +396,11 @@ def check_strategy_n_shape(df):
         # ==========================================
         # ⭐ 條件六：極致窒息量與防追高樞紐
         # ==========================================
+        # 1. 乖離率 <= 2.5% (緊貼五日線)
         ma5_bias = (curr_c - curr_ma5) / curr_ma5 if curr_ma5 > 0 else 1.0
         not_overextended = ma5_bias <= 0.025
         
+        # 2. 今日成交量必須 <= 昨日成交量的一半 (縮量 50% 以上)
         volume_contraction = curr_v <= (prev_v * 0.5)
 
         # ==========================================
@@ -408,16 +426,12 @@ def check_strategy_n_shape(df):
 
 def check_strategy_long_consolidation_breakout(df):
     """
-    策略 D：雙月整理突破 (緊密橫盤箱型版)
-    專門尋找像 2344 一樣，進行 2 個月以上（約 40~120 交易日）的極緊密橫盤整理，
-    且整理期間的每日收盤價均嚴格夾在 2 個月平均價的 ±5% 區間內，今日帶量向上突破。
+    策略 D：雙月整理突破 (動態回溯 40~120 天，均值 ±10% / 總振幅 25% 版)
     """
     try:
         if len(df) < 150: return False, None
 
         close = df['Close']
-        high = df['High']
-        low = df['Low']
         volume = df['Volume']
 
         curr_c = float(close.iloc[-1])
@@ -430,34 +444,42 @@ def check_strategy_long_consolidation_breakout(df):
         if not math.isnan(curr_ma240) and curr_c < curr_ma240:
             return False, None
 
-        # 1. 抓取過去 2 個月至 6 個月（排除最近 5 天）的整理區間 (約 40~120 交易日)
-        consolidation_window = df.iloc[-120:-5]  
-        if len(consolidation_window) < 40: return False, None
+        # 1. 動態抓取過去 40 ~ 120 交易日 (當天往回推算) 的整理區間
+        valid_box = False
+        box_high = 0
+        
+        for window_len in range(120, 39, -5):
+            # 往回推算 window_len 天，不含今日突破點
+            consolidation_window = df.iloc[-(window_len + 1):-1]  
+            if len(consolidation_window) < window_len: continue
 
-        box_high = float(consolidation_window['High'].max())
-        box_low = float(consolidation_window['Low'].min())
+            box_h = float(consolidation_window['High'].max())
+            box_l = float(consolidation_window['Low'].min())
 
-        if box_low <= 0: return False, None
+            if box_l <= 0: continue
 
-        # 2. 嚴格緊密過濾 (類似 2344 華新科型態)：
-        # 整個整理區間的平均收盤價
-        cons_close = consolidation_window['Close']
-        mean_price = float(cons_close.mean())
-        if mean_price <= 0: return False, None
+            # 區間振幅總檢查：整理期間總高低點振幅小於 25% 
+            box_amplitude = (box_h - box_l) / box_l
+            if box_amplitude > 0.25: continue
 
-        # 檢查整理期間每一天的收盤價，是否都緊緊貼在 2 個月平均價的 ±5% 以內 (排除 3045 那種大起大落的波段)
-        max_deviation = max(abs(cons_close - mean_price) / mean_price)
-        if max_deviation > 0.05:
-            return False, None
+            # 嚴格緊密均值 ±10% 過濾 
+            cons_close = consolidation_window['Close']
+            mean_price = float(cons_close.mean())
+            if mean_price <= 0: continue
 
-        # 3. 區間振幅總檢查：整理期間總高低點振幅應小於 15% (更加緊密)
-        box_amplitude = (box_high - box_low) / box_low
-        if box_amplitude > 0.15: return False, None
+            # 檢查整理期間每一天的收盤價，是否都緊緊貼在該區間平均價的 ±10% 以內
+            max_deviation = max(abs(cons_close - mean_price) / mean_price)
+            if max_deviation <= 0.10:
+                valid_box = True
+                box_high = box_h
+                break # 找到最長且符合的區間，停止尋找
 
-        # 4. 突破確認：今日收盤價向上突破箱型上緣 (超越過去兩個月的最高價)
-        is_breakout = curr_c > box_high * 0.995 and curr_c >= float(high.iloc[-5:].max())
+        if not valid_box: return False, None
 
-        # 5. 量能確認：突破當日成交量必須放大（大於 5 日均量，且成交量大於 1000 張 / 1,000,000 股）
+        # 2. 突破確認：今日收盤價向上突破該區間箱型上緣
+        is_breakout = curr_c > box_high * 0.995
+
+        # 3. 量能確認：突破當日成交量必須放大
         vol_ma5 = float(volume.rolling(5).mean().iloc[-1])
         if curr_v < 1000000 or curr_v < vol_ma5 * 1.2:
             return False, None
@@ -476,7 +498,6 @@ def check_strategy_long_consolidation_breakout(df):
     except Exception:
         return False, None
 
-
 # ==========================================
 # 4. 更新歷史績效 (改為 K棒數計算)
 # ==========================================
@@ -484,6 +505,7 @@ def update_history_roi(history_db):
     print("正在更新歷史名單績效 (K-Bar ROI Tracking)...")
     tickers_to_check = set()
     
+    # 這裡只需要下載資料，不需要算今天日期 (因為是看 K 棒相對位置)
     for date_str, stocks in history_db.items():
         for stock in stocks:
             symbol = stock['id'] + ('.TW' if stock['type'] == '上市' else '.TWO')
@@ -520,6 +542,7 @@ def update_history_roi(history_db):
         print("⚠️ 無法取得歷史股價資料，跳過 ROI 更新。")
         return history_db
 
+    # Helper: 取得該股票的 Series
     def get_stock_series(ticker_symbol, dataframe):
         try:
             target_col = None
@@ -538,6 +561,7 @@ def update_history_roi(history_db):
             return dataframe[target_col].dropna()
         except: return None
 
+    # Helper: 解析日期
     def parse_record_date(date_str):
         formats = ["%Y/%m/%d", "%Y-%m-%d", "%Y/%m/%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"]
         for fmt in formats:
@@ -545,10 +569,12 @@ def update_history_roi(history_db):
             except ValueError: continue
         return None
 
+    # 開始遍歷歷史紀錄
     for date_str, stocks in history_db.items():
         record_date_obj = parse_record_date(date_str)
         if not record_date_obj: continue
         
+        # 將 datetime.date 轉為 pd.Timestamp 以便比對 Index
         record_ts = pd.Timestamp(record_date_obj)
 
         for stock in stocks:
@@ -558,17 +584,25 @@ def update_history_roi(history_db):
             series = get_stock_series(symbol, close_df)
             if series is None or series.empty: continue
 
+            # 1. 找到進場日在 series 中的位置 (Index Location)
             try:
                 start_idx = series.index.searchsorted(record_ts)
+                
                 if start_idx >= len(series): continue
+                
                 found_date = series.index[start_idx]
                 if (found_date - record_ts).days > 7: pass
+
             except Exception: continue
 
+            # 2. 計算目前持有幾根 K 棒
             current_idx = len(series) - 1
             bars_held = current_idx - start_idx
+            
+            # 存回 stock 物件，方便前端參考
             stock['days_held'] = int(bars_held) 
 
+            # 3. 更新最新報價與 ROI
             latest_price = float(series.iloc[-1])
             roi = round(((latest_price - buy_price) / buy_price) * 100, 2)
             
@@ -579,6 +613,7 @@ def update_history_roi(history_db):
                 prev_price = float(series.iloc[-2])
                 stock['daily_change'] = round(((latest_price - prev_price) / prev_price) * 100, 2)
 
+            # 4. 里程碑鎖定 (基於 K 棒數)
             targets = [
                 (1, 'perf_1d'),
                 (5, 'perf_5d'),
@@ -592,6 +627,7 @@ def update_history_roi(history_db):
             for bar_threshold, field_name in targets:
                 if bars_held >= bar_threshold:
                     target_idx = start_idx + bar_threshold
+                    
                     if target_idx < len(series):
                         lock_price = float(series.iloc[target_idx])
                         lock_roi = round(((lock_price - buy_price) / buy_price) * 100, 2)
