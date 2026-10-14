@@ -408,8 +408,9 @@ def check_strategy_n_shape(df):
 
 def check_strategy_long_consolidation_breakout(df):
     """
-    策略 D：雙月整理突破 (類似 2344 華新科型態)
-    尋找橫盤整理 2 個月以上（約 40~120 交易日），且在今日帶量突破整理區間上緣的標的
+    策略 D：雙月整理突破 (緊密橫盤箱型版)
+    專門尋找像 2344 一樣，進行 2 個月以上（約 40~120 交易日）的極緊密橫盤整理，
+    且整理期間的每日收盤價均嚴格夾在 2 個月平均價的 ±5% 區間內，今日帶量向上突破。
     """
     try:
         if len(df) < 150: return False, None
@@ -429,8 +430,7 @@ def check_strategy_long_consolidation_breakout(df):
         if not math.isnan(curr_ma240) and curr_c < curr_ma240:
             return False, None
 
-        # 1. 抓取過去 2 個月至 6 個月（排除最近 5 天）的整理區間
-        # 2個月約 40 個交易日
+        # 1. 抓取過去 2 個月至 6 個月（排除最近 5 天）的整理區間 (約 40~120 交易日)
         consolidation_window = df.iloc[-120:-5]  
         if len(consolidation_window) < 40: return False, None
 
@@ -439,14 +439,25 @@ def check_strategy_long_consolidation_breakout(df):
 
         if box_low <= 0: return False, None
 
-        # 2. 區間振幅檢查：整理期間振幅應小於 25%（顯示為緊密的橫盤箱型整理）
-        box_amplitude = (box_high - box_low) / box_low
-        if box_amplitude > 0.25: return False, None
+        # 2. 嚴格緊密過濾 (類似 2344 華新科型態)：
+        # 整個整理區間的平均收盤價
+        cons_close = consolidation_window['Close']
+        mean_price = float(cons_close.mean())
+        if mean_price <= 0: return False, None
 
-        # 3. 突破確認：今日收盤價向上突破箱型上緣 (超越過去兩個月的最高價)
+        # 檢查整理期間每一天的收盤價，是否都緊緊貼在 2 個月平均價的 ±5% 以內 (排除 3045 那種大起大落的波段)
+        max_deviation = max(abs(cons_close - mean_price) / mean_price)
+        if max_deviation > 0.05:
+            return False, None
+
+        # 3. 區間振幅總檢查：整理期間總高低點振幅應小於 15% (更加緊密)
+        box_amplitude = (box_high - box_low) / box_low
+        if box_amplitude > 0.15: return False, None
+
+        # 4. 突破確認：今日收盤價向上突破箱型上緣 (超越過去兩個月的最高價)
         is_breakout = curr_c > box_high * 0.995 and curr_c >= float(high.iloc[-5:].max())
 
-        # 4. 量能確認：突破當日成交量必須放量（大於 5 日均量，且成交量大於 1000 張 / 1,000,000 股）
+        # 5. 量能確認：突破當日成交量必須放大（大於 5 日均量，且成交量大於 1000 張 / 1,000,000 股）
         vol_ma5 = float(volume.rolling(5).mean().iloc[-1])
         if curr_v < 1000000 or curr_v < vol_ma5 * 1.2:
             return False, None
