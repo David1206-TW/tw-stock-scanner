@@ -584,6 +584,7 @@ def update_history_roi(history_db):
                 (5, 'perf_5d'),
                 (10, 'perf_10d'),
                 (20, 'perf_20d'),
+                (30, 'perf_30d'),
                 (60, 'perf_60d'),
                 (120, 'perf_120d')
             ]
