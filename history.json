@@ -1,4 +1,29 @@
 {
+  "2026/10/17": [
+    {
+      "id": "2618",
+      "name": "長榮航",
+      "group": "航運",
+      "type": "上市",
+      "price": 43.7,
+      "ma5": 43.11,
+      "ma10": 42.47,
+      "changeRate": 0.58,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 36.85",
+      "buy_price": 43.7,
+      "latest_price": 43.7,
+      "roi": 0.0,
+      "daily_change": 0.58,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    }
+  ],
   "2026/10/16": [
     {
       "id": "1216",
