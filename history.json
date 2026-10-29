@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "2606",
@@ -44,7 +45,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "2887",
@@ -67,7 +69,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     },
     {
       "id": "6026",
@@ -82,7 +85,7 @@
       "note": "雙月整理突破 / MA300 13.21",
       "buy_price": 16.4,
       "latest_price": 16.4,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 0.31,
       "perf_1d": null,
       "perf_5d": null,
@@ -90,7 +93,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/10/28": [
@@ -108,15 +112,15 @@
       "buy_price": 108.65,
       "latest_price": 107.25,
       "roi": -1.29,
-      "daily_change": 0.61,
-      "perf_1d": null,
+      "daily_change": -1.29,
+      "perf_1d": -1.29,
       "perf_5d": null,
       "perf_10d": null,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 0
+      "days_held": 1
     }
   ],
   "2026/10/27": [
@@ -740,15 +744,15 @@
       "buy_price": 58.75,
       "latest_price": 56.9,
       "roi": -3.15,
-      "daily_change": 0.62,
+      "daily_change": -0.61,
       "perf_1d": -4.17,
-      "perf_5d": null,
+      "perf_5d": -3.15,
       "perf_10d": null,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 4
+      "days_held": 5
     },
     {
       "id": "6179",
@@ -1104,7 +1108,7 @@
       "buy_price": 51.4,
       "latest_price": 52.5,
       "roi": 2.14,
-      "daily_change": 0.57,
+      "daily_change": 1.16,
       "perf_1d": -2.14,
       "perf_5d": 1.56,
       "perf_10d": null,
@@ -1112,7 +1116,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 6
+      "days_held": 7
     },
     {
       "id": "6609",
