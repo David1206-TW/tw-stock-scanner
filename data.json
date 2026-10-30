@@ -1,5 +1,5 @@
 {
-  "date": "2026/10/30 14:34:37",
+  "date": "2026/10/30 19:34:17",
   "source": "GitHub Actions",
   "list": [
     {
@@ -224,6 +224,29 @@
       "latest_price": 103.5,
       "roi": 0.0,
       "daily_change": 1.97,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    },
+    {
+      "id": "0055",
+      "name": "元大MSCI金融",
+      "group": "其他",
+      "type": "上市",
+      "price": 52.4,
+      "ma5": 52.18,
+      "ma10": 51.78,
+      "changeRate": -0.19,
+      "isValid": true,
+      "note": "Strict-VCP / MA300 36.14",
+      "buy_price": 52.4,
+      "latest_price": 52.4,
+      "roi": 0.0,
+      "daily_change": -0.19,
       "perf_1d": null,
       "perf_5d": null,
       "perf_10d": null,
