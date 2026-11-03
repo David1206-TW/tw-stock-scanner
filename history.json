@@ -844,7 +844,7 @@
       "buy_price": 58.75,
       "latest_price": 53.55,
       "roi": -8.85,
-      "daily_change": -4.12,
+      "daily_change": -3.95,
       "perf_1d": -4.17,
       "perf_5d": -3.15,
       "perf_10d": null,
@@ -852,7 +852,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "6179",
@@ -1208,15 +1208,15 @@
       "buy_price": 51.4,
       "latest_price": 50.65,
       "roi": -1.46,
-      "daily_change": -3.34,
+      "daily_change": -2.5,
       "perf_1d": -2.14,
       "perf_5d": 1.56,
-      "perf_10d": null,
+      "perf_10d": -1.46,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 9
+      "days_held": 10
     },
     {
       "id": "6609",
