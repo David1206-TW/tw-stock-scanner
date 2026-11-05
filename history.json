@@ -13,7 +13,7 @@
       "note": "雙月整理突破 / MA300 48.51",
       "buy_price": 54.6,
       "latest_price": 54.6,
-      "roi": 0.0,
+      "roi": -0.0,
       "daily_change": 4.0,
       "perf_1d": null,
       "perf_5d": null,
@@ -21,7 +21,8 @@
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
-      "perf_120d": null
+      "perf_120d": null,
+      "days_held": 0
     }
   ],
   "2026/11/04": [
@@ -263,15 +264,15 @@
       "buy_price": 108.65,
       "latest_price": 97.15,
       "roi": -10.58,
-      "daily_change": -3.43,
+      "daily_change": -2.7,
       "perf_1d": -1.29,
-      "perf_5d": -10.58,
+      "perf_5d": -8.1,
       "perf_10d": null,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 5
+      "days_held": 6
     }
   ],
   "2026/10/27": [
@@ -895,15 +896,15 @@
       "buy_price": 58.75,
       "latest_price": 51.55,
       "roi": -12.26,
-      "daily_change": -3.73,
+      "daily_change": -2.83,
       "perf_1d": -4.17,
       "perf_5d": -3.15,
-      "perf_10d": null,
+      "perf_10d": -12.26,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 9
+      "days_held": 10
     },
     {
       "id": "6179",
@@ -1259,7 +1260,7 @@
       "buy_price": 51.4,
       "latest_price": 50.55,
       "roi": -1.65,
-      "daily_change": -0.2,
+      "daily_change": 0.9,
       "perf_1d": -2.14,
       "perf_5d": 1.56,
       "perf_10d": -1.46,
@@ -1267,7 +1268,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 11
+      "days_held": 12
     },
     {
       "id": "6609",
@@ -1741,9 +1742,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 385.65",
       "buy_price": 584.0,
-      "latest_price": 484.0,
-      "roi": -17.12,
-      "daily_change": -0.92,
+      "latest_price": 438.5,
+      "roi": -24.91,
+      "daily_change": -9.4,
       "perf_1d": -1.2,
       "perf_5d": -4.79,
       "perf_10d": -9.76,
@@ -1751,7 +1752,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "3356",
