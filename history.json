@@ -12,17 +12,17 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 48.51",
       "buy_price": 54.6,
-      "latest_price": 54.6,
-      "roi": -0.0,
-      "daily_change": 4.0,
-      "perf_1d": null,
+      "latest_price": 55.3,
+      "roi": 1.28,
+      "daily_change": 1.28,
+      "perf_1d": 1.28,
       "perf_5d": null,
       "perf_10d": null,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 0
+      "days_held": 1
     }
   ],
   "2026/11/04": [
@@ -38,9 +38,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 19.73",
       "buy_price": 20.5,
-      "latest_price": 21.65,
-      "roi": 5.61,
-      "daily_change": 5.61,
+      "latest_price": 21.1,
+      "roi": 2.93,
+      "daily_change": -2.54,
       "perf_1d": 5.61,
       "perf_5d": null,
       "perf_10d": null,
@@ -48,7 +48,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 1
+      "days_held": 2
     }
   ],
   "2026/11/02": [
@@ -64,9 +64,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 229.11",
       "buy_price": 251.0,
-      "latest_price": 235.0,
-      "roi": -6.37,
-      "daily_change": -2.08,
+      "latest_price": 220.0,
+      "roi": -12.35,
+      "daily_change": -6.38,
       "perf_1d": -2.19,
       "perf_5d": null,
       "perf_10d": null,
@@ -74,7 +74,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 3
+      "days_held": 4
     },
     {
       "id": "3293",
@@ -88,9 +88,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 724.55",
       "buy_price": 797.0,
-      "latest_price": 760.0,
-      "roi": -4.64,
-      "daily_change": -2.31,
+      "latest_price": 724.0,
+      "roi": -9.16,
+      "daily_change": -4.74,
       "perf_1d": -2.51,
       "perf_5d": null,
       "perf_10d": null,
@@ -98,7 +98,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 3
+      "days_held": 4
     },
     {
       "id": "6245",
@@ -112,9 +112,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 74.82",
       "buy_price": 92.8,
-      "latest_price": 83.6,
-      "roi": -9.91,
-      "daily_change": -5.0,
+      "latest_price": 78.3,
+      "roi": -15.62,
+      "daily_change": -6.34,
       "perf_1d": -6.68,
       "perf_5d": null,
       "perf_10d": null,
@@ -122,7 +122,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 3
+      "days_held": 4
     }
   ],
   "2026/10/30": [
@@ -138,17 +138,17 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 13.45",
       "buy_price": 13.55,
-      "latest_price": 12.8,
-      "roi": -5.54,
-      "daily_change": -1.92,
+      "latest_price": 12.6,
+      "roi": -7.01,
+      "daily_change": -1.56,
       "perf_1d": 0.74,
-      "perf_5d": null,
+      "perf_5d": -7.01,
       "perf_10d": null,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 4
+      "days_held": 5
     }
   ],
   "2026/10/29": [
@@ -164,9 +164,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 31.16",
       "buy_price": 36.95,
-      "latest_price": 32.6,
-      "roi": -11.77,
-      "daily_change": -1.66,
+      "latest_price": 31.45,
+      "roi": -14.88,
+      "daily_change": -3.53,
       "perf_1d": -2.71,
       "perf_5d": -11.77,
       "perf_10d": null,
@@ -174,7 +174,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 5
+      "days_held": 6
     },
     {
       "id": "2606",
@@ -188,9 +188,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 61.32",
       "buy_price": 74.3,
-      "latest_price": 69.4,
-      "roi": -6.59,
-      "daily_change": -1.14,
+      "latest_price": 66.3,
+      "roi": -10.77,
+      "daily_change": -4.47,
       "perf_1d": 2.29,
       "perf_5d": -6.59,
       "perf_10d": null,
@@ -198,7 +198,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 5
+      "days_held": 6
     },
     {
       "id": "2887",
@@ -212,9 +212,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 25.72",
       "buy_price": 42.4,
-      "latest_price": 40.1,
-      "roi": -5.42,
-      "daily_change": -0.37,
+      "latest_price": 37.4,
+      "roi": -11.79,
+      "daily_change": -6.73,
       "perf_1d": -0.35,
       "perf_5d": -5.42,
       "perf_10d": null,
@@ -222,7 +222,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 5
+      "days_held": 6
     },
     {
       "id": "6026",
@@ -236,9 +236,9 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 13.21",
       "buy_price": 16.4,
-      "latest_price": 15.35,
-      "roi": -6.4,
-      "daily_change": -0.97,
+      "latest_price": 14.8,
+      "roi": -9.76,
+      "daily_change": -3.58,
       "perf_1d": -0.61,
       "perf_5d": -6.4,
       "perf_10d": null,
@@ -246,7 +246,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 5
+      "days_held": 6
     }
   ],
   "2026/10/28": [
@@ -262,9 +262,9 @@
       "isValid": true,
       "note": "N字形 / MA300 81.51",
       "buy_price": 108.65,
-      "latest_price": 97.15,
-      "roi": -10.58,
-      "daily_change": -2.7,
+      "latest_price": 91.1,
+      "roi": -16.15,
+      "daily_change": -8.76,
       "perf_1d": -1.29,
       "perf_5d": -8.1,
       "perf_10d": null,
@@ -288,9 +288,9 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 33.09",
       "buy_price": 34.75,
-      "latest_price": 30.8,
-      "roi": -11.37,
-      "daily_change": -0.16,
+      "latest_price": 29.9,
+      "roi": -13.96,
+      "daily_change": -2.92,
       "perf_1d": -4.89,
       "perf_5d": -10.79,
       "perf_10d": null,
@@ -298,7 +298,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "2633",
@@ -312,9 +312,9 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 25.93",
       "buy_price": 26.55,
-      "latest_price": 25.85,
-      "roi": -2.64,
-      "daily_change": -0.39,
+      "latest_price": 25.4,
+      "roi": -4.33,
+      "daily_change": -1.74,
       "perf_1d": -0.75,
       "perf_5d": -1.88,
       "perf_10d": null,
@@ -322,7 +322,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     }
   ],
   "2026/10/24": [
@@ -338,9 +338,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 34.07",
       "buy_price": 38.55,
-      "latest_price": 37.25,
-      "roi": -3.37,
-      "daily_change": 0.95,
+      "latest_price": 35.95,
+      "roi": -6.74,
+      "daily_change": -3.49,
       "perf_1d": -2.2,
       "perf_5d": -2.08,
       "perf_10d": null,
@@ -348,7 +348,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "2033",
@@ -362,9 +362,9 @@
       "isValid": true,
       "note": "N字形 / MA300 19.58",
       "buy_price": 67.9,
-      "latest_price": 74.7,
-      "roi": 10.01,
-      "daily_change": -3.11,
+      "latest_price": 74.6,
+      "roi": 9.87,
+      "daily_change": -0.13,
       "perf_1d": 0.88,
       "perf_5d": 3.24,
       "perf_10d": null,
@@ -372,7 +372,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "2323",
@@ -386,9 +386,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 10.32",
       "buy_price": 11.65,
-      "latest_price": 10.3,
-      "roi": -11.59,
-      "daily_change": -5.07,
+      "latest_price": 9.59,
+      "roi": -17.68,
+      "daily_change": -6.89,
       "perf_1d": 1.29,
       "perf_5d": -5.58,
       "perf_10d": null,
@@ -396,7 +396,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "2834",
@@ -410,9 +410,9 @@
       "isValid": true,
       "note": "拉回佈局 & N字形 / MA300 15.18",
       "buy_price": 17.9,
-      "latest_price": 17.5,
-      "roi": -2.23,
-      "daily_change": -0.85,
+      "latest_price": 17.0,
+      "roi": -5.03,
+      "daily_change": -2.86,
       "perf_1d": 0.56,
       "perf_5d": -1.12,
       "perf_10d": null,
@@ -420,7 +420,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "2845",
@@ -434,9 +434,9 @@
       "isValid": true,
       "note": "N字形 / MA300 12.22",
       "buy_price": 13.3,
-      "latest_price": 12.85,
-      "roi": -3.38,
-      "daily_change": -0.77,
+      "latest_price": 12.45,
+      "roi": -6.39,
+      "daily_change": -3.11,
       "perf_1d": -1.13,
       "perf_5d": -2.63,
       "perf_10d": null,
@@ -444,7 +444,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "2905",
@@ -458,9 +458,9 @@
       "isValid": true,
       "note": "N字形 / MA300 14.8",
       "buy_price": 17.95,
-      "latest_price": 17.9,
-      "roi": -0.28,
-      "daily_change": 0.28,
+      "latest_price": 17.0,
+      "roi": -5.29,
+      "daily_change": -5.03,
       "perf_1d": 1.11,
       "perf_5d": -1.67,
       "perf_10d": null,
@@ -468,7 +468,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "3231",
@@ -482,9 +482,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 144.72",
       "buy_price": 190.0,
-      "latest_price": 168.5,
-      "roi": -11.32,
-      "daily_change": -4.26,
+      "latest_price": 159.5,
+      "roi": -16.05,
+      "daily_change": -5.34,
       "perf_1d": 2.37,
       "perf_5d": -7.11,
       "perf_10d": null,
@@ -492,7 +492,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "4770",
@@ -506,9 +506,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 240.68",
       "buy_price": 292.0,
-      "latest_price": 272.5,
-      "roi": -6.68,
-      "daily_change": -6.68,
+      "latest_price": 260.0,
+      "roi": -10.96,
+      "daily_change": -4.59,
       "perf_1d": 4.79,
       "perf_5d": -5.48,
       "perf_10d": null,
@@ -516,7 +516,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "2254",
@@ -530,9 +530,9 @@
       "isValid": true,
       "note": "N字形 / MA300 64.74",
       "buy_price": 97.9,
-      "latest_price": 109.0,
-      "roi": 11.34,
-      "daily_change": 1.4,
+      "latest_price": 109.5,
+      "roi": 11.85,
+      "daily_change": 0.46,
       "perf_1d": 2.04,
       "perf_5d": 8.78,
       "perf_10d": null,
@@ -540,7 +540,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "5426",
@@ -554,9 +554,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 23.25",
       "buy_price": 30.3,
-      "latest_price": 27.95,
-      "roi": -7.76,
-      "daily_change": -9.98,
+      "latest_price": 25.75,
+      "roi": -15.02,
+      "daily_change": -7.87,
       "perf_1d": 14.36,
       "perf_5d": 5.94,
       "perf_10d": null,
@@ -564,7 +564,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     },
     {
       "id": "6199",
@@ -578,9 +578,9 @@
       "isValid": true,
       "note": "N字形 / MA300 102.39",
       "buy_price": 149.5,
-      "latest_price": 167.0,
-      "roi": 11.71,
-      "daily_change": 0.91,
+      "latest_price": 160.0,
+      "roi": 7.02,
+      "daily_change": -4.19,
       "perf_1d": 4.35,
       "perf_5d": 10.03,
       "perf_10d": null,
@@ -588,7 +588,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 7
+      "days_held": 8
     }
   ],
   "2026/10/22": [
@@ -604,17 +604,17 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 13.1",
       "buy_price": 13.6,
-      "latest_price": 13.45,
-      "roi": -1.1,
-      "daily_change": 0.37,
+      "latest_price": 13.2,
+      "roi": -2.94,
+      "daily_change": -1.86,
       "perf_1d": 0.0,
       "perf_5d": 0.74,
-      "perf_10d": null,
+      "perf_10d": -2.94,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 9
+      "days_held": 10
     },
     {
       "id": "2347",
@@ -628,17 +628,17 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 72.58",
       "buy_price": 99.5,
-      "latest_price": 87.2,
-      "roi": -12.36,
-      "daily_change": -3.43,
+      "latest_price": 83.8,
+      "roi": -15.78,
+      "daily_change": -3.9,
       "perf_1d": -0.2,
       "perf_5d": 0.0,
-      "perf_10d": null,
+      "perf_10d": -15.78,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 9
+      "days_held": 10
     },
     {
       "id": "2615",
@@ -652,17 +652,17 @@
       "isValid": true,
       "note": "拉回佈局 & Strict-VCP / MA300 83.3",
       "buy_price": 120.0,
-      "latest_price": 113.0,
-      "roi": -5.83,
-      "daily_change": -2.16,
+      "latest_price": 105.5,
+      "roi": -12.08,
+      "daily_change": -6.64,
       "perf_1d": -0.42,
       "perf_5d": 0.0,
-      "perf_10d": null,
+      "perf_10d": -12.08,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 9
+      "days_held": 10
     },
     {
       "id": "5904",
@@ -676,17 +676,17 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 53.2",
       "buy_price": 73.6,
-      "latest_price": 73.7,
-      "roi": 0.14,
-      "daily_change": 0.68,
+      "latest_price": 71.8,
+      "roi": -2.45,
+      "daily_change": -2.58,
       "perf_1d": 0.14,
       "perf_5d": -1.49,
-      "perf_10d": null,
+      "perf_10d": -2.45,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 9
+      "days_held": 10
     }
   ],
   "2026/10/21": [
@@ -702,9 +702,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 11.11",
       "buy_price": 12.5,
-      "latest_price": 11.65,
-      "roi": -6.8,
-      "daily_change": 2.64,
+      "latest_price": 11.2,
+      "roi": -10.4,
+      "daily_change": -3.86,
       "perf_1d": -2.4,
       "perf_5d": -2.8,
       "perf_10d": -6.8,
@@ -712,7 +712,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "2034",
@@ -726,9 +726,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 19.81",
       "buy_price": 24.0,
-      "latest_price": 22.0,
-      "roi": -8.33,
-      "daily_change": -2.44,
+      "latest_price": 21.2,
+      "roi": -11.67,
+      "daily_change": -3.64,
       "perf_1d": 1.46,
       "perf_5d": -2.08,
       "perf_10d": -8.33,
@@ -736,7 +736,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "2377",
@@ -750,9 +750,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 118.01",
       "buy_price": 165.0,
-      "latest_price": 142.5,
-      "roi": -13.64,
-      "daily_change": -5.32,
+      "latest_price": 134.5,
+      "roi": -18.48,
+      "daily_change": -5.61,
       "perf_1d": -1.21,
       "perf_5d": -3.03,
       "perf_10d": -13.64,
@@ -760,7 +760,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "3010",
@@ -774,9 +774,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 113.85",
       "buy_price": 139.0,
-      "latest_price": 121.0,
-      "roi": -12.95,
-      "daily_change": -4.72,
+      "latest_price": 115.0,
+      "roi": -17.27,
+      "daily_change": -4.96,
       "perf_1d": -2.52,
       "perf_5d": -2.52,
       "perf_10d": -12.95,
@@ -784,7 +784,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "3045",
@@ -798,9 +798,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 107.82",
       "buy_price": 130.5,
-      "latest_price": 132.5,
-      "roi": 1.53,
-      "daily_change": -1.85,
+      "latest_price": 130.5,
+      "roi": 0.0,
+      "daily_change": -1.51,
       "perf_1d": 1.92,
       "perf_5d": 3.07,
       "perf_10d": 1.53,
@@ -808,7 +808,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "3545",
@@ -822,9 +822,9 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 54.04",
       "buy_price": 53.7,
-      "latest_price": 47.45,
-      "roi": -11.64,
-      "daily_change": -1.96,
+      "latest_price": 45.3,
+      "roi": -15.64,
+      "daily_change": -4.53,
       "perf_1d": -0.74,
       "perf_5d": 4.66,
       "perf_10d": -11.64,
@@ -832,7 +832,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "4961",
@@ -846,9 +846,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 155.85",
       "buy_price": 188.0,
-      "latest_price": 167.0,
-      "roi": -11.17,
-      "daily_change": -4.3,
+      "latest_price": 159.5,
+      "roi": -15.16,
+      "daily_change": -4.49,
       "perf_1d": -0.53,
       "perf_5d": 3.72,
       "perf_10d": -11.17,
@@ -856,7 +856,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "9933",
@@ -870,9 +870,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 34.36",
       "buy_price": 43.7,
-      "latest_price": 45.4,
-      "roi": 3.89,
-      "daily_change": -5.32,
+      "latest_price": 44.6,
+      "roi": 2.06,
+      "daily_change": -1.76,
       "perf_1d": 2.17,
       "perf_5d": 9.61,
       "perf_10d": 3.89,
@@ -880,7 +880,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "0056",
@@ -894,12 +894,12 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 41.28",
       "buy_price": 58.75,
-      "latest_price": 51.55,
-      "roi": -12.26,
-      "daily_change": -2.83,
+      "latest_price": 48.56,
+      "roi": -17.34,
+      "daily_change": -8.46,
       "perf_1d": -4.17,
       "perf_5d": -3.15,
-      "perf_10d": -12.26,
+      "perf_10d": -17.34,
       "perf_20d": null,
       "perf_30d": null,
       "perf_60d": null,
@@ -918,9 +918,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 28.35",
       "buy_price": 37.65,
-      "latest_price": 33.7,
-      "roi": -10.49,
-      "daily_change": -9.41,
+      "latest_price": 31.4,
+      "roi": -16.6,
+      "daily_change": -6.82,
       "perf_1d": 0.53,
       "perf_5d": -1.2,
       "perf_10d": -10.49,
@@ -928,7 +928,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "6509",
@@ -942,9 +942,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 39.51",
       "buy_price": 48.6,
-      "latest_price": 47.15,
-      "roi": -2.98,
-      "daily_change": 0.11,
+      "latest_price": 45.75,
+      "roi": -5.86,
+      "daily_change": -2.97,
       "perf_1d": -2.16,
       "perf_5d": 0.62,
       "perf_10d": -2.98,
@@ -952,7 +952,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     }
   ],
   "2026/10/20": [
@@ -968,9 +968,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 19.58",
       "buy_price": 28.5,
-      "latest_price": 25.6,
-      "roi": -10.18,
-      "daily_change": -0.39,
+      "latest_price": 23.05,
+      "roi": -19.12,
+      "daily_change": -9.96,
       "perf_1d": -0.7,
       "perf_5d": -1.93,
       "perf_10d": -9.82,
@@ -978,7 +978,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 11
+      "days_held": 12
     },
     {
       "id": "2851",
@@ -992,9 +992,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 30.37",
       "buy_price": 49.65,
-      "latest_price": 48.65,
-      "roi": -2.01,
-      "daily_change": 0.62,
+      "latest_price": 45.85,
+      "roi": -7.65,
+      "daily_change": -5.76,
       "perf_1d": 1.31,
       "perf_5d": -1.21,
       "perf_10d": -2.62,
@@ -1002,7 +1002,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 11
+      "days_held": 12
     },
     {
       "id": "3693",
@@ -1016,9 +1016,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 436.71",
       "buy_price": 721.0,
-      "latest_price": 543.0,
-      "roi": -24.69,
-      "daily_change": -9.95,
+      "latest_price": 489.0,
+      "roi": -32.18,
+      "daily_change": -9.94,
       "perf_1d": -0.42,
       "perf_5d": -7.07,
       "perf_10d": -16.37,
@@ -1026,7 +1026,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 11
+      "days_held": 12
     }
   ],
   "2026/10/19": [
@@ -1042,9 +1042,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 16.3",
       "buy_price": 19.9,
-      "latest_price": 18.05,
-      "roi": -9.3,
-      "daily_change": -1.1,
+      "latest_price": 17.0,
+      "roi": -14.57,
+      "daily_change": -5.82,
       "perf_1d": -1.01,
       "perf_5d": -3.52,
       "perf_10d": -7.79,
@@ -1052,7 +1052,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "2027",
@@ -1066,9 +1066,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 39.17",
       "buy_price": 51.0,
-      "latest_price": 47.75,
-      "roi": -6.37,
-      "daily_change": -1.95,
+      "latest_price": 45.45,
+      "roi": -10.88,
+      "daily_change": -4.82,
       "perf_1d": -2.06,
       "perf_5d": 0.0,
       "perf_10d": -4.02,
@@ -1076,7 +1076,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "2881",
@@ -1090,9 +1090,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 102.77",
       "buy_price": 158.5,
-      "latest_price": 155.5,
-      "roi": -1.89,
-      "daily_change": 0.65,
+      "latest_price": 144.5,
+      "roi": -8.83,
+      "daily_change": -7.07,
       "perf_1d": -3.15,
       "perf_5d": 2.21,
       "perf_10d": -2.84,
@@ -1100,7 +1100,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "2882",
@@ -1114,9 +1114,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 79.26",
       "buy_price": 114.5,
-      "latest_price": 112.0,
-      "roi": -2.18,
-      "daily_change": 0.9,
+      "latest_price": 103.5,
+      "roi": -9.61,
+      "daily_change": -7.59,
       "perf_1d": -3.93,
       "perf_5d": -0.44,
       "perf_10d": -1.31,
@@ -1124,7 +1124,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "2884",
@@ -1138,9 +1138,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 33.65",
       "buy_price": 49.35,
-      "latest_price": 47.95,
-      "roi": -2.84,
-      "daily_change": 0.74,
+      "latest_price": 45.95,
+      "roi": -6.89,
+      "daily_change": -4.17,
       "perf_1d": -2.03,
       "perf_5d": 0.2,
       "perf_10d": -3.95,
@@ -1148,7 +1148,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "2886",
@@ -1162,9 +1162,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 41.53",
       "buy_price": 53.9,
-      "latest_price": 54.0,
-      "roi": 0.19,
-      "daily_change": 0.93,
+      "latest_price": 52.3,
+      "roi": -2.97,
+      "daily_change": -3.15,
       "perf_1d": -1.3,
       "perf_5d": 2.04,
       "perf_10d": -1.3,
@@ -1172,7 +1172,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "2892",
@@ -1186,9 +1186,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 29.92",
       "buy_price": 41.1,
-      "latest_price": 42.25,
-      "roi": 2.8,
-      "daily_change": -0.47,
+      "latest_price": 39.4,
+      "roi": -4.14,
+      "daily_change": -6.75,
       "perf_1d": -0.85,
       "perf_5d": 4.99,
       "perf_10d": 3.65,
@@ -1196,7 +1196,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "3034",
@@ -1210,9 +1210,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 433.38",
       "buy_price": 585.0,
-      "latest_price": 510.0,
-      "roi": -12.82,
-      "daily_change": -4.32,
+      "latest_price": 487.5,
+      "roi": -16.67,
+      "daily_change": -4.41,
       "perf_1d": -2.91,
       "perf_5d": 2.39,
       "perf_10d": -5.13,
@@ -1220,7 +1220,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "5880",
@@ -1234,9 +1234,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 23.28",
       "buy_price": 28.05,
-      "latest_price": 28.5,
-      "roi": 1.6,
-      "daily_change": 0.0,
+      "latest_price": 27.05,
+      "roi": -3.57,
+      "daily_change": -5.09,
       "perf_1d": -2.14,
       "perf_5d": 2.67,
       "perf_10d": 1.43,
@@ -1244,7 +1244,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     },
     {
       "id": "0055",
@@ -1258,9 +1258,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 35.51",
       "buy_price": 51.4,
-      "latest_price": 50.55,
-      "roi": -1.65,
-      "daily_change": 0.9,
+      "latest_price": 48.1,
+      "roi": -6.42,
+      "daily_change": -3.99,
       "perf_1d": -2.14,
       "perf_5d": 1.56,
       "perf_10d": -1.46,
@@ -1282,9 +1282,9 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 39.37",
       "buy_price": 43.75,
-      "latest_price": 44.6,
-      "roi": 1.94,
-      "daily_change": -7.47,
+      "latest_price": 44.8,
+      "roi": 2.4,
+      "daily_change": 0.45,
       "perf_1d": -6.29,
       "perf_5d": -1.26,
       "perf_10d": 0.23,
@@ -1292,7 +1292,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     }
   ],
   "2026/10/17": [
@@ -1308,9 +1308,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 36.85",
       "buy_price": 43.7,
-      "latest_price": 45.1,
-      "roi": 3.2,
-      "daily_change": 3.09,
+      "latest_price": 43.5,
+      "roi": -0.46,
+      "daily_change": -3.55,
       "perf_1d": -3.09,
       "perf_5d": -1.72,
       "perf_10d": 0.0,
@@ -1318,7 +1318,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 12
+      "days_held": 13
     }
   ],
   "2026/10/16": [
@@ -1334,9 +1334,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 73.14",
       "buy_price": 79.6,
-      "latest_price": 80.9,
-      "roi": 1.63,
-      "daily_change": 0.0,
+      "latest_price": 78.4,
+      "roi": -1.51,
+      "daily_change": -3.09,
       "perf_1d": -0.0,
       "perf_5d": -0.0,
       "perf_10d": 1.26,
@@ -1344,7 +1344,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "1402",
@@ -1358,9 +1358,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 26.68",
       "buy_price": 29.4,
-      "latest_price": 28.15,
-      "roi": -4.25,
-      "daily_change": 0.36,
+      "latest_price": 27.1,
+      "roi": -7.82,
+      "daily_change": -3.73,
       "perf_1d": -1.87,
       "perf_5d": -1.7,
       "perf_10d": -2.89,
@@ -1368,7 +1368,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "1409",
@@ -1382,9 +1382,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 17.78",
       "buy_price": 25.75,
-      "latest_price": 22.0,
-      "roi": -14.56,
-      "daily_change": -2.65,
+      "latest_price": 20.75,
+      "roi": -19.42,
+      "daily_change": -5.68,
       "perf_1d": -0.97,
       "perf_5d": -3.3,
       "perf_10d": -7.96,
@@ -1392,7 +1392,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "1455",
@@ -1406,9 +1406,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 8.75",
       "buy_price": 10.1,
-      "latest_price": 8.97,
-      "roi": -11.19,
-      "daily_change": -2.29,
+      "latest_price": 8.69,
+      "roi": -13.96,
+      "daily_change": -3.12,
       "perf_1d": -1.29,
       "perf_5d": -3.47,
       "perf_10d": -6.93,
@@ -1416,7 +1416,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "1710",
@@ -1430,9 +1430,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 13.69",
       "buy_price": 18.05,
-      "latest_price": 15.85,
-      "roi": -12.19,
-      "daily_change": -5.37,
+      "latest_price": 15.3,
+      "roi": -15.24,
+      "daily_change": -3.47,
       "perf_1d": -2.49,
       "perf_5d": -5.54,
       "perf_10d": -7.48,
@@ -1440,7 +1440,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "1904",
@@ -1454,9 +1454,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 19.5",
       "buy_price": 25.35,
-      "latest_price": 24.15,
-      "roi": -4.73,
-      "daily_change": -0.41,
+      "latest_price": 22.95,
+      "roi": -9.47,
+      "daily_change": -4.97,
       "perf_1d": -1.38,
       "perf_5d": -2.96,
       "perf_10d": -2.76,
@@ -1464,7 +1464,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "1907",
@@ -1478,9 +1478,9 @@
       "isValid": true,
       "note": "N字形 / MA300 25.63",
       "buy_price": 29.55,
-      "latest_price": 28.35,
-      "roi": -4.06,
-      "daily_change": -0.7,
+      "latest_price": 27.15,
+      "roi": -8.12,
+      "daily_change": -4.23,
       "perf_1d": -2.54,
       "perf_5d": -4.4,
       "perf_10d": 0.17,
@@ -1488,7 +1488,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "2010",
@@ -1502,9 +1502,9 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 20.53",
       "buy_price": 23.45,
-      "latest_price": 22.55,
-      "roi": -3.84,
-      "daily_change": -1.31,
+      "latest_price": 22.25,
+      "roi": -5.12,
+      "daily_change": -1.33,
       "perf_1d": -0.85,
       "perf_5d": -1.49,
       "perf_10d": -1.71,
@@ -1512,7 +1512,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "2023",
@@ -1526,9 +1526,9 @@
       "isValid": true,
       "note": "雙月整理突破 / MA300 14.45",
       "buy_price": 15.05,
-      "latest_price": 14.9,
-      "roi": -1.0,
-      "daily_change": -1.0,
+      "latest_price": 14.35,
+      "roi": -4.65,
+      "daily_change": -3.69,
       "perf_1d": 0.33,
       "perf_5d": 0.0,
       "perf_10d": -1.66,
@@ -1536,7 +1536,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "2206",
@@ -1550,9 +1550,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 59.12",
       "buy_price": 65.5,
-      "latest_price": 63.6,
-      "roi": -2.9,
-      "daily_change": 0.79,
+      "latest_price": 61.4,
+      "roi": -6.26,
+      "daily_change": -3.46,
       "perf_1d": -1.98,
       "perf_5d": -1.98,
       "perf_10d": -2.6,
@@ -1560,7 +1560,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "2357",
@@ -1574,9 +1574,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 660.07",
       "buy_price": 994.0,
-      "latest_price": 867.0,
-      "roi": -12.78,
-      "daily_change": -1.14,
+      "latest_price": 834.0,
+      "roi": -16.1,
+      "daily_change": -3.81,
       "perf_1d": -2.41,
       "perf_5d": -4.83,
       "perf_10d": -8.25,
@@ -1584,7 +1584,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "2520",
@@ -1598,9 +1598,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 33.0",
       "buy_price": 37.55,
-      "latest_price": 34.7,
-      "roi": -7.59,
-      "daily_change": -1.42,
+      "latest_price": 32.55,
+      "roi": -13.32,
+      "daily_change": -6.2,
       "perf_1d": -0.67,
       "perf_5d": 0.13,
       "perf_10d": -2.4,
@@ -1608,7 +1608,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "2609",
@@ -1622,9 +1622,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 53.15",
       "buy_price": 64.7,
-      "latest_price": 60.0,
-      "roi": -7.26,
-      "daily_change": -3.69,
+      "latest_price": 56.2,
+      "roi": -13.14,
+      "daily_change": -6.33,
       "perf_1d": -1.85,
       "perf_5d": -4.33,
       "perf_10d": -1.08,
@@ -1632,7 +1632,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "2880",
@@ -1646,9 +1646,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 33.31",
       "buy_price": 48.9,
-      "latest_price": 49.6,
-      "roi": 1.43,
-      "daily_change": 1.12,
+      "latest_price": 47.3,
+      "roi": -3.27,
+      "daily_change": -4.64,
       "perf_1d": -0.41,
       "perf_5d": 2.86,
       "perf_10d": 1.43,
@@ -1656,7 +1656,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "2885",
@@ -1670,9 +1670,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 46.41",
       "buy_price": 72.9,
-      "latest_price": 69.1,
-      "roi": -5.21,
-      "daily_change": 0.14,
+      "latest_price": 64.2,
+      "roi": -11.93,
+      "daily_change": -7.09,
       "perf_1d": -1.65,
       "perf_5d": -0.69,
       "perf_10d": -1.92,
@@ -1680,7 +1680,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "2890",
@@ -1694,9 +1694,9 @@
       "isValid": true,
       "note": "拉回佈局 & N字形 / MA300 30.84",
       "buy_price": 45.75,
-      "latest_price": 42.9,
-      "roi": -6.23,
-      "daily_change": -0.58,
+      "latest_price": 40.4,
+      "roi": -11.69,
+      "daily_change": -5.83,
       "perf_1d": -1.09,
       "perf_5d": 1.31,
       "perf_10d": 0.11,
@@ -1704,7 +1704,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "3029",
@@ -1718,9 +1718,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 108.11",
       "buy_price": 120.5,
-      "latest_price": 113.0,
-      "roi": -6.22,
-      "daily_change": -3.0,
+      "latest_price": 116.0,
+      "roi": -3.73,
+      "daily_change": 2.65,
       "perf_1d": -2.49,
       "perf_5d": 1.66,
       "perf_10d": 2.49,
@@ -1728,7 +1728,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "3044",
@@ -1742,9 +1742,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 385.65",
       "buy_price": 584.0,
-      "latest_price": 438.5,
-      "roi": -24.91,
-      "daily_change": -9.4,
+      "latest_price": 403.0,
+      "roi": -30.99,
+      "daily_change": -8.1,
       "perf_1d": -1.2,
       "perf_5d": -4.79,
       "perf_10d": -9.76,
@@ -1752,7 +1752,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "3356",
@@ -1766,9 +1766,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 58.06",
       "buy_price": 73.3,
-      "latest_price": 64.6,
-      "roi": -11.87,
-      "daily_change": -3.0,
+      "latest_price": 61.2,
+      "roi": -16.51,
+      "daily_change": -5.26,
       "perf_1d": -0.41,
       "perf_5d": -2.32,
       "perf_10d": -4.5,
@@ -1776,7 +1776,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     },
     {
       "id": "8050",
@@ -1790,9 +1790,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 49.04",
       "buy_price": 65.4,
-      "latest_price": 55.7,
-      "roi": -14.83,
-      "daily_change": -3.8,
+      "latest_price": 52.4,
+      "roi": -19.88,
+      "daily_change": -5.92,
       "perf_1d": -1.68,
       "perf_5d": -5.81,
       "perf_10d": -6.57,
@@ -1800,7 +1800,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 13
+      "days_held": 14
     }
   ],
   "2026/10/15": [
@@ -1816,9 +1816,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 23.35",
       "buy_price": 26.8,
-      "latest_price": 27.2,
-      "roi": 1.49,
-      "daily_change": -0.18,
+      "latest_price": 26.3,
+      "roi": -1.87,
+      "daily_change": -3.31,
       "perf_1d": 1.87,
       "perf_5d": 4.29,
       "perf_10d": 5.78,
@@ -1826,7 +1826,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     },
     {
       "id": "2379",
@@ -1840,9 +1840,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 567.75",
       "buy_price": 764.0,
-      "latest_price": 720.0,
-      "roi": -5.76,
-      "daily_change": -3.74,
+      "latest_price": 702.0,
+      "roi": -8.12,
+      "daily_change": -2.5,
       "perf_1d": 1.83,
       "perf_5d": 1.05,
       "perf_10d": 5.1,
@@ -1850,7 +1850,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     },
     {
       "id": "2637",
@@ -1864,9 +1864,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 71.29",
       "buy_price": 101.0,
-      "latest_price": 98.6,
-      "roi": -2.38,
-      "daily_change": -0.3,
+      "latest_price": 94.0,
+      "roi": -6.93,
+      "daily_change": -4.67,
       "perf_1d": 0.5,
       "perf_5d": -0.5,
       "perf_10d": -0.5,
@@ -1874,7 +1874,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     },
     {
       "id": "2801",
@@ -1888,9 +1888,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 20.72",
       "buy_price": 29.15,
-      "latest_price": 28.7,
-      "roi": -1.54,
-      "daily_change": -2.21,
+      "latest_price": 26.95,
+      "roi": -7.55,
+      "daily_change": -6.1,
       "perf_1d": 1.2,
       "perf_5d": 2.57,
       "perf_10d": 5.32,
@@ -1898,7 +1898,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     },
     {
       "id": "2855",
@@ -1912,9 +1912,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 33.71",
       "buy_price": 59.1,
-      "latest_price": 50.1,
-      "roi": -15.23,
-      "daily_change": -1.76,
+      "latest_price": 46.7,
+      "roi": -20.98,
+      "daily_change": -6.79,
       "perf_1d": -1.35,
       "perf_5d": -6.94,
       "perf_10d": -7.95,
@@ -1922,7 +1922,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     },
     {
       "id": "2883",
@@ -1936,9 +1936,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 21.86",
       "buy_price": 38.4,
-      "latest_price": 34.35,
-      "roi": -10.55,
-      "daily_change": -1.29,
+      "latest_price": 32.45,
+      "roi": -15.49,
+      "daily_change": -5.53,
       "perf_1d": 1.82,
       "perf_5d": -1.69,
       "perf_10d": -1.56,
@@ -1946,7 +1946,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     },
     {
       "id": "2915",
@@ -1960,9 +1960,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 50.82",
       "buy_price": 58.9,
-      "latest_price": 55.6,
-      "roi": -5.6,
-      "daily_change": -0.18,
+      "latest_price": 52.7,
+      "roi": -10.53,
+      "daily_change": -5.22,
       "perf_1d": 0.17,
       "perf_5d": -1.87,
       "perf_10d": -2.21,
@@ -1970,7 +1970,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     },
     {
       "id": "9105",
@@ -1984,9 +1984,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 6.81",
       "buy_price": 9.24,
-      "latest_price": 7.29,
-      "roi": -21.1,
-      "daily_change": -3.32,
+      "latest_price": 6.94,
+      "roi": -24.89,
+      "daily_change": -4.8,
       "perf_1d": -1.95,
       "perf_5d": -6.39,
       "perf_10d": -13.42,
@@ -1994,7 +1994,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     }
   ],
   "2026/10/14": [
@@ -2010,9 +2010,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 11.09",
       "buy_price": 13.05,
-      "latest_price": 14.9,
-      "roi": 14.18,
-      "daily_change": 5.3,
+      "latest_price": 15.05,
+      "roi": 15.33,
+      "daily_change": 1.01,
       "perf_1d": 1.53,
       "perf_5d": 1.15,
       "perf_10d": 1.92,
@@ -2020,7 +2020,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2006",
@@ -2034,9 +2034,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 67.97",
       "buy_price": 89.5,
-      "latest_price": 85.9,
-      "roi": -4.02,
-      "daily_change": -4.24,
+      "latest_price": 84.2,
+      "roi": -5.92,
+      "daily_change": -1.98,
       "perf_1d": 0.67,
       "perf_5d": 4.25,
       "perf_10d": 3.13,
@@ -2044,7 +2044,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2031",
@@ -2058,9 +2058,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 39.03",
       "buy_price": 47.35,
-      "latest_price": 44.5,
-      "roi": -6.02,
-      "daily_change": -2.31,
+      "latest_price": 42.35,
+      "roi": -10.56,
+      "daily_change": -4.83,
       "perf_1d": -0.84,
       "perf_5d": 0.95,
       "perf_10d": -0.63,
@@ -2068,7 +2068,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2108",
@@ -2082,9 +2082,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 25.33",
       "buy_price": 30.1,
-      "latest_price": 27.25,
-      "roi": -9.47,
-      "daily_change": -1.8,
+      "latest_price": 26.55,
+      "roi": -11.79,
+      "daily_change": -2.57,
       "perf_1d": -1.83,
       "perf_5d": -3.82,
       "perf_10d": -3.99,
@@ -2092,7 +2092,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2352",
@@ -2106,9 +2106,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 27.94",
       "buy_price": 29.55,
-      "latest_price": 28.0,
-      "roi": -5.25,
-      "daily_change": -3.95,
+      "latest_price": 26.4,
+      "roi": -10.66,
+      "daily_change": -5.71,
       "perf_1d": -1.86,
       "perf_5d": -0.34,
       "perf_10d": 11.0,
@@ -2116,7 +2116,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2393",
@@ -2130,9 +2130,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 59.41",
       "buy_price": 68.3,
-      "latest_price": 62.7,
-      "roi": -8.2,
-      "daily_change": -2.79,
+      "latest_price": 60.2,
+      "roi": -11.86,
+      "daily_change": -3.99,
       "perf_1d": 0.15,
       "perf_5d": -0.59,
       "perf_10d": 1.02,
@@ -2140,7 +2140,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2395",
@@ -2154,9 +2154,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 410.53",
       "buy_price": 714.0,
-      "latest_price": 596.0,
-      "roi": -16.53,
-      "daily_change": -5.25,
+      "latest_price": 537.0,
+      "roi": -24.79,
+      "daily_change": -9.9,
       "perf_1d": -2.24,
       "perf_5d": -4.34,
       "perf_10d": -5.74,
@@ -2164,7 +2164,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2412",
@@ -2178,9 +2178,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 131.86",
       "buy_price": 148.5,
-      "latest_price": 161.5,
-      "roi": 8.75,
-      "daily_change": 0.0,
+      "latest_price": 160.0,
+      "roi": 7.74,
+      "daily_change": -0.93,
       "perf_1d": 2.69,
       "perf_5d": 3.7,
       "perf_10d": 6.4,
@@ -2188,7 +2188,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2603",
@@ -2202,9 +2202,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 191.3",
       "buy_price": 263.0,
-      "latest_price": 259.0,
-      "roi": -1.52,
-      "daily_change": -3.36,
+      "latest_price": 242.5,
+      "roi": -7.79,
+      "daily_change": -6.37,
       "perf_1d": -2.28,
       "perf_5d": -2.09,
       "perf_10d": -0.76,
@@ -2212,7 +2212,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2605",
@@ -2226,9 +2226,9 @@
       "isValid": true,
       "note": "拉回佈局 & Strict-VCP / MA300 29.17",
       "buy_price": 37.05,
-      "latest_price": 32.65,
-      "roi": -11.88,
-      "daily_change": -1.36,
+      "latest_price": 31.1,
+      "roi": -16.06,
+      "daily_change": -4.75,
       "perf_1d": -2.83,
       "perf_5d": -4.18,
       "perf_10d": -5.13,
@@ -2236,7 +2236,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2889",
@@ -2250,9 +2250,9 @@
       "isValid": true,
       "note": "N字形 / MA300 15.16",
       "buy_price": 16.8,
-      "latest_price": 16.4,
-      "roi": -2.38,
-      "daily_change": -0.91,
+      "latest_price": 15.65,
+      "roi": -6.85,
+      "daily_change": -4.57,
       "perf_1d": -0.0,
       "perf_5d": 0.6,
       "perf_10d": 2.38,
@@ -2260,7 +2260,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "2891",
@@ -2274,9 +2274,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 52.42",
       "buy_price": 71.4,
-      "latest_price": 74.9,
-      "roi": 4.9,
-      "daily_change": 2.32,
+      "latest_price": 69.9,
+      "roi": -2.1,
+      "daily_change": -6.68,
       "perf_1d": 2.1,
       "perf_5d": 4.76,
       "perf_10d": 5.46,
@@ -2284,7 +2284,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "3711",
@@ -2298,9 +2298,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 389.07",
       "buy_price": 747.0,
-      "latest_price": 572.0,
-      "roi": -23.43,
-      "daily_change": -8.77,
+      "latest_price": 515.0,
+      "roi": -31.06,
+      "daily_change": -9.97,
       "perf_1d": -9.91,
       "perf_5d": -8.43,
       "perf_10d": -8.57,
@@ -2308,7 +2308,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "4566",
@@ -2322,9 +2322,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 61.23",
       "buy_price": 76.3,
-      "latest_price": 75.3,
-      "roi": -1.31,
-      "daily_change": -6.34,
+      "latest_price": 70.9,
+      "roi": -7.08,
+      "daily_change": -5.84,
       "perf_1d": -2.49,
       "perf_5d": 11.53,
       "perf_10d": 15.07,
@@ -2332,7 +2332,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "4904",
@@ -2346,9 +2346,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 91.7",
       "buy_price": 108.0,
-      "latest_price": 112.5,
-      "roi": 4.17,
-      "daily_change": -1.32,
+      "latest_price": 109.5,
+      "roi": 1.39,
+      "daily_change": -2.67,
       "perf_1d": 4.63,
       "perf_5d": 3.7,
       "perf_10d": 4.63,
@@ -2356,7 +2356,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "4938",
@@ -2370,9 +2370,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 76.32",
       "buy_price": 100.0,
-      "latest_price": 97.2,
-      "roi": -2.8,
-      "daily_change": -4.24,
+      "latest_price": 91.5,
+      "roi": -8.5,
+      "daily_change": -5.86,
       "perf_1d": -1.9,
       "perf_5d": 5.0,
       "perf_10d": 4.5,
@@ -2380,7 +2380,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "5876",
@@ -2394,9 +2394,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 40.26",
       "buy_price": 51.7,
-      "latest_price": 51.7,
-      "roi": 0.0,
-      "daily_change": -0.19,
+      "latest_price": 49.75,
+      "roi": -3.77,
+      "daily_change": -3.77,
       "perf_1d": 3.29,
       "perf_5d": 4.06,
       "perf_10d": 5.42,
@@ -2404,7 +2404,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "6005",
@@ -2418,9 +2418,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 25.64",
       "buy_price": 32.95,
-      "latest_price": 28.85,
-      "roi": -12.44,
-      "daily_change": -1.03,
+      "latest_price": 27.1,
+      "roi": -17.75,
+      "daily_change": -6.07,
       "perf_1d": -2.12,
       "perf_5d": -5.92,
       "perf_10d": -5.16,
@@ -2428,7 +2428,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "6214",
@@ -2442,9 +2442,9 @@
       "isValid": true,
       "note": "Strict-VCP / MA300 128.46",
       "buy_price": 196.0,
-      "latest_price": 176.5,
-      "roi": -9.95,
-      "daily_change": -3.02,
+      "latest_price": 184.0,
+      "roi": -6.12,
+      "daily_change": 4.25,
       "perf_1d": 0.51,
       "perf_5d": 1.53,
       "perf_10d": 3.06,
@@ -2452,7 +2452,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "8039",
@@ -2466,9 +2466,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 129.15",
       "buy_price": 303.0,
-      "latest_price": 201.5,
-      "roi": -33.5,
-      "daily_change": -9.64,
+      "latest_price": 181.5,
+      "roi": -40.1,
+      "daily_change": -9.93,
       "perf_1d": -6.44,
       "perf_5d": -3.3,
       "perf_10d": -12.21,
@@ -2476,7 +2476,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     },
     {
       "id": "8932",
@@ -2490,9 +2490,9 @@
       "isValid": true,
       "note": "拉回佈局 / MA300 80.68",
       "buy_price": 94.5,
-      "latest_price": 78.6,
-      "roi": -16.83,
-      "daily_change": -5.53,
+      "latest_price": 70.8,
+      "roi": -25.08,
+      "daily_change": -9.92,
       "perf_1d": -3.07,
       "perf_5d": -2.65,
       "perf_10d": -4.34,
@@ -2500,7 +2500,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 15
+      "days_held": 16
     }
   ]
 }
