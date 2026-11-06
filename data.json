@@ -1,5 +1,29 @@
 {
-  "date": "2026/11/06 10:19:45",
+  "date": "2026/11/06 15:28:33",
   "source": "GitHub Actions",
-  "list": []
+  "list": [
+    {
+      "id": "5438",
+      "name": "東友",
+      "group": "電腦周邊",
+      "type": "上櫃",
+      "price": 18.85,
+      "ma5": 16.71,
+      "ma10": 16.73,
+      "changeRate": 9.91,
+      "isValid": true,
+      "note": "雙月整理突破 / MA300 19.83",
+      "buy_price": 18.85,
+      "latest_price": 18.85,
+      "roi": 0.0,
+      "daily_change": 9.91,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    }
+  ]
 }
