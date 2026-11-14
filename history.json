@@ -292,7 +292,7 @@
       "buy_price": 36.95,
       "latest_price": 38.75,
       "roi": 4.87,
-      "daily_change": 5.44,
+      "daily_change": 0.0,
       "perf_1d": 15.34,
       "perf_5d": 4.59,
       "perf_10d": 4.87,
@@ -300,7 +300,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 10
+      "days_held": 11
     },
     {
       "id": "2606",
