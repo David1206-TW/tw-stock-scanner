@@ -390,7 +390,7 @@
       "buy_price": 108.65,
       "latest_price": 94.1,
       "roi": -13.39,
-      "daily_change": -2.44,
+      "daily_change": 0.11,
       "perf_1d": -1.29,
       "perf_5d": -8.1,
       "perf_10d": -5.02,
@@ -398,7 +398,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 14
+      "days_held": 15
     }
   ],
   "2026/10/27": [
@@ -1022,7 +1022,7 @@
       "buy_price": 58.75,
       "latest_price": 49.48,
       "roi": -15.78,
-      "daily_change": -2.21,
+      "daily_change": -0.88,
       "perf_1d": -4.17,
       "perf_5d": -3.15,
       "perf_10d": -12.26,
@@ -1030,7 +1030,7 @@
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 18
+      "days_held": 19
     },
     {
       "id": "6179",
@@ -1386,15 +1386,15 @@
       "buy_price": 51.4,
       "latest_price": 48.28,
       "roi": -6.07,
-      "daily_change": -4.02,
+      "daily_change": -3.92,
       "perf_1d": -2.14,
       "perf_5d": 1.56,
       "perf_10d": -1.46,
-      "perf_20d": -6.07,
+      "perf_20d": -2.24,
       "perf_30d": null,
       "perf_60d": null,
       "perf_120d": null,
-      "days_held": 20
+      "days_held": 21
     },
     {
       "id": "6609",
