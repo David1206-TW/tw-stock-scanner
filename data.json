@@ -1,5 +1,29 @@
 {
-  "date": "2026/11/22 21:33:16",
+  "date": "2026/11/23 09:41:53",
   "source": "GitHub Actions",
-  "list": []
+  "list": [
+    {
+      "id": "6199",
+      "name": "天品",
+      "group": "其他",
+      "type": "上櫃",
+      "price": 172.0,
+      "ma5": 171.1,
+      "ma10": 169.75,
+      "changeRate": 1.47,
+      "isValid": true,
+      "note": "Strict-VCP / MA300 106.71",
+      "buy_price": 172.0,
+      "latest_price": 172.0,
+      "roi": 0.0,
+      "daily_change": 1.47,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    }
+  ]
 }
