@@ -1,5 +1,29 @@
 {
-  "date": "2026/11/25 17:19:57",
+  "date": "2026/11/25 23:59:17",
   "source": "GitHub Actions",
-  "list": []
+  "list": [
+    {
+      "id": "6690",
+      "name": "安碁資訊",
+      "group": "系統整合",
+      "type": "上櫃",
+      "price": 199.5,
+      "ma5": 187.9,
+      "ma10": 197.85,
+      "changeRate": 9.92,
+      "isValid": true,
+      "note": "拉回佈局 / MA300 166.3",
+      "buy_price": 199.5,
+      "latest_price": 199.5,
+      "roi": 0.0,
+      "daily_change": 9.92,
+      "perf_1d": null,
+      "perf_5d": null,
+      "perf_10d": null,
+      "perf_20d": null,
+      "perf_30d": null,
+      "perf_60d": null,
+      "perf_120d": null
+    }
+  ]
 }
