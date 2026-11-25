@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-台股自動掃描策略機器人 (Scanner Bot) - V59.5 六線合一雙月突破版
+台股自動掃描策略機器人 (Scanner Bot) - V59.4 DKQS轉多整合版
 
 【版本資訊】
 Base Version: V58.4
@@ -20,14 +20,45 @@ Update V59.1:
 Update V59.3 (回歸純粹型態):
 1. [移除不必要條件] 移除 V59.2 的歷史 5 倍爆量條件，避免過度擬合。
 2. [確立核心過濾] 嚴格執行「前高距離 -9% ~ +2%」搭配「成交量縮減 50% 以上」的純粹窒息量樞紐點。
-Update V59.5 (新增雙月整理突破與六線合一):
-1. 新增策略 D：動態回溯 40~120 天，均值 ±10% / 總振幅 25% 緊密盤整突破。
-2. 新增嚴格濾網：突破當下 5, 10, 20, 30, 60, 120 均線最高最低落差必須 <= 5% (六線合一)。
+Update V59.4:
+1. [策略新增] 新增策略 D「DKQS轉多」(富途牛牛 12/50 EXPMA 綠帶翻紅帶起漲第一槍)。
 
 【新增排除條件 (兩策略皆適用)】
 1. 墓碑線排除：當日K線只有上引線(>0.2%)，沒有下引線(<0.1%)。
 2. 破底排除：當日最低價小於前日最低價 1.5% 以上。
 3. 扣抵值排除：當日收盤價 < 20交易日前收盤價 (確保趨勢向上)。
+
+【保留策略說明】
+1. 策略 A (拉回佈局): 
+   1. 長線保護：收盤 > MA300, MA120, MA60。
+   2. 多頭排列：MA10 > MA60 > MA120 > MA240。
+   3. 位階安全：乖離率 < 25%。
+   4. 均線糾結：差異 < 8%。
+   5. 量縮整理：成交量 < 5日均量。
+   6. 支撐確認：收盤 > MA12。
+   7. K線收斂：當日振幅 < 4.5% 且 實體幅度 < 2.5%。
+   8. 流動性：5日均量 > 1000張。
+   9. 趨勢支撐：當日收盤 > 20日均線扣抵值。
+2. 策略 B (Strict VCP):
+   1. 硬指標過濾：股價 > MA300 & > MA60 & 成交量 > 1000張。
+   2. 多頭排列：MA60 > MA120 > MA240。
+   3. 價格位階：靠近 52 週新高。
+   4. 波動收縮：布林帶寬度 < 15%。
+   5. 量能遞減：5日均量 < 20日均量。
+   6. 回檔收縮：r1(60日) > r2(20日) > r3(10日)。
+   7. 趨勢支撐：當日收盤 > 20日均線扣抵值。
+3. 策略 C (N字形上攻 - 純粹窒息量樞紐版):
+   1. 長線保護：股價必須在年線之上，且 MA60 > MA120。
+   2. 創高位階：尋找近30天前高，且該前高必須是「近兩年來的最高點」。
+   3. 實質回檔：前高之後的低點，跌落超過 8%。
+   4. 柄部起漲：今日收盤價距離前高在 -9% 到 +2% 以內。
+   5. 短線轉強：今日收盤價站穩 5MA 與 10MA 之上。
+   6. 窒息量防追高：今日成交量 <= 昨日成交量的 50%，且距離 5MA 乖離不超過 2.5%。
+4. 策略 D (DKQS轉多):
+   1. 基礎防線：5日均量 >= 800張，且收盤價 > 年線 (MA240)。
+   2. 綠帶翻紅帶：昨日 EXPMA(12) <= EXPMA(50)，今日 EXPMA(12) > EXPMA(50)。
+   3. 白線翻揚：今日 EXPMA(12) > 昨日 EXPMA(12)。
+   4. 站穩防追高：今日收盤價 > EXPMA(12)，且距離 EXPMA(12) 乖離率 <= 5%。
 """
 
 import yfinance as yf
@@ -92,7 +123,7 @@ def get_all_tickers():
     return ticker_list
 
 # ==========================================
-# 3. 策略邏輯 (V59.5)
+# 3. 策略邏輯 (V59.4)
 # ==========================================
 
 def check_strategy_original(df):
@@ -393,101 +424,65 @@ def check_strategy_n_shape(df):
     except Exception:
         return False, None
 
-def check_strategy_long_consolidation_breakout(df):
+def check_strategy_dkqs(df):
     """
-    策略 D：雙月整理突破 (動態回溯 40~120 天，均值 ±10% / 總振幅 25% 且均線極度糾結版)
+    策略 D：DKQS轉多 (富途牛牛 12/50 EXPMA 綠帶翻紅帶)
     """
     try:
-        if len(df) < 150: return False, None
+        if len(df) < 250: return False, None
 
         close = df['Close']
-        high = df['High']
-        low = df['Low']
         volume = df['Volume']
 
+        # 精準還原富途 EXPMA(CLOSE, 12) 與 EXPMA(CLOSE, 50)
+        exp1 = close.ewm(span=12, adjust=False).mean()
+        exp2 = close.ewm(span=50, adjust=False).mean()
+
         curr_c = float(close.iloc[-1])
-        curr_v = float(volume.iloc[-1])
+        curr_exp1, prev_exp1 = float(exp1.iloc[-1]), float(exp1.iloc[-2])
+        curr_exp2, prev_exp2 = float(exp2.iloc[-1]), float(exp2.iloc[-2])
 
-        # --- 新增：六線合一極度糾結檢查 (5, 10, 20, 30, 60, 120MA 差距在 5% 以內) ---
-        ma5 = float(close.rolling(5).mean().iloc[-1])
-        ma10 = float(close.rolling(10).mean().iloc[-1])
-        ma20 = float(close.rolling(20).mean().iloc[-1])
-        ma30 = float(close.rolling(30).mean().iloc[-1])
-        ma60 = float(close.rolling(60).mean().iloc[-1])
-        ma120 = float(close.rolling(120).mean().iloc[-1])
-        
-        mas = [ma5, ma10, ma20, ma30, ma60, ma120]
-        if any(math.isnan(m) or m <= 0 for m in mas):
-            return False, None
-            
-        ma_max = max(mas)
-        ma_min = min(mas)
-        
-        # 最高均線與最低均線的落差大於 5%，代表尚未完全收斂，直接過濾
-        if (ma_max - ma_min) / ma_min > 0.05:
-            return False, None
-        # ----------------------------------------------------------------------
-
+        ma5 = close.rolling(5).mean()
+        ma10 = close.rolling(10).mean()
+        ma20 = close.rolling(20).mean()
         ma240 = close.rolling(240).mean()
+        ma300 = close.rolling(300).mean()
+
+        curr_ma5 = float(ma5.iloc[-1])
+        curr_ma10 = float(ma10.iloc[-1])
+        curr_ma20 = float(ma20.iloc[-1])
         curr_ma240 = float(ma240.iloc[-1])
+        curr_ma300 = float(ma300.iloc[-1])
 
-        # 0. 長線保護：股價在年線之上
-        if not math.isnan(curr_ma240) and curr_c < curr_ma240:
-            return False, None
-
-        # 1. 動態抓取過去 40 ~ 120 交易日 (當天往回推算) 的整理區間
-        valid_box = False
-        box_high = 0
-        
-        for window_len in range(120, 39, -5):
-            # 往回推算 window_len 天，不含今日突破點
-            consolidation_window = df.iloc[-(window_len + 1):-1]  
-            if len(consolidation_window) < window_len: continue
-
-            box_h = float(consolidation_window['High'].max())
-            box_l = float(consolidation_window['Low'].min())
-
-            if box_l <= 0: continue
-
-            # 區間振幅總檢查：整理期間總高低點振幅小於 25% 
-            box_amplitude = (box_h - box_l) / box_l
-            if box_amplitude > 0.25: continue
-
-            # 嚴格緊密均值 ±10% 過濾 
-            cons_close = consolidation_window['Close']
-            mean_price = float(cons_close.mean())
-            if mean_price <= 0: continue
-
-            # 檢查整理期間每一天的收盤價，是否都緊緊貼在該區間平均價的 ±10% 以內
-            max_deviation = max(abs(cons_close - mean_price) / mean_price)
-            if max_deviation <= 0.10:
-                valid_box = True
-                box_high = box_h
-                break # 找到最長且符合的區間，停止尋找
-
-        if not valid_box: return False, None
-
-        # 2. 突破確認：今日收盤價向上突破該區間箱型上緣
-        is_breakout = curr_c > box_high * 0.995
-
-        # 3. 量能確認：突破當日成交量必須放大
+        # 1. 基礎防線：5日均量 >= 800 張、收盤在年線之上
         vol_ma5 = float(volume.rolling(5).mean().iloc[-1])
-        if curr_v < 1000000 or curr_v < vol_ma5 * 1.2:
-            return False, None
+        if vol_ma5 < 800000: return False, None
+        if math.isnan(curr_ma240) or curr_c < curr_ma240: return False, None
 
-        if is_breakout:
+        # 2. 綠帶剛翻紅帶 (昨日 EXP1 <= EXP2，今日 EXP1 > EXP2)
+        just_turned_red = (prev_exp1 <= prev_exp2) and (curr_exp1 > curr_exp2)
+
+        # 3. 白線翻揚 (EXP1 向上)
+        white_up = curr_exp1 > prev_exp1
+
+        # 4. 收盤站穩白線且防追高 (乖離率 <= 5%)
+        bias_exp1 = (curr_c - curr_exp1) / curr_exp1 if curr_exp1 > 0 else 1.0
+        above_and_safe = (curr_c > curr_exp1) and (bias_exp1 <= 0.05)
+
+        if just_turned_red and white_up and above_and_safe:
             return True, {
-                "tag": "雙月整理突破",
+                "tag": "DKQS轉多",
                 "price": round(curr_c, 2),
-                "ma5": round(ma5, 2),
-                "ma10": round(ma10, 2),
-                "ma20": round(ma20, 2),
-                "ma300": round(float(close.rolling(300).mean().iloc[-1]), 2) if not math.isnan(close.rolling(300).mean().iloc[-1]) else 0.0
+                "ma5": round(curr_ma5, 2),
+                "ma10": round(curr_ma10, 2),
+                "ma20": round(curr_ma20, 2),
+                "ma300": round(curr_ma300, 2) if not math.isnan(curr_ma300) else 0.0
             }
 
         return False, None
     except Exception:
         return False, None
+
 
 # ==========================================
 # 4. 更新歷史績效 (改為 K棒數計算)
@@ -610,7 +605,6 @@ def update_history_roi(history_db):
                 (5, 'perf_5d'),
                 (10, 'perf_10d'),
                 (20, 'perf_20d'),
-                (30, 'perf_30d'),
                 (60, 'perf_60d'),
                 (120, 'perf_120d')
             ]
@@ -673,7 +667,7 @@ def run_scanner():
                     is_match_1, info_1 = check_strategy_original(df)
                     is_match_2, info_2 = check_strategy_vcp_pro(df)
                     is_match_3, info_3 = check_strategy_n_shape(df)
-                    is_match_4, info_4 = check_strategy_long_consolidation_breakout(df)
+                    is_match_4, info_4 = check_strategy_dkqs(df)
                     
                     final_match = False
                     final_info = {}
@@ -694,7 +688,7 @@ def run_scanner():
                     if is_match_4:
                         final_match = True
                         if not final_info: final_info = info_4
-                        strategy_tags.append("雙月整理突破")
+                        strategy_tags.append("DKQS轉多")
                     
                     if final_match:
                         name = raw_code
